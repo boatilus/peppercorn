@@ -6,6 +6,7 @@ import (
   "net/http"
   rethink "gopkg.in/dancannon/gorethink.v2"
   "log"
+  "strconv"
 )
 
 type User struct {
@@ -13,23 +14,20 @@ type User struct {
   Name    string  `gorethink:"name"`
   Email   string  `gorethink:"email"`
   Title   string  `gorethink:"title"`
+  PPP     uint64  `gorethink:"posts_per_page"`
 }
 
 type Post struct {
   ID      string  `gorethink:"id,omitempty"`
-  Num     uint32  `gorethink:"num"`
+  Active  bool    `gorethink:"active"`
   Author  User    `gorethink:"user_id,reference" gorethink_ref:"id"`
   Content string  `gorethink:"content"`
 }
 
-func GetUserByName(name string) (*User, error) {  
-  f := struct {
-    name string
-  } {
-    name,
-  }
-  
-  res, dberr := rethink.DB("map").Table("users").Filter(f).Run(session)
+func GetUserByName(name string) (*User, error) {
+  res, dberr := rethink.DB("map").Table("users").Filter(map[string]interface{}{
+    "name": name,
+  }).Run(session)
   
   if dberr != nil {
     return nil, dberr
@@ -89,9 +87,18 @@ func CreateIndices() (error) {
 }
 
 func GetPosts(first uint64, limit uint64) ([]Post, error) {
-  res, dberr := rethink.DB("map").Table("posts").Between(first, first + limit, rethink.BetweenOpts{
-    Index: "num",
-  }).Run(session)
+  if first < 1 {
+    first = 1
+  }
+  
+  // We want to order displayed posts by time posted (ascending), showing only active posts,
+  // skipping all those we don't need and limiting the number of results to `limit` -- typically
+  // the user's `posts_per_page` setting
+  res, dberr := rethink.DB("map").Table("posts").OrderBy(rethink.OrderByOpts{
+    Index: "time",
+  }).Filter(map[string]interface{}{
+    "active": true,
+  }).Skip(first - 1).Limit(limit).Run(session)
   
   if dberr != nil {
     return nil, dberr
@@ -104,7 +111,7 @@ func GetPosts(first uint64, limit uint64) ([]Post, error) {
   geterr := res.All(&posts)
   
   if geterr == rethink.ErrEmptyResult {
-    return nil, errors.New("not_found")
+    return nil, errors.New("empty_result")
   }
   
   if geterr != nil {
@@ -116,7 +123,12 @@ func GetPosts(first uint64, limit uint64) ([]Post, error) {
 
 var session *rethink.Session
 
-func index(w http.ResponseWriter, r *http.Request) {
+
+//////////////
+// Handlers //
+//////////////
+
+func indexHandler(w http.ResponseWriter, r *http.Request) {
   //user, err := GetUserByID("de0dc022-e1d7-4985-ba53-0b4579ada365")
   //user, err := GetUserByName("boat")
   posts, err := GetPosts(1, 10)
@@ -127,6 +139,43 @@ func index(w http.ResponseWriter, r *http.Request) {
   
   io.WriteString(w, posts[0].Content + "; " + posts[1].Content)
 }
+
+func pageHandler(w http.ResponseWriter, r *http.Request) {
+  page_num, parse_err := strconv.ParseUint(r.URL.Path[len("/page/"):], 10, 64)
+  
+  if parse_err != nil {
+    http.Error(w, parse_err.Error(), http.StatusInternalServerError)
+  }
+  
+  user, err := GetUserByID("de0dc022-e1d7-4985-ba53-0b4579ada365")
+  
+  if err != nil {
+    http.Error(w, err.Error(), http.StatusInternalServerError)
+  }
+  
+  if user.PPP == 0 {
+    user.PPP = 10
+  }
+  
+  start := (page_num * user.PPP) - user.PPP + 1
+  
+  posts, geterr := GetPosts(start, user.PPP)
+  
+  if geterr != nil {
+    http.Error(w, geterr.Error(), http.StatusInternalServerError)
+  }
+  
+  if len(posts) == 0 {
+    http.NotFound(w, r)
+  } else {
+    io.WriteString(w, "Number of posts found: " + strconv.Itoa(len(posts))) 
+  }
+}
+
+
+//////////
+// Main //
+//////////
 
 func main() {
   var err error
@@ -139,13 +188,14 @@ func main() {
     log.Fatal(err.Error())
   }
   
-  indexerr := CreateIndices()
+  /*indexerr := CreateIndices()
   
   if indexerr != nil {
     log.Print(indexerr)
-  }
+  }*/
   
-  http.HandleFunc("/", index)
+  http.HandleFunc("/", indexHandler)
+  http.HandleFunc("/page/", pageHandler)
   http.ListenAndServe(":8000", nil)
   
   log.Print("Listening on :8000")
