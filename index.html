@@ -1,0 +1,42 @@
+<!doctype HTML>
+<html>
+  <head>
+    <title></title>
+    <link rel="stylesheet" href="cutestrap.min.css" />
+    <style type="text/css">
+      main {
+        margin: 0 auto;
+        width: 48em;
+      }
+      
+      article { background: #eee }
+      hr { display: none }
+    </style>
+  </head>
+  
+  <body>
+    <main>
+      <header>
+        <h1><a href="/">Make a Post</a></h1>
+      </header>
+      <hr>
+      
+      <article>
+        <header>
+          <h1><a href="/{user}" rel="author">{username}</a></h1>
+          <h2>{title}</h2>
+       </header>
+        
+        <section><p>{text}</p></section>
+      </article>
+      <hr>
+      
+      <article>
+        <h1><a href="/{user}" rel="author">{username}</a></h1>
+        <h2>{title}</h2>
+        
+        <section><p>{text}</p></section>
+      </article>
+    </main>
+  </body>
+</html>
