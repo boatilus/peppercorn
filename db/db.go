@@ -1,20 +1,20 @@
 package db
 
 import (
-  "log"
-  rethink "gopkg.in/dancannon/gorethink.v2"
+	rethink "gopkg.in/dancannon/gorethink.v2"
+	"log"
 )
 
 var Session *rethink.Session
 
 func init() {
-  var err error
+	var err error
 
-  Session, err = rethink.Connect(rethink.ConnectOpts{
-    Address: "localhost:28015",
-  })
+	Session, err = rethink.Connect(rethink.ConnectOpts{
+		Address: "localhost:28015",
+	})
 
-  if err != nil {
-    log.Fatal(err.Error())
-  }
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 }
