@@ -49,14 +49,11 @@ func GetPosts(first uint64, limit uint64) ([]Post, error) {
 
 	var posts []Post
 
-	geterr := res.All(&posts)
-
-	if geterr == rethink.ErrEmptyResult {
-		return nil, errors.New("empty_result")
-	}
-
-	if geterr != nil {
-		return nil, geterr
+	if err := res.All(&posts); err != nil {
+		switch err {
+			case rethink.ErrEmptyResult: return nil, errors.New("empty_result")
+			default: panic("unrecognized escape character")
+		}
 	}
 
 	return posts, nil
