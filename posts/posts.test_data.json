@@ -3,77 +3,42 @@
     "active": true,
     "author": "9b00b4c6-fdcd-44f3-b797-fe009ddd9042",
     "content": "Test post 1 content by test_user_1",
-    "id": "23bde356-ad08-4fe2-afdd-3a6629dcfc4f",
-    "time": {
-      "$reql_type$": "TIME",
-      "epoch_time": 1464650198,
-      "timezone": "-07:00"
-    }
+    "time": 1464650198
   },
   {
     "active": true,
     "author": "9b00b4c6-fdcd-44f3-b797-fe009ddd9042",
     "content": "Test post 2 content by test_user_2",
-    "id": "fe92fd0c-7be2-4b58-8edd-edbf8360d804",
-    "time": {
-      "$reql_type$": "TIME",
-      "epoch_time": 1464650250,
-      "timezone": "-07:00"
-    }
+    "time": 1464650250
   },
   {
     "active": true,
     "author": "d93f9e7f-87de-494e-85db-bc796524027e",
     "content": "Test post 3 content by test_user_1",
-    "id": "9f350906-89e0-46a8-a784-facba0699ff1",
-    "time": {
-      "$reql_type$": "TIME",
-      "epoch_time": 1464650300,
-      "timezone": "-07:00"
-    }
+    "time": 1464650300
   },
   {
     "active": true,
     "author": "d93f9e7f-87de-494e-85db-bc796524027e",
     "content": "Test post 4 content by test_user_1",
-    "id": "48077126-1a2d-4284-84fa-87162638263a",
-    "time": {
-      "$reql_type$": "TIME",
-      "epoch_time": 1464656400,
-      "timezone": "-07:00"
-    }
+    "time": 1464656400
   },
   {
     "active": true,
     "author": "9b00b4c6-fdcd-44f3-b797-fe009ddd9042",
     "content": "Test post 5 content by test_user_2",
-    "id": "61faa88c-45d9-4eb7-a2cb-e882c1cc4703",
-    "time": {
-      "$reql_type$": "TIME",
-      "epoch_time": 1464659600,
-      "timezone": "-07:00"
-    }
+    "time": 1464659600
   },
   {
     "active": true,
     "author": "9b00b4c6-fdcd-44f3-b797-fe009ddd9042",
     "content": "Test post 6 content by test_user_2",
-    "id": "f2491085-57f6-43b3-8333-92bbbaf05766",
-    "time": {
-      "$reql_type$": "TIME",
-      "epoch_time": 1464659780,
-      "timezone": "-07:00"
-    }
+    "time": 1464659780
   },
   {
     "active": false,
     "author": "d93f9e7f-87de-494e-85db-bc796524027e",
     "content": "Inactive test post would-be-7 content by test_user_2",
-    "id": "d047d055-867f-40b2-9ee9-05904d4a6da2",
-    "time": {
-      "$reql_type$": "TIME",
-      "epoch_time": 1464659900,
-      "timezone": "-07:00"
-    }
+    "time": 1464659900
   }
 ]

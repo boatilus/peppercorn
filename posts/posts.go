@@ -3,18 +3,18 @@ package posts
 import (
 	"errors"
 	"github.com/boatilus/peppercorn/db"
-	"github.com/boatilus/peppercorn/users"
+	//"github.com/boatilus/peppercorn/users"
 	rethink "gopkg.in/dancannon/gorethink.v2"
 	"os"
 	"time"
 )
 
 type Post struct {
-	ID      string     `gorethink:"id,omitempty"`
-	Active  bool       `gorethink:"active"`
-	Author  users.User `gorethink:"user_id,reference" gorethink_ref:"id"`
-	Content string     `gorethink:"content"`
-	Time    time.Time  `gorethink:"time"`
+	ID      string    `gorethink:"id,omitempty"`
+	Active  bool      `gorethink:"active"`
+	Author  string    `gorethink:"user_id"`
+	Content string    `gorethink:"content"`
+	Time    time.Time `gorethink:"time"`
 }
 
 // The default table. When running tests, can replace with another table
@@ -26,7 +26,7 @@ func init() {
 	}
 }
 
-func GetPosts(first uint64, limit uint64) ([]Post, error) {
+func Get(first uint64, limit uint64) ([]Post, error) {
 	// Don't let users try to load any page prior to the, uh, first one
 	if first < 1 {
 		first = 1
@@ -51,10 +51,26 @@ func GetPosts(first uint64, limit uint64) ([]Post, error) {
 
 	if err := res.All(&posts); err != nil {
 		switch err {
-			case rethink.ErrEmptyResult: return nil, errors.New("empty_result")
-			default: panic("unrecognized escape character")
+		case rethink.ErrEmptyResult:
+			return nil, errors.New("empty_result")
+		default:
+			panic("unrecognized escape character")
 		}
 	}
 
 	return posts, nil
+}
+
+func GetSingle(n uint64) (Post, error) {
+	if n < 1 {
+		return Post{}, errors.New("Cannot request negative post number")
+	}
+
+	posts, err := Get(n, 1)
+
+	if err != nil {
+		return Post{}, err
+	}
+
+	return posts[0], nil
 }
