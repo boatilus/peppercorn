@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/boatilus/peppercorn/posts"
 	"github.com/boatilus/peppercorn/users"
+	"github.com/gorilla/mux"
 	"io"
 	"log"
 	"net/http"
@@ -16,7 +17,7 @@ import (
 func indexHandler(w http.ResponseWriter, r *http.Request) {
 	//user, err := GetUserByID("de0dc022-e1d7-4985-ba53-0b4579ada365")
 	//user, err := GetUserByName("boat")
-	posts, err := posts.GetPosts(1, 10)
+	posts, err := posts.GetRange(1, 10)
 
 	if err != nil {
 		log.Panic(err)
@@ -44,7 +45,7 @@ func pageHandler(w http.ResponseWriter, r *http.Request) {
 
 	start := (page_num * user.PPP) - user.PPP + 1
 
-	posts, geterr := posts.GetPosts(start, user.PPP)
+	posts, geterr := posts.GetRange(start, user.PPP)
 
 	if geterr != nil {
 		http.Error(w, geterr.Error(), http.StatusInternalServerError)
@@ -57,13 +58,37 @@ func pageHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func singleHandler(w http.ResponseWriter, r *http.Request) {
+	n, parseErr := strconv.ParseUint(mux.Vars(r)["num"], 10, 64)
+
+	if parseErr != nil {
+		http.Error(w, parseErr.Error(), http.StatusInternalServerError)
+	}
+
+	post, err := posts.GetOne(n)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
+	io.WriteString(w, post.Content)
+}
+
 //////////
 // Main //
 //////////
 
 func main() {
-	http.HandleFunc("/", indexHandler)
-	http.HandleFunc("/page/", pageHandler)
+	router := mux.NewRouter()
+
+	get := router.Methods("GET").Subrouter()
+
+	get.HandleFunc("/", indexHandler)
+	get.HandleFunc("/page/{num}", pageHandler)
+	get.HandleFunc("/single/{num}", singleHandler)
+
+	http.Handle("/", router)
+
 	http.ListenAndServe(":8000", nil)
 
 	log.Print("Listening on :8000")

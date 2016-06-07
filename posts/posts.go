@@ -26,7 +26,7 @@ func init() {
 	}
 }
 
-func Get(first uint64, limit uint64) ([]Post, error) {
+func GetRange(first uint64, limit uint64) ([]Post, error) {
 	// Don't let users try to load any page prior to the, uh, first one
 	if first < 1 {
 		first = 1
@@ -49,24 +49,30 @@ func Get(first uint64, limit uint64) ([]Post, error) {
 
 	var posts []Post
 
-	if err := res.All(&posts); err != nil {
+	err := res.All(&posts)
+
+	if len(posts) == 0 {
+		return nil, errors.New("empty_result")
+	}
+
+	if err != nil {
 		switch err {
-		case rethink.ErrEmptyResult:
+		case rethink.ErrEmptyResult: // I have no idea when this is actually returned...
 			return nil, errors.New("empty_result")
 		default:
-			panic("unrecognized escape character")
+			return nil, errors.New("illegal_escape")
 		}
 	}
 
 	return posts, nil
 }
 
-func GetSingle(n uint64) (Post, error) {
+func GetOne(n uint64) (Post, error) {
 	if n < 1 {
-		return Post{}, errors.New("Cannot request negative post number")
+		return Post{}, errors.New("no_negative_allowed")
 	}
 
-	posts, err := Get(n, 1)
+	posts, err := GetRange(n, 1)
 
 	if err != nil {
 		return Post{}, err

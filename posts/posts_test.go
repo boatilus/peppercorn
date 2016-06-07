@@ -4,12 +4,14 @@ import (
 	"encoding/json"
 	rethink "gopkg.in/dancannon/gorethink.v2"
 	"io/ioutil"
-	//"log"
 	"testing"
 	"time"
 )
 
 var session *rethink.Session
+
+const dbName string = "peppercorn"
+const tableName string = "posts_test"
 
 type doc struct {
 	Active  bool
@@ -42,30 +44,30 @@ func setupDB() {
 		panic("No DB connected")
 	}
 
-	rethink.DBCreate("peppercorn").Run(session)
+	rethink.DBCreate(dbName).Run(session)
 
-	db := rethink.DB("peppercorn")
+	db := rethink.DB(dbName)
 
 	// Due to a lack of mocking in gorethink, we'll tear down the test data and repopulate on each
 	// run of the tests
-	db.TableDrop("posts_test").Run(session)
+	db.TableDrop(tableName).Run(session)
 
-	if _, err := db.TableCreate("posts_test").Run(session); err != nil {
+	if _, err := db.TableCreate(tableName).Run(session); err != nil {
 		panic(err)
 	}
 
-	table := db.Table("posts_test")
+	table := db.Table(tableName)
 
 	table.IndexCreate("time").Run(session)
 	table.IndexWait().Run(session)
 
 	bytes, err := ioutil.ReadFile("posts.test_data.json")
 
-	if err != nil {
+	if err := json.Unmarshal(bytes, &docs); err != nil {
 		panic(err)
 	}
 
-	if err := json.Unmarshal(bytes, &docs); err != nil {
+	if err != nil {
 		panic(err)
 	}
 
@@ -87,29 +89,23 @@ func setupDB() {
 // Tests //
 ///////////
 
-func TestGet(t *testing.T) {
+func TestGetRange(t *testing.T) {
 	setupDB()
 }
 
-func TestGetSingle(t *testing.T) {
+func TestGetOne(t *testing.T) {
 	setupDB()
-
-	p1 := Post{
-		Active:  docs[0].Active,
-		Author:  docs[0].Author,
-		Content: docs[0].Content,
-		Time:    time.Unix(docs[0].Time, 0),
-	}
 
 	cases := []struct {
 		in   uint64
 		want Post
 	}{
-		{1, p1},
+		{1, makePostFromDoc(docs[0])},
+		{3, makePostFromDoc(docs[2])},
 	}
 
 	for _, c := range cases {
-		got, err := GetSingle(c.in)
+		got, err := GetOne(c.in)
 
 		if err != nil {
 			t.Error(err)
@@ -129,8 +125,19 @@ func TestGetSingle(t *testing.T) {
 			t.Errorf("GetSingle(%v).Content == %v, want %v", c.in, got.Content, c.want.Content)
 		}
 
+		// Must use t.Equal() rather than == to discard time zone differences
 		if !got.Time.Equal(c.want.Time) {
 			t.Errorf("GetSingle(%v).Time inequal from test data time")
+		}
+	}
+
+	failCases := [3]uint64{0, 7, 12}
+
+	for _, c := range failCases {
+		_, err := GetOne(c)
+
+		if err == nil {
+			t.Errorf("GetSingle(%v) should return an error")
 		}
 	}
 }
