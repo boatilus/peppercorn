@@ -1,0 +1,24 @@
+[
+  {
+    "email": "user1@test.com",
+    "phone": {
+      "area": "111",
+      "num": "1111111"
+    },
+    "name": "user1",
+    "ppp": 10,
+    "title": "user1 title",
+    "hash": "$2a$08$8Mph3BRCFQy8epejUoB7m.OeFZtNcgyb.3/1jsTj8qWhPPfNMHYMu"
+  },
+  {
+    "email": "user2@test.com",
+    "phone": {
+      "area": "222",
+      "num": "2222222"
+    },
+    "name": "user2",
+    "ppp": 20,
+    "title": "user2 title",
+    "hash": "$2a$08$ALb1nD4nfIpBXKgBdWc.meAOkaE4g7jXPzBq/W1zZLvWtVmtfprW6"
+  }
+]
