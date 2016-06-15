@@ -1,8 +1,6 @@
 package users
 
 import (
-	"crypto/rand"
-	"encoding/base64"
 	"errors"
 	"github.com/boatilus/peppercorn/db"
 	"golang.org/x/crypto/bcrypt"
@@ -34,7 +32,7 @@ func init() {
 	}
 }
 
-func validateData(email string, name string, ppp uint16, hash string) error {
+func validateData(email string, name string, ppp uint32, hash string) error {
 	if len(email) == 0 {
 		return errors.New("invalid_email")
 	}
@@ -54,29 +52,31 @@ func validateData(email string, name string, ppp uint16, hash string) error {
 	return nil
 }
 
-func Create(email string, name string, title string, PhoneNumber phone, ppp uint16, hash string) (*User, error) {
-	// Our password procedure is to accept a browser-generated SHA-256 hash of the user's password,
-	// then stores a bcrypted hash. The server never needs to store the password, and we don't store
-	// the browser-generate hash directly (as advised by https://crackstation.net/hashing-security.htm)
+func Create(email string, name string, title string, phone PhoneNumber, ppp uint32, hash string) (*User, error) {
+	// Our password strategy is to accept a browser-generated SHA-256 hash of the user's password,
+	// then store a bcrypted hash. The server never needs to see the user's password, and we don't store
+	// the browser-generated hash directly (as advised by https://crackstation.net/hashing-security.htm)
 	if err := validateData(email, name, ppp, hash); err != nil {
 		return nil, err
 	}
 
-	hash, err := brcypt.GenerateFromPassword([]byte(hash), 10)
+	bhash, err := bcrypt.GenerateFromPassword([]byte(hash), 10)
 
-  if err != nil {
-    return nil, err
-  }
+	if err != nil {
+		return nil, err
+	}
 
-  return new User{
-    ID: "",
-    Email: email,
-    Phone: phone,
-    Nane: name,
-    PPP: ppp,
-    Title: title,
-    Hash: string(hash)
-  }
+	ret := User{
+		ID:    "",
+		Email: email,
+		Phone: phone,
+		Name:  name,
+		PPP:   ppp,
+		Title: title,
+		Hash:  string(bhash),
+	}
+
+	return &ret, nil
 }
 
 func GetByName(name string) (*User, error) {

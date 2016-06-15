@@ -1,70 +1,89 @@
-package "routes"
+package routes
 
 import (
-  "io"
-  "net/http"
-  "github.com/gorilla/mux"
-  "github.com/boatilus/peppercorn/posts"
-  "github.com/boatilus/peppercorn/users"
-  "strconv"
+	"fmt"
+	"github.com/boatilus/peppercorn/posts"
+	"github.com/boatilus/peppercorn/users"
+	"github.com/gorilla/mux"
+	"io"
+	"net/http"
+	"strconv"
 )
 
-func indexHandler(w http.ResponseWriter, r *http.Request) {
+func IndexHandler(writer http.ResponseWriter, _ *http.Request) {
 	//user, err := GetUserByID("de0dc022-e1d7-4985-ba53-0b4579ada365")
 	//user, err := GetUserByName("boat")
 	ps, err := posts.GetRange(1, 10)
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(writer, err.Error(), http.StatusInternalServerError)
 	}
 
-	io.WriteString(w, ps[0].Content+"; "+ps[1].Content)
+	io.WriteString(writer, ps[0].Content+"; "+ps[1].Content)
 }
 
-func pageHandler(w http.ResponseWriter, r *http.Request) {
-	page_num, parse_err := strconv.ParseUint(r.URL.Path[len("/page/"):], 10, 64)
+// Of the format: /page/{num}
+func PageHandler(writer http.ResponseWriter, req *http.Request) {
+	num := mux.Vars(req)["num"]
+
+	page_num, parse_err := strconv.ParseUint(num, 10, 64)
 
 	if parse_err != nil {
-		http.Error(w, parse_err.Error(), http.StatusInternalServerError)
+		msg := fmt.Sprintf("Bad request: for route \"/page/%v\", expected \"%v\" to be a positive integer", num, num)
+
+		http.Error(writer, msg, http.StatusBadRequest)
+
+		return
 	}
 
-	u, err := users.GetByID("9b00b4c6-fdcd-44f3-b797-fe009ddd9042")
+	// TODO: Replace with session data
+	user, err := users.GetByID("9b00b4c6-fdcd-44f3-b797-fe009ddd9042")
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(writer, err.Error(), http.StatusForbidden)
+
+		return
 	}
 
-	if u.PPP == 0 {
-		u.PPP = 10
+	if user.PPP == 0 {
+		user.PPP = 10
 	}
 
-	start := (page_num * user.PPP) - user.PPP + 1
+	start := (page_num * uint64(user.PPP)) - uint64(user.PPP) + 1
 
-	ps, geterr := posts.GetRange(start, u.PPP)
+	ps, geterr := posts.GetRange(start, uint64(user.PPP))
 
 	if geterr != nil {
-		http.Error(w, geterr.Error(), http.StatusInternalServerError)
+		http.Error(writer, geterr.Error(), http.StatusNotFound)
+
+		return
 	}
 
 	if len(ps) == 0 {
-		http.NotFound(w, r)
+		http.NotFound(writer, req)
 	} else {
-		io.WriteString(w, "Number of posts found: "+strconv.Itoa(len(ps)))
+		io.WriteString(writer, "Number of posts found: "+strconv.Itoa(len(ps)))
 	}
 }
 
-func singleHandler(w http.ResponseWriter, r *http.Request) {
-	n, parseErr := strconv.ParseUint(mux.Vars(r)["num"], 10, 64)
+func SingleHandler(writer http.ResponseWriter, req *http.Request) {
+	num := mux.Vars(req)["num"]
 
-	if parseErr != nil {
-		http.Error(w, parseErr.Error(), http.StatusInternalServerError)
+	post_num, parse_err := strconv.ParseUint(num, 10, 64)
+
+	if parse_err != nil {
+		msg := fmt.Sprintf("Bad request: for route \"/post/%v\", expected \"%v\" to be a positive integer", num, num)
+
+		http.Error(writer, msg, http.StatusBadRequest)
+
+		return
 	}
 
-	p, err := posts.GetOne(n)
+	p, err := posts.GetOne(post_num)
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.NotFound(writer, req)
 	}
 
-	io.WriteString(w, p.Content)
+	io.WriteString(writer, p.Content)
 }

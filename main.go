@@ -11,9 +11,9 @@ func main() {
 	router := mux.NewRouter()
 	get := router.Methods("GET").Subrouter()
 
-	get.HandleFunc("/", indexHandler)
-	get.HandleFunc("/page/{num}", pageHandler)
-	get.HandleFunc("/single/{num}", singleHandler)
+	get.HandleFunc("/", routes.IndexHandler)
+	get.HandleFunc("/page/{num}", routes.PageHandler)
+	get.HandleFunc("/post/{num}", routes.SingleHandler)
 
 	log.Print("Listening on :8000")
 
