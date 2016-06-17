@@ -10,8 +10,8 @@ import (
 
 var session *rethink.Session
 
-const dbName string = "peppercorn"
-const tableName string = "posts_test"
+const db_name string = "peppercorn"
+const table_name string = "posts_test"
 
 type doc struct {
 	Active  bool
@@ -44,19 +44,19 @@ func setupDB() {
 		panic("No DB connected")
 	}
 
-	rethink.DBCreate(dbName).Run(session)
+	rethink.DBCreate(db_name).Run(session)
 
-	db := rethink.DB(dbName)
+	db := rethink.DB(db_name)
 
 	// Due to a lack of mocking in gorethink, we'll tear down the test data and repopulate on each
 	// run of the tests
-	db.TableDrop(tableName).Run(session)
+	db.TableDrop(table_name).Run(session)
 
-	if _, err := db.TableCreate(tableName).Run(session); err != nil {
+	if _, err := db.TableCreate(table_name).Run(session); err != nil {
 		panic(err)
 	}
 
-	table := db.Table(tableName)
+	table := db.Table(table_name)
 
 	table.IndexCreate("time").Run(session)
 	table.IndexWait().Run(session)
@@ -90,10 +90,58 @@ func setupDB() {
 ///////////
 
 func TestGetRange(t *testing.T) {
+	func_name := "GetRange"
+
 	setupDB()
+
+	cases := []struct {
+		first uint64
+		limit uint64
+		want  []Post
+	}{
+		{1, 2, []Post{makePostFromDoc(docs[0]), makePostFromDoc(docs[1])}},
+		{3, 2, []Post{makePostFromDoc(docs[2]), makePostFromDoc(docs[3])}},
+		{2, 3, []Post{makePostFromDoc(docs[1]), makePostFromDoc(docs[2]), makePostFromDoc(docs[3])}},
+		// The 'first' argument is locked to 1 if < 1, so we should check that we get posts 1 and 2...
+		{0, 2, []Post{makePostFromDoc(docs[0]), makePostFromDoc(docs[1])}},
+	}
+
+	for _, c := range cases {
+		got, err := GetRange(c.first, c.limit)
+
+		if err != nil {
+			t.Error(err)
+
+			return
+		}
+
+		for i, _ := range got {
+			g := got[i]
+			w := c.want[i]
+
+			if g.Active != w.Active {
+				t.Errorf("%s(%v, %v).Active == %v, want %v", func_name, c.first, c.limit, g.Active, w.Active)
+			}
+
+			if g.Author != w.Author {
+				t.Errorf("%s(%v, %v).Author == %v, want %v", func_name, c.first, c.limit, g.Author, w.Author)
+			}
+
+			if g.Content != w.Content {
+				t.Errorf("%s(%v, %v).Content == %v, want %v", func_name, c.first, c.limit, g.Content, w.Content)
+			}
+
+			// Must use t.Equal() rather than == to discard time zone differences
+			if !g.Time.Equal(w.Time) {
+				t.Errorf("%s(%v, %v).Time inequal from test data time", func_name, c.first, c.limit)
+			}
+		}
+	}
 }
 
 func TestGetOne(t *testing.T) {
+	func_name := "GetOne"
+
 	setupDB()
 
 	cases := []struct {
@@ -114,20 +162,20 @@ func TestGetOne(t *testing.T) {
 		}
 
 		if got.Active != c.want.Active {
-			t.Errorf("GetSingle(%v).Active == %v, want %v", c.in, got.Active, c.want.Active)
+			t.Errorf("%s(%v).Active == %v, want %v", func_name, c.in, got.Active, c.want.Active)
 		}
 
 		if got.Author != c.want.Author {
-			t.Errorf("GetSingle(%v).Author == %v, want %v", c.in, got.Author, c.want.Author)
+			t.Errorf("%s(%v).Author == %v, want %v", func_name, c.in, got.Author, c.want.Author)
 		}
 
 		if got.Content != c.want.Content {
-			t.Errorf("GetSingle(%v).Content == %v, want %v", c.in, got.Content, c.want.Content)
+			t.Errorf("%s(%v).Content == %v, want %v", func_name, c.in, got.Content, c.want.Content)
 		}
 
 		// Must use t.Equal() rather than == to discard time zone differences
 		if !got.Time.Equal(c.want.Time) {
-			t.Errorf("GetSingle(%v).Time inequal from test data time")
+			t.Errorf("%s(%v).Time inequal from test data time", func_name, c.in)
 		}
 	}
 
@@ -137,7 +185,7 @@ func TestGetOne(t *testing.T) {
 		_, err := GetOne(c)
 
 		if err == nil {
-			t.Errorf("GetSingle(%v) should return an error")
+			t.Errorf("GetOne(%v) should return an error", c)
 		}
 	}
 }

@@ -57,8 +57,10 @@ func GetRange(first uint64, limit uint64) ([]Post, error) {
 
 	if err != nil {
 		switch err {
-		case rethink.ErrEmptyResult: // I have no idea when this is actually returned...
-			return nil, errors.New("empty_result")
+		/*
+			    case rethink.ErrEmptyResult: // I have no idea when this is actually returned...
+						return nil, errors.New("empty_result")
+		*/
 		default:
 			return nil, errors.New("illegal_escape")
 		}
