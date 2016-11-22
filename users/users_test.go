@@ -195,19 +195,18 @@ func TestExists(t *testing.T) {
 	setupDB()
 
 	cases := []struct {
-		email string
-		name  string
-		want  bool
+		user User
+		want bool
 	}{
-		{"user2@test.com", "", true},
-		{"", "user2", true},
-		{"user2@test.com", "user2", true},
-		{"user10030@test.com", "", false},
-		{"", "user0004891", false},
+		{User{Email: "user2@test.com"}, true},
+		{User{Name: "user2"}, true},
+		{User{Email: "user2@test.com"}, true},
+		{User{Email: "user10030@test.com"}, false},
+		{User{Name: "user0004891"}, false},
 	}
 
 	for _, c := range cases {
-		got, err := Exists(c.email, c.name)
+		got, err := Exists(&c.user)
 
 		if err != nil {
 			t.Error(err)

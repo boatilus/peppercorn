@@ -88,10 +88,11 @@ func New(email string, name string, title string, ppp uint32, hash string) (*Use
 	return &ret, nil
 }
 
-func Exists(email string, name string) (bool, error) {
-	table := viper.GetString("db.users_table")
+// Exists returns true if a user exists in the table with either a matching email or matching name
+func Exists(u *User) (bool, error) {
+	t := rethink.Or(rethink.Row.Field("email").Eq(u.Email), rethink.Row.Field("name").Eq(u.Name))
 
-	cursor, err := rethink.Table(table).Filter(rethink.Or(rethink.Row.Field("email").Eq(email), rethink.Row.Field("name").Eq(name))).Run(db.Session)
+	cursor, err := rethink.Table(viper.GetString("db.users_table")).Filter(t).Run(db.Session)
 
 	if err != nil {
 		return false, err
@@ -107,44 +108,26 @@ func Exists(email string, name string) (bool, error) {
 func Create(u *User) (*User, error) {
 	table := viper.GetString("db.users_table")
 
-	/*
-		cursor, err := rethink.Table(table).Filter(rethink.Row("email").Eq(func(user rethink.Term) interface{} {
-			return user.Field("email").Eq(u.Email)
-		})).Run(db.Session)
-	*/
+	_ = table
 
-	//cursor, err := rethink.Table(table).Filter(rethink.Row.Field("email").Eq(u.Email).Or()).Run(db.Session)
-
-	cursor, err := rethink.Table(table).Filter(rethink.Or(rethink.Row.Field("email").Eq(u.Email), rethink.Row.Field("name").Eq(u.Name))).Run(db.Session)
+	exists, err := Exists(u)
 
 	if err != nil {
 		return nil, err
 	}
 
-	defer cursor.Close()
-
-	var user User
-
-	err = cursor.One(&user)
-
-	if err == rethink.ErrEmptyResult {
-		return nil, errors.New("not_found")
+	if exists {
+		return nil, errors.New("user_exists")
 	}
 
-	if err != nil {
-		return nil, err
-	}
-
-	return &user, nil
+	return u, nil
 }
 
 // GetByEmail returns a single User from the database, given an email, if it exists. Else returns err
 func GetByEmail(email string) (*User, error) {
 	table := viper.GetString("db.users_table")
 
-	res, dberr := rethink.Table(table).Filter(map[string]interface{}{
-		"email": email,
-	}).Run(db.Session)
+	res, dberr := rethink.Table(table).Filter(rethink.Row.Field("email").Eq(email)).Run(db.Session)
 
 	if dberr != nil {
 		return nil, dberr
@@ -171,9 +154,7 @@ func GetByEmail(email string) (*User, error) {
 func GetByName(name string) (*User, error) {
 	table := viper.GetString("db.users_table")
 
-	res, dberr := rethink.Table(table).Filter(map[string]interface{}{
-		"name": name,
-	}).Run(db.Session)
+	res, dberr := rethink.Table(table).Filter(rethink.Row.Field("name").Eq(name)).Run(db.Session)
 
 	if dberr != nil {
 		return nil, dberr
