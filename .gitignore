@@ -27,3 +27,9 @@ _testmain.go
 
 # macOS
 .DS_Store
+
+# Ignore configuration data
+config.json
+
+# Ignore Rethink data
+rethinkdb_data

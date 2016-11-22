@@ -2,11 +2,11 @@ package posts
 
 import (
 	"errors"
-	"github.com/boatilus/peppercorn/db"
-	//"github.com/boatilus/peppercorn/users"
-	rethink "gopkg.in/dancannon/gorethink.v2"
-	"os"
 	"time"
+
+	"github.com/boatilus/peppercorn/db"
+	"github.com/spf13/viper"
+	rethink "gopkg.in/dancannon/gorethink.v2"
 )
 
 type Post struct {
@@ -17,16 +17,9 @@ type Post struct {
 	Time    time.Time `gorethink:"time"`
 }
 
-// The default table. When running tests, can replace with another table
-var table string = os.Getenv("POSTS_TABLE")
-
-func init() {
-	if len(table) == 0 {
-		table = "posts"
-	}
-}
-
 func GetRange(first uint64, limit uint64) ([]Post, error) {
+	table := viper.GetString("db.posts_table")
+
 	// Don't let users try to load any page prior to the, uh, first one
 	if first < 1 {
 		first = 1

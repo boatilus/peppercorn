@@ -2,16 +2,18 @@ package posts
 
 import (
 	"encoding/json"
-	rethink "gopkg.in/dancannon/gorethink.v2"
 	"io/ioutil"
 	"testing"
 	"time"
+
+	"github.com/spf13/viper"
+	rethink "gopkg.in/dancannon/gorethink.v2"
 )
 
 var session *rethink.Session
 
-const db_name string = "peppercorn"
-const table_name string = "posts_test"
+const tableName = "posts_test"
+const dbName = "peppercorn"
 
 type doc struct {
 	Active  bool
@@ -23,6 +25,8 @@ type doc struct {
 var docs []doc // Stores test data read in from JSON
 
 func init() {
+	viper.Set("db.posts_table", "posts_test")
+
 	var err error
 
 	if session, err = rethink.Connect(rethink.ConnectOpts{Address: "localhost:28015"}); err != nil {
@@ -44,19 +48,19 @@ func setupDB() {
 		panic("No DB connected")
 	}
 
-	rethink.DBCreate(db_name).Run(session)
+	rethink.DBCreate(dbName).Run(session)
 
-	db := rethink.DB(db_name)
+	db := rethink.DB(dbName)
 
 	// Due to a lack of mocking in gorethink, we'll tear down the test data and repopulate on each
 	// run of the tests
-	db.TableDrop(table_name).Run(session)
+	db.TableDrop(tableName).Run(session)
 
-	if _, err := db.TableCreate(table_name).Run(session); err != nil {
+	if _, err := db.TableCreate(tableName).Run(session); err != nil {
 		panic(err)
 	}
 
-	table := db.Table(table_name)
+	table := db.Table(tableName)
 
 	table.IndexCreate("time").Run(session)
 	table.IndexWait().Run(session)

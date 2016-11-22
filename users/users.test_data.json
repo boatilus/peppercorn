@@ -1,10 +1,6 @@
 [
   {
     "email": "user1@test.com",
-    "phone": {
-      "area": "111",
-      "num": "1111111"
-    },
     "name": "user1",
     "ppp": 10,
     "title": "user1 title",
@@ -12,10 +8,6 @@
   },
   {
     "email": "user2@test.com",
-    "phone": {
-      "area": "222",
-      "num": "2222222"
-    },
     "name": "user2",
     "ppp": 20,
     "title": "user2 title",

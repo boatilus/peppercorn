@@ -1,11 +1,23 @@
 package main
 
 import (
-	"github.com/boatilus/peppercorn/routes"
-	"github.com/gorilla/mux"
 	"log"
 	"net/http"
+
+	"github.com/boatilus/peppercorn/routes"
+	"github.com/gorilla/mux"
+	"github.com/spf13/viper"
+	"github.com/urfave/negroni"
 )
+
+func init() {
+	viper.SetConfigName("config")
+	viper.AddConfigPath(".")
+
+	if err := viper.ReadInConfig(); err != nil {
+		panic(err)
+	}
+}
 
 func main() {
 	router := mux.NewRouter()
@@ -15,8 +27,13 @@ func main() {
 	get.HandleFunc("/page/{num}", routes.PageHandler)
 	get.HandleFunc("/post/{num}", routes.SingleHandler)
 
-	log.Print("Listening on :8000")
+	n := negroni.Classic()
+	n.UseHandler(router)
+
+	port := viper.GetString("port")
+
+	log.Printf("Listening on %v", port)
 
 	http.Handle("/", router)
-	log.Fatal(http.ListenAndServe(":8000", nil))
+	log.Fatal(http.ListenAndServe(port, nil))
 }
