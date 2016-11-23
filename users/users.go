@@ -9,20 +9,16 @@ import (
 	rethink "gopkg.in/dancannon/gorethink.v2"
 )
 
+// User contains all the information relevant to a single user
 type User struct {
 	ID    string `gorethink:"id,omitempty"`
 	Email string `gorethink:"email"`
-	//Phone PhoneNumber `gorethink:"phone"`
 	Name  string `gorethink:"name"`
 	PPP   uint32 `gorethink:"posts_per_page"`
 	Title string `gorethink:"title,omitempty"`
 
-	Hash string `gorethink:"hash"`
-}
-
-type PhoneNumber struct {
-	Area string `gorethink:"area"`
-	Num  string `gorethink:"num"`
+	Hash      string `gorethink:"hash"`
+	SessionID string `gorethink:"session_id,omitempty"`
 }
 
 const defaultPPP uint32 = 10

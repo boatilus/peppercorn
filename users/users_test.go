@@ -16,11 +16,12 @@ const dbName = "peppercorn"
 const tableName = "users_test"
 
 type doc struct {
-	Email string
-	Name  string
-	PPP   uint32
-	Title string
-	Hash  string
+	Email     string
+	Name      string
+	PPP       uint32
+	Title     string
+	Hash      string
+	SessionID string
 }
 
 var docs []doc // Stores test data read in from JSON
@@ -33,36 +34,16 @@ func init() {
 	if session, err = rethink.Connect(rethink.ConnectOpts{Address: "localhost:28015"}); err != nil {
 		panic(err)
 	}
-
-	/*
-		  session = rethink.NewMock(db.Opts)
-
-			mock.On(rethink.Table("users")).Return([]interface{}{
-				map[string]interface{}{
-					"email": "user1@test.com",
-					"name":  "user1",
-					"ppp":   10,
-					"title": "user1 title",
-					"hash":  "$2a$08$8Mph3BRCFQy8epejUoB7m.OeFZtNcgyb.3/1jsTj8qWhPPfNMHYMu",
-				},
-				map[string]interface{}{
-					"email": "user2@test.com",
-					"name":  "user2",
-					"ppp":   20,
-					"title": "user2 title",
-					"hash":  "$2a$08$ALb1nD4nfIpBXKgBdWc.meAOkaE4g7jXPzBq/W1zZLvWtVmtfprW6",
-				},
-			}, nil)
-	*/
 }
 
 func makeUserFromDoc(d doc) User {
 	return User{
-		Email: d.Email,
-		Name:  d.Name,
-		PPP:   d.PPP,
-		Title: d.Title,
-		Hash:  d.Hash,
+		Email:     d.Email,
+		Name:      d.Name,
+		PPP:       d.PPP,
+		Title:     d.Title,
+		Hash:      d.Hash,
+		SessionID: d.SessionID,
 	}
 }
 
