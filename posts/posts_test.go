@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/spf13/viper"
+	"github.com/stretchr/testify/assert"
 	rethink "gopkg.in/dancannon/gorethink.v2"
 )
 
@@ -93,8 +94,43 @@ func setupDB() {
 // Tests //
 ///////////
 
+func TestNew(t *testing.T) {
+	assert := assert.New(t)
+
+	type data struct {
+		author  string
+		content string
+	}
+
+	passCases := []data{
+		{"user", "content"},
+		{"_", "_"},
+	}
+
+	for _, c := range passCases {
+		got, err := New(c.author, c.content)
+
+		assert.Nil(err)
+		assert.True(got.Active)
+		assert.Equal(c.author, got.Author)
+		assert.Equal(c.content, got.Content)
+	}
+
+	failCases := []data{
+		{"", "content"},
+		{"user", ""},
+		{"", ""},
+	}
+
+	for _, c := range failCases {
+		_, err := New(c.author, c.content)
+
+		assert.NotNil(err)
+	}
+}
+
 func TestGetRange(t *testing.T) {
-	func_name := "GetRange"
+	assert := assert.New(t)
 
 	setupDB()
 
@@ -113,38 +149,22 @@ func TestGetRange(t *testing.T) {
 	for _, c := range cases {
 		got, err := GetRange(c.first, c.limit)
 
-		if err != nil {
-			t.Error(err)
+		assert.Nil(err)
 
-			return
-		}
-
-		for i, _ := range got {
+		for i := range got {
 			g := got[i]
 			w := c.want[i]
 
-			if g.Active != w.Active {
-				t.Errorf("%s(%v, %v).Active == %v, want %v", func_name, c.first, c.limit, g.Active, w.Active)
-			}
-
-			if g.Author != w.Author {
-				t.Errorf("%s(%v, %v).Author == %v, want %v", func_name, c.first, c.limit, g.Author, w.Author)
-			}
-
-			if g.Content != w.Content {
-				t.Errorf("%s(%v, %v).Content == %v, want %v", func_name, c.first, c.limit, g.Content, w.Content)
-			}
-
-			// Must use t.Equal() rather than == to discard time zone differences
-			if !g.Time.Equal(w.Time) {
-				t.Errorf("%s(%v, %v).Time inequal from test data time", func_name, c.first, c.limit)
-			}
+			assert.Equal(g.Active, w.Active)
+			assert.Equal(g.Author, w.Author)
+			assert.Equal(g.Content, w.Content)
+			assert.True(g.Time.Equal(w.Time))
 		}
 	}
 }
 
 func TestGetOne(t *testing.T) {
-	func_name := "GetOne"
+	assert := assert.New(t)
 
 	setupDB()
 
@@ -159,28 +179,12 @@ func TestGetOne(t *testing.T) {
 	for _, c := range cases {
 		got, err := GetOne(c.in)
 
-		if err != nil {
-			t.Error(err)
+		assert.Nil(err)
 
-			return
-		}
-
-		if got.Active != c.want.Active {
-			t.Errorf("%s(%v).Active == %v, want %v", func_name, c.in, got.Active, c.want.Active)
-		}
-
-		if got.Author != c.want.Author {
-			t.Errorf("%s(%v).Author == %v, want %v", func_name, c.in, got.Author, c.want.Author)
-		}
-
-		if got.Content != c.want.Content {
-			t.Errorf("%s(%v).Content == %v, want %v", func_name, c.in, got.Content, c.want.Content)
-		}
-
-		// Must use t.Equal() rather than == to discard time zone differences
-		if !got.Time.Equal(c.want.Time) {
-			t.Errorf("%s(%v).Time inequal from test data time", func_name, c.in)
-		}
+		assert.Equal(got.Active, c.want.Active)
+		assert.Equal(got.Author, c.want.Author)
+		assert.Equal(got.Content, c.want.Content)
+		assert.True(got.Time.Equal(c.want.Time))
 	}
 
 	failCases := [3]uint64{0, 7, 12}

@@ -9,6 +9,7 @@ import (
 	rethink "gopkg.in/dancannon/gorethink.v2"
 )
 
+// Post contains all the information stored for a single post
 type Post struct {
 	ID      string    `gorethink:"id,omitempty"`
 	Active  bool      `gorethink:"active"`
@@ -17,6 +18,27 @@ type Post struct {
 	Time    time.Time `gorethink:"time"`
 }
 
+// New fills and returns a Post object given an author and a post. The `Active` property
+// is `true` by default, and `Time` is always time.Now()
+func New(author string, content string) (*Post, error) {
+	if len(author) == 0 { // should we check for ID conformity here?
+		return nil, errors.New("cannot create Post given an empty author")
+	}
+
+	if len(content) == 0 {
+		return nil, errors.New("cannot create Post with no content")
+	}
+
+	return &Post{
+		Active:  true,
+		Author:  author,
+		Content: content,
+		Time:    time.Now(),
+	}, nil
+}
+
+// GetRange returns a range of posts specified by `first` -- the first post in the range --
+// and `limit`, the number of posts.
 func GetRange(first uint64, limit uint64) ([]Post, error) {
 	table := viper.GetString("db.posts_table")
 
