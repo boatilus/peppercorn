@@ -111,6 +111,7 @@ func TestNew(t *testing.T) {
 		got, err := New(c.author, c.content)
 
 		assert.Nil(err)
+		assert.Empty(got.ID)
 		assert.True(got.Active)
 		assert.Equal(c.author, got.Author)
 		assert.Equal(c.content, got.Content)
@@ -196,4 +197,12 @@ func TestGetOne(t *testing.T) {
 			t.Errorf("GetOne(%v) should return an error", c)
 		}
 	}
+}
+
+func TestSubmit(t *testing.T) {
+	p, _ := New("user", "content")
+
+	err := Submit(p)
+
+	assert.Nil(t, err)
 }

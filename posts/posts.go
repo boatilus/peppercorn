@@ -30,6 +30,7 @@ func New(author string, content string) (*Post, error) {
 	}
 
 	return &Post{
+		// ID: RethinkDB will generate one for us on insert, so omit
 		Active:  true,
 		Author:  author,
 		Content: content,
@@ -84,6 +85,7 @@ func GetRange(first uint64, limit uint64) ([]Post, error) {
 	return posts, nil
 }
 
+// GetOne simply returns a single Post, given a post number
 func GetOne(n uint64) (Post, error) {
 	if n < 1 {
 		return Post{}, errors.New("no_negative_allowed")
@@ -96,4 +98,18 @@ func GetOne(n uint64) (Post, error) {
 	}
 
 	return posts[0], nil
+}
+
+// Submit accepts a complete Post and inserts it into the database, returnign an error on any
+// failure
+func Submit(p *Post) error {
+	table := viper.GetString("db.posts_table")
+
+	_, err := rethink.DB("peppercorn").Table(table).Insert(p).Run(db.Session)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
