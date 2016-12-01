@@ -72,7 +72,7 @@ func setupDB() {
 		panic(err)
 	}
 
-	if err != nil {
+	if len(docs) != 7 {
 		panic(err)
 	}
 
@@ -205,4 +205,50 @@ func TestSubmit(t *testing.T) {
 	err := Submit(p)
 
 	assert.Nil(t, err)
+
+	err = Submit(nil)
+
+	assert.NotNil(t, err)
+}
+
+func TestEdit(t *testing.T) {
+	assert := assert.New(t)
+
+	setupDB()
+
+	p, _ := GetOne(3)
+
+	err := Edit(3, "edited content")
+	assert.Nil(err)
+
+	pEdit, _ := GetOne(3)
+
+	assert.Equal(p.ID, pEdit.ID)
+	assert.Equal(p.Active, pEdit.Active)
+	assert.Equal(p.Author, pEdit.Author)
+	assert.Equal(pEdit.Content, "edited content")
+	assert.True(p.Time.Equal(pEdit.Time))
+}
+
+func TestActivate(t *testing.T) {
+	assert := assert.New(t)
+
+	setupDB()
+
+	const n = 6
+
+	p, err := GetOne(n) // 7th post is inactive
+	assert.Nil(err)
+
+	err = Activate(n)
+	assert.Nil(err)
+
+	pActivated, err := GetOne(n)
+	assert.Nil(err)
+
+	assert.Equal(p.ID, pActivated.ID)
+	assert.Equal(true, pActivated.Active)
+	assert.Equal(p.Author, pActivated.Author)
+	assert.Equal(p.Content, pActivated.Content)
+	assert.True(p.Time.Equal(pActivated.Time))
 }
