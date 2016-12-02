@@ -88,6 +88,21 @@ func setupDB() {
 	if _, err := table.Insert(posts).RunWrite(session); err != nil {
 		panic(err)
 	}
+
+	cursor, err := table.Count().Run(session)
+
+	if err != nil {
+		panic(err)
+	}
+
+	var n int
+
+	cursor.One(&n)
+	cursor.Close()
+
+	if n != 7 {
+		panic(err)
+	}
 }
 
 ///////////
