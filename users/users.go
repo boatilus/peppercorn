@@ -43,21 +43,6 @@ func validateData(email string, name string, ppp uint32, hash string) error {
 	return nil
 }
 
-// NewFromDefaults validates and creates a User object with the default PPP setting and a blank title
-func NewFromDefaults(email string, name string, hash string) (*User, error) {
-	if err := validateData(email, name, defaultPPP, hash); err != nil {
-		return nil, err
-	}
-
-	bhash, err := bcrypt.GenerateFromPassword([]byte(hash), 10)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return &User{Email: email, Name: name, PPP: defaultPPP, Hash: string(bhash)}, nil
-}
-
 // New validates and creates a User object with all properties supplied
 func New(email string, name string, title string, ppp uint32, hash string) (*User, error) {
 	// Our password strategy is to accept a browser-generated SHA-256 hash of the user's password,
@@ -68,7 +53,6 @@ func New(email string, name string, title string, ppp uint32, hash string) (*Use
 	}
 
 	bhash, err := bcrypt.GenerateFromPassword([]byte(hash), viper.GetInt("bcrypt_cost"))
-
 	if err != nil {
 		return nil, err
 	}
@@ -82,6 +66,20 @@ func New(email string, name string, title string, ppp uint32, hash string) (*Use
 	}
 
 	return &ret, nil
+}
+
+// NewFromDefaults validates and creates a User object with the default PPP setting and a blank title
+func NewFromDefaults(email string, name string, hash string) (*User, error) {
+	if err := validateData(email, name, defaultPPP, hash); err != nil {
+		return nil, err
+	}
+
+	bhash, err := bcrypt.GenerateFromPassword([]byte(hash), 10)
+	if err != nil {
+		return nil, err
+	}
+
+	return &User{Email: email, Name: name, PPP: defaultPPP, Hash: string(bhash)}, nil
 }
 
 // Exists returns true if a user exists in the table with either a matching email or matching name
@@ -107,7 +105,6 @@ func Create(u *User) (*User, error) {
 	_ = table
 
 	exists, err := Exists(u)
-
 	if err != nil {
 		return nil, err
 	}
@@ -123,54 +120,42 @@ func Create(u *User) (*User, error) {
 func GetByEmail(email string) (*User, error) {
 	table := viper.GetString("db.users_table")
 
-	res, dberr := rethink.Table(table).Filter(rethink.Row.Field("email").Eq(email)).Run(db.Session)
+	f := rethink.Row.Field("email").Eq(email)
 
-	if dberr != nil {
-		return nil, dberr
+	cursor, err := rethink.Table(table).Filter(f).Run(db.Session)
+	if err != nil {
+		return nil, err
 	}
 
-	defer res.Close()
+	defer cursor.Close()
 
-	var user User
-
-	geterr := res.One(&user)
-
-	if geterr == rethink.ErrEmptyResult {
-		return nil, errors.New("not_found")
+	var u User
+	if err = cursor.One(&u); err != nil {
+		return nil, err
 	}
 
-	if geterr != nil {
-		return nil, geterr
-	}
-
-	return &user, nil
+	return &u, nil
 }
 
 // GetByName returns a single User from the database, given a useranme, if it exists. Else returns err
 func GetByName(name string) (*User, error) {
 	table := viper.GetString("db.users_table")
 
-	res, dberr := rethink.Table(table).Filter(rethink.Row.Field("name").Eq(name)).Run(db.Session)
+	f := rethink.Row.Field("name").Eq(name)
 
-	if dberr != nil {
-		return nil, dberr
+	cursor, err := rethink.Table(table).Filter(f).Run(db.Session)
+	if err != nil {
+		return nil, err
 	}
 
-	defer res.Close()
+	defer cursor.Close()
 
-	var user User
-
-	geterr := res.One(&user)
-
-	if geterr == rethink.ErrEmptyResult {
-		return nil, errors.New("not_found")
+	var u User
+	if err = cursor.One(&u); err != nil {
+		return nil, err
 	}
 
-	if geterr != nil {
-		return nil, geterr
-	}
-
-	return &user, nil
+	return &u, nil
 }
 
 // GetByID queries for a user by its ID, and returns the User object if it exists. Otherwise, it
@@ -178,25 +163,17 @@ func GetByName(name string) (*User, error) {
 func GetByID(id string) (*User, error) {
 	table := viper.GetString("db.users_table")
 
-	res, dberr := rethink.Table(table).Get(id).Run(db.Session)
-
-	if dberr != nil {
-		return nil, dberr
+	cursor, err := rethink.Table(table).Get(id).Run(db.Session)
+	if err != nil {
+		return nil, err
 	}
 
-	defer res.Close()
+	defer cursor.Close()
 
-	var user User
-
-	geterr := res.One(&user)
-
-	if geterr == rethink.ErrEmptyResult {
-		return nil, errors.New("not_found")
+	var u User
+	if err = cursor.One(&u); err != nil {
+		return nil, err
 	}
 
-	if geterr != nil {
-		return nil, geterr
-	}
-
-	return &user, nil
+	return &u, nil
 }
