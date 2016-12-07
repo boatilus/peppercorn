@@ -25,16 +25,6 @@ type doc struct {
 
 var docs []doc // Stores test data read in from JSON
 
-func init() {
-	viper.Set("db.posts_table", "posts_test")
-
-	var err error
-
-	if session, err = rethink.Connect(rethink.ConnectOpts{Address: "localhost:28015"}); err != nil {
-		panic(err)
-	}
-}
-
 func makePostFromDoc(d doc) Post {
 	return Post{
 		Active:  d.Active,
@@ -90,6 +80,18 @@ func setupDB() {
 	}
 }
 
+func init() {
+	viper.Set("db.posts_table", "posts_test")
+
+	var err error
+
+	if session, err = rethink.Connect(rethink.ConnectOpts{Address: "localhost:28015"}); err != nil {
+		panic(err)
+	}
+
+	setupDB()
+}
+
 ///////////
 // Tests //
 ///////////
@@ -130,10 +132,22 @@ func TestNew(t *testing.T) {
 	}
 }
 
+func TestCount(t *testing.T) {
+	n, err := Count()
+
+	assert.Nil(t, err)
+	assert.Equal(t, n, 6)
+}
+
+func TestCountAll(t *testing.T) {
+	n, err := CountAll()
+
+	assert.Nil(t, err)
+	assert.Equal(t, n, 7)
+}
+
 func TestGetRange(t *testing.T) {
 	assert := assert.New(t)
-
-	setupDB()
 
 	cases := []struct {
 		first uint64
@@ -167,8 +181,6 @@ func TestGetRange(t *testing.T) {
 func TestGetOne(t *testing.T) {
 	assert := assert.New(t)
 
-	setupDB()
-
 	cases := []struct {
 		in   uint64
 		want Post
@@ -199,22 +211,20 @@ func TestGetOne(t *testing.T) {
 	}
 }
 
-func TestSubmit(t *testing.T) {
-	p, _ := New("user", "content")
+func TestGetByID(t *testing.T) {
+	assert := assert.New(t)
 
-	err := Submit(p)
+	want, err := GetOne(1)
+	assert.Nil(err)
 
-	assert.Nil(t, err)
+	got, err := GetByID(want.ID)
+	assert.Nil(err)
 
-	err = Submit(nil)
-
-	assert.NotNil(t, err)
+	assert.Equal(want, got)
 }
 
 func TestEdit(t *testing.T) {
 	assert := assert.New(t)
-
-	setupDB()
 
 	p, _ := GetOne(3)
 
@@ -230,25 +240,29 @@ func TestEdit(t *testing.T) {
 	assert.True(p.Time.Equal(pEdit.Time))
 }
 
-func TestActivate(t *testing.T) {
+func TestSubmit(t *testing.T) {
 	assert := assert.New(t)
 
-	setupDB()
+	p, _ := New("user", "content")
 
-	const n = 6
+	err := Submit(p)
 
-	p, err := GetOne(n) // 7th post is inactive
 	assert.Nil(err)
 
-	err = Activate(n)
+	n, err := Count()
+	assert.Nil(err)
+	assert.Equal(n, 7)
+
+	pt, err := GetOne(7)
 	assert.Nil(err)
 
-	pActivated, err := GetOne(n)
-	assert.Nil(err)
+	assert.Equal(p.Active, pt.Active)
+	assert.Equal(p.Author, pt.Author)
+	assert.Equal(p.Content, pt.Content)
+	assert.Equal(p.Time.Hour(), pt.Time.Hour())     // If the hour and second are equal we can be
+	assert.Equal(p.Time.Second(), pt.Time.Second()) // reasonably confident the times are equal
 
-	assert.Equal(p.ID, pActivated.ID)
-	assert.Equal(true, pActivated.Active)
-	assert.Equal(p.Author, pActivated.Author)
-	assert.Equal(p.Content, pActivated.Content)
-	assert.True(p.Time.Equal(pActivated.Time))
+	err = Submit(nil)
+
+	assert.NotNil(err)
 }

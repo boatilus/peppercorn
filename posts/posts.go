@@ -18,16 +18,9 @@ type Post struct {
 	Time    time.Time `gorethink:"time"`
 }
 
-func validate(p *Post) bool {
-	if len(p.Author) == 0 || len(p.Content) == 0 {
-		return false
-	}
-
-	return true
-}
-
 // New fills and returns a Post object given an author and a post. The `Active` property
-// is `true` by default, and `Time` is always time.Now()
+// is `true` by default, and `Time` is always `time.Now()`. RethinkDB will truncate .Time
+// to millisecond precision.
 func New(author string, content string) (*Post, error) {
 	p := Post{
 		// ID: RethinkDB will generate one for us on insert, so omit
@@ -44,6 +37,48 @@ func New(author string, content string) (*Post, error) {
 	return &p, nil
 }
 
+// Count returns the number of active posts as an int
+func Count() (int, error) {
+	table := viper.GetString("db.posts_table")
+
+	f := rethink.Row.Field("active").Eq(true)
+
+	cursor, err := rethink.Table(table).Filter(f).Count().Run(db.Session)
+	if err != nil {
+		return 0, err
+	}
+
+	var n int
+
+	if err = cursor.One(&n); err != nil {
+		return 0, err
+	}
+
+	cursor.Close()
+
+	return n, nil
+}
+
+// CountAll returns the total number of posts, including inactive posts, as an int
+func CountAll() (int, error) {
+	table := viper.GetString("db.posts_table")
+
+	cursor, err := rethink.Table(table).Count().Run(db.Session)
+	if err != nil {
+		return 0, err
+	}
+
+	var n int
+
+	if err = cursor.One(&n); err != nil {
+		return 0, err
+	}
+
+	cursor.Close()
+
+	return n, nil
+}
+
 // GetRange returns a range of posts specified by `first` -- the first post in the range --
 // and `limit`, the number of posts.
 func GetRange(first uint64, limit uint64) ([]Post, error) {
@@ -54,38 +89,31 @@ func GetRange(first uint64, limit uint64) ([]Post, error) {
 		first = 1
 	}
 
-	// We want to order displayed posts by time posted (ascending), showing only active posts,
-	// skipping all those we don't need and limiting the number of results to `limit` -- typically
-	// the user's `posts_per_page` setting
-	res, dberr := rethink.Table(table).OrderBy(rethink.OrderByOpts{
-		Index: "time",
-	}).Filter(map[string]interface{}{
-		"active": true,
-	}).Skip(first - 1).Limit(limit).Run(db.Session)
-
-	if dberr != nil {
-		return nil, dberr
+	// Always enforce a limit of 100
+	if limit > 100 {
+		limit = 100
 	}
 
-	defer res.Close()
+	// We want to order displayed posts by time posted (ascending), showing only active posts,
+	// skipping all those we don't need and limiting the number of results to `limit`
+	o := rethink.OrderByOpts{Index: "time"}
+	f := rethink.Row.Field("active").Eq(true)
+
+	cursor, err := rethink.Table(table).OrderBy(o).Filter(f).Skip(first - 1).Limit(limit).Run(db.Session)
+	if err != nil {
+		return nil, err
+	}
 
 	var posts []Post
 
-	err := res.All(&posts)
+	if err = cursor.All(&posts); err != nil {
+		return nil, err
+	}
+
+	cursor.Close()
 
 	if len(posts) == 0 {
 		return nil, errors.New("empty_result")
-	}
-
-	if err != nil {
-		switch err {
-		/*
-			    case rethink.ErrEmptyResult: // I have no idea when this is actually returned...
-						return nil, errors.New("empty_result")
-		*/
-		default:
-			return nil, errors.New("illegal_escape")
-		}
 	}
 
 	return posts, nil
@@ -98,7 +126,6 @@ func GetOne(n uint64) (*Post, error) {
 	}
 
 	posts, err := GetRange(n, 1)
-
 	if err != nil {
 		return nil, err
 	}
@@ -106,63 +133,24 @@ func GetOne(n uint64) (*Post, error) {
 	return &posts[0], nil
 }
 
-// Submit accepts a complete Post and inserts it into the database, returnign an error on any
-// failure
-func Submit(p *Post) error {
-	if p != nil && !validate(p) {
-		return errors.New("invalid Post supplied")
-	}
-
+// GetByID returns a single post given its ID
+func GetByID(id string) (*Post, error) {
 	table := viper.GetString("db.posts_table")
 
-	_, err := rethink.Table(table).Insert(p).Run(db.Session)
-
+	cursor, err := rethink.Table(table).Get(id).Run(db.Session)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
-}
+	var p Post
 
-func update(p *Post) error {
-	table := viper.GetString("db.posts_table")
-
-	_, err := rethink.Table(table).Insert(p, rethink.InsertOpts{Conflict: "update"}).Run(db.Session)
-
-	if err != nil {
-		return err
+	if err = cursor.One(&p); err != nil {
+		return nil, err
 	}
 
-	return nil
-}
+	cursor.Close()
 
-func updateActive(n uint64, status bool) error {
-	if n < 1 {
-		return errors.New("Cannot attempt to edit post 0")
-	}
-
-	p, err := GetOne(n)
-
-	if err != nil {
-		return err
-	}
-
-	if p.Active == status {
-		// Nothing to update? Simply exit out
-		return nil
-	}
-
-	p.Active = status
-
-	table := viper.GetString("db.posts_table")
-
-	_, err = rethink.Table(table).Insert(p, rethink.InsertOpts{Conflict: "update"}).Run(db.Session)
-
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return &p, nil
 }
 
 // Edit accepts a post number and the content to update a post with. Errs if `n < 1` or if
@@ -177,36 +165,91 @@ func Edit(n uint64, newContent string) error {
 	}
 
 	p, err := GetOne(n)
-
 	if err != nil {
 		return err
 	}
 
 	p.Content = newContent
 
-	update(p)
-
-	if err != nil {
+	if err = update(p); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func Activate(n uint64) error {
-	err := updateActive(n, true)
+// Submit accepts a complete Post and inserts it into the database, returnign an error on any
+// failure
+func Submit(p *Post) error {
+	if p != nil && !validate(p) {
+		return errors.New("invalid Post supplied")
+	}
 
-	if err != nil {
+	table := viper.GetString("db.posts_table")
+
+	if _, err := rethink.Table(table).Insert(p).Run(db.Session); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func Deactivate(n uint64) error {
-	err := updateActive(n, false)
+func Activate(id string) error {
+	if err := updateStatus(id, true); err != nil {
+		return err
+	}
 
+	return nil
+}
+
+func Deactivate(id string) error {
+	if err := updateStatus(id, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func validate(p *Post) bool {
+	if len(p.Author) == 0 || len(p.Content) == 0 {
+		return false
+	}
+
+	return true
+}
+
+func update(p *Post) error {
+	table := viper.GetString("db.posts_table")
+	io := rethink.InsertOpts{Conflict: "update"}
+
+	if _, err := rethink.Table(table).Insert(p, io).Run(db.Session); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func updateStatus(id string, status bool) error {
+	table := viper.GetString("db.posts_table")
+
+	cursor, err := rethink.Table(table).Get(id).Run(db.Session)
 	if err != nil {
+		return err
+	}
+
+	var p Post
+
+	if err = cursor.One(&p); err != nil {
+		return err
+	}
+
+	cursor.Close()
+
+	p.Active = status
+
+	io := rethink.InsertOpts{Conflict: "update"}
+
+	if _, err = rethink.Table(table).Insert(&p, io).Run(db.Session); err != nil {
 		return err
 	}
 
