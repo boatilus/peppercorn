@@ -1,18 +1,17 @@
 # peppercorn
 
-**peppercorn** is a simple "post stream"; a single-thread discussion forum concept, written in Go and backed by RethinkDB. Development is early — there are only simple routes defined and models are incomplete.
+**peppercorn** is a simple "post stream"; a single-thread discussion forum concept, written in Go and backed by [RethinkDB](https://www.rethinkdb.com/). Development is early — there are only simple routes defined and models are incomplete.
 
-## Testing
+## Running tests
 
 To run the tests, first [install RethinkDB](https://rethinkdb.com/docs/install/). On macOS, RethinkDB can be installed via Homebrew:
 
     brew update && brew install rethinkdb
   
-Launch the RethinkDB server with default options:
+Launch a RethinkDB server with default options:
 
     rethinkdb
   
-Currently tests are available for the `users` and `posts` modules.
+Run all tests, including subpackages (the `-v` flag specifies verbose output)
 
-    cd users && go test -v
-    cd posts && go test- v
+    go test -v ./...
