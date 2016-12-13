@@ -1,11 +1,13 @@
 package main
 
 import (
-	"log"
 	"net/http"
 
+	log "github.com/Sirupsen/logrus"
+	"github.com/boatilus/peppercorn/db"
 	"github.com/boatilus/peppercorn/routes"
-	"github.com/gorilla/mux"
+	"github.com/evalphobia/logrus_sentry"
+	"github.com/pressly/chi"
 	"github.com/spf13/viper"
 	"github.com/urfave/negroni"
 )
@@ -15,25 +17,48 @@ func init() {
 	viper.AddConfigPath(".")
 
 	if err := viper.ReadInConfig(); err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
+
+	dsn := viper.GetString("sentry.dsn")
+
+	// Merely return and skip configuring the Sentry hook if no Sentry DSN specified
+	if dsn == "" {
+		return
+	}
+
+	hook, err := logrus_sentry.NewSentryHook(dsn, []log.Level{
+		log.PanicLevel,
+		log.FatalLevel,
+		log.ErrorLevel,
+	})
+
+	if err != nil {
+		log.Error("Could not add Sentry logging hook:", err)
+	}
+
+	log.AddHook(hook)
+
+	log.Print("Configured Sentry for logging hook")
 }
 
 func main() {
-	router := mux.NewRouter()
-	get := router.Methods("GET").Subrouter()
+	if err := db.Connect(); err != nil {
+		log.Fatal(err)
+	}
 
-	get.HandleFunc("/", routes.IndexHandler)
-	get.HandleFunc("/page/{num}", routes.PageHandler)
-	get.HandleFunc("/post/{num}", routes.SingleHandler)
+	r := chi.NewRouter()
+
+	r.Get("/", routes.IndexHandler)
+	r.Get("/page/:num", routes.PageHandler)
+	r.Get("/post/:num", routes.SingleHandler)
+	r.Get("/post/count", routes.CountHandler)
 
 	n := negroni.Classic()
-	n.UseHandler(router)
+	n.UseHandler(r)
 
 	port := viper.GetString("port")
 
-	log.Printf("Listening on %v", port)
-
-	http.Handle("/", router)
-	log.Fatal(http.ListenAndServe(port, nil))
+	log.Printf("Listening on %v..", port)
+	log.Fatal(http.ListenAndServe(port, r))
 }

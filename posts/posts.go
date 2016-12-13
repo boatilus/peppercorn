@@ -2,6 +2,7 @@ package posts
 
 import (
 	"errors"
+	"log"
 	"time"
 
 	"github.com/boatilus/peppercorn/db"
@@ -43,7 +44,7 @@ func Count() (int, error) {
 
 	f := rethink.Row.Field("active").Eq(true)
 
-	cursor, err := rethink.Table(table).Filter(f).Count().Run(db.Session)
+	cursor, err := db.GetDB().Table(table).Filter(f).Count().Run(db.Session)
 	if err != nil {
 		return 0, err
 	}
@@ -111,6 +112,8 @@ func GetRange(first uint64, limit uint64) ([]Post, error) {
 	}
 
 	cursor.Close()
+
+	log.Print(len(posts))
 
 	if len(posts) == 0 {
 		return nil, errors.New("empty_result")
