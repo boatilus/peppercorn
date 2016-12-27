@@ -95,6 +95,17 @@ func Exists(u *User) (bool, error) {
 	return !cursor.IsNil(), nil
 }
 
+// Validate compares a user's hash and a supplied password against each other and returns true
+// if they match, and false if not
+func Validate(hash string, password string) (bool, error) {
+	// A non-error indicates the password and the hash are true
+	if err = bcrypt.CompareHashAndPassword([]byte(hash), []byte(password)); err != nil {
+		return false
+	}
+
+	return true
+}
+
 // Create accepts a User object and inserts it into the database, assuming a user with that ID,
 // email or name doesn't already exist. Otherwise, returns an err
 func Create(u *User) (*User, error) {

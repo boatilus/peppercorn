@@ -3,6 +3,7 @@ package session
 import (
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/boatilus/peppercorn/db"
 	"github.com/spf13/viper"
@@ -11,12 +12,16 @@ import (
 // Session maintains a session key (the RethinkDB ID), the user's IP address and the user agent for
 // that session's browser
 type Session struct {
-	ID        string `gorethink:"id,omitempty"`
-	UserID    string `gorethink:"user"`
-	IP        string `gorethink:"ip"`
-	UserAgent string `gorethink:"user_agent"`
+	ID        string    `gorethink:"id,omitempty"`
+	UserID    string    `gorethink:"user"`
+	IP        string    `gorethink:"ip"`
+	UserAgent string    `gorethink:"user_agent"`
+	Timestamp time.Time `gorethink:"timestamp"`
 }
 
+// Create builds a session object given the user's ID, his IP address and his User-Agent, fills
+// the current time in the Timestamp field and inserts it into the sessions table. Returns a blank
+// string and an error on any failure.
 func Create(userID string, ip string, userAgent string) (string, error) {
 	if !db.Session.IsConnected() {
 		return "", errors.New("RethinkDB session not connected")
@@ -28,6 +33,7 @@ func Create(userID string, ip string, userAgent string) (string, error) {
 		UserID:    userID,
 		IP:        ip,
 		UserAgent: userAgent,
+		Timestamp: time.Now().UTC(),
 	}
 
 	res, err := db.Get().Table(table).Insert(&s).RunWrite(db.Session)

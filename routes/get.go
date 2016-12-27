@@ -7,25 +7,30 @@ import (
 	"strconv"
 
 	"github.com/boatilus/peppercorn/posts"
+	"github.com/boatilus/peppercorn/templates"
 	"github.com/boatilus/peppercorn/users"
 	"github.com/pressly/chi"
 )
 
 // IndexHandler is called for the `/` (index) route and
-func IndexHandler(writer http.ResponseWriter, _ *http.Request) {
+func IndexGetHandler(w http.ResponseWriter, _ *http.Request) {
 	//user, err := GetUserByID("de0dc022-e1d7-4985-ba53-0b4579ada365")
 	//user, err := GetUserByName("boat")
 	ps, err := posts.GetRange(1, 10)
 	if err != nil {
-		http.Error(writer, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	io.WriteString(writer, ps[0].Content+"; "+ps[1].Content)
+	io.WriteString(w, ps[0].Content+"; "+ps[1].Content)
+}
+
+func SignInGetHandler(w http.ResponseWriter, req *http.Request) {
+	templates.SignIn.Execute(w, nil)
 }
 
 // Of the format: /page/{num}
-func PageHandler(w http.ResponseWriter, req *http.Request) {
+func PageGetHandler(w http.ResponseWriter, req *http.Request) {
 	num := chi.URLParam(req, "num")
 
 	n, err := strconv.ParseUint(num, 10, 64)
@@ -64,7 +69,7 @@ func PageHandler(w http.ResponseWriter, req *http.Request) {
 
 // SingleHandler is called for GET requests for the `/post/{num}` route and renders a single post
 // by its computed post number.
-func SingleHandler(w http.ResponseWriter, req *http.Request) {
+func SingleGetHandler(w http.ResponseWriter, req *http.Request) {
 	num := chi.URLParam(req, "num")
 
 	n, err := strconv.ParseUint(num, 10, 64)
@@ -84,7 +89,7 @@ func SingleHandler(w http.ResponseWriter, req *http.Request) {
 	io.WriteString(w, p.Content)
 }
 
-func CountHandler(w http.ResponseWriter, _ *http.Request) {
+func CountGetHandler(w http.ResponseWriter, _ *http.Request) {
 	n, err := posts.Count()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

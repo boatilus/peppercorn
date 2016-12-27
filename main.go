@@ -51,16 +51,18 @@ func main() {
 	}
 
 	r := chi.NewRouter()
+	r.Use(middleware.RealIP)
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.CloseNotify)
 	r.Use(middleware.Timeout(60 * time.Second))
 
-	r.Get("/", routes.IndexHandler)
-	r.Get("/page/:num", routes.PageHandler)
-	r.Get("/posts/:num", routes.SingleHandler)
-	r.Get("/posts/count", routes.CountHandler)
-	r.Get("/settings", routes.SettingsHandler)
+	r.Get("/", routes.IndexGetHandler)
+	r.Get("/sign-in", routes.SignInGetHandler)
+	r.Get("/page/:num", routes.PageGetHandler)
+	r.Get("/posts/:num", routes.SingleGetHandler)
+	r.Get("/posts/count", routes.CountGetHandler)
+	r.Get("/settings", routes.SettingsGetHandler)
 
 	// n := negroni.Classic()
 	// n.UseHandler(r)
