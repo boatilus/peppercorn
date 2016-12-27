@@ -1,22 +1,15 @@
 package cookie
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/gorilla/securecookie"
 	"github.com/spf13/viper"
 )
 
-var key string
 var cookieGen *securecookie.SecureCookie
 
 func init() {
-	key = viper.GetString("session-key")
-	if key == "" {
-		log.Fatal("No session key specified in config; aborting..")
-	}
-
 	hashKey := securecookie.GenerateRandomKey(64)
 	blockKey := securecookie.GenerateRandomKey(32)
 
@@ -24,16 +17,22 @@ func init() {
 }
 
 func Create(value string) (*http.Cookie, error) {
+	key := viper.GetString("session_key")
+
 	encoded, err := cookieGen.Encode(key, value)
 	if err != nil {
 		return nil, err
 	}
 
-	cookie := &http.Cookie{
+	cookie := http.Cookie{
 		Name:  key,
 		Value: encoded,
-		Path:  "/",
+
+		Path: "/",
+
+		//Secure:   true,
+		HttpOnly: true,
 	}
 
-	return cookie, nil
+	return &cookie, nil
 }
