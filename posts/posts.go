@@ -2,7 +2,6 @@ package posts
 
 import (
 	"errors"
-	"log"
 	"time"
 
 	"github.com/boatilus/peppercorn/db"
@@ -44,18 +43,18 @@ func Count() (int, error) {
 
 	f := rethink.Row.Field("active").Eq(true)
 
-	cursor, err := db.GetDB().Table(table).Filter(f).Count().Run(db.Session)
+	cursor, err := db.Get().Table(table).Filter(f).Count().Run(db.Session)
 	if err != nil {
 		return 0, err
 	}
+
+	defer cursor.Close()
 
 	var n int
 
 	if err = cursor.One(&n); err != nil {
 		return 0, err
 	}
-
-	cursor.Close()
 
 	return n, nil
 }
@@ -64,18 +63,18 @@ func Count() (int, error) {
 func CountAll() (int, error) {
 	table := viper.GetString("db.posts_table")
 
-	cursor, err := rethink.Table(table).Count().Run(db.Session)
+	cursor, err := db.Get().Table(table).Count().Run(db.Session)
 	if err != nil {
 		return 0, err
 	}
+
+	defer cursor.Close()
 
 	var n int
 
 	if err = cursor.One(&n); err != nil {
 		return 0, err
 	}
-
-	cursor.Close()
 
 	return n, nil
 }
@@ -100,20 +99,18 @@ func GetRange(first uint64, limit uint64) ([]Post, error) {
 	o := rethink.OrderByOpts{Index: "time"}
 	f := rethink.Row.Field("active").Eq(true)
 
-	cursor, err := rethink.Table(table).OrderBy(o).Filter(f).Skip(first - 1).Limit(limit).Run(db.Session)
+	cursor, err := db.Get().Table(table).OrderBy(o).Filter(f).Skip(first - 1).Limit(limit).Run(db.Session)
 	if err != nil {
 		return nil, err
 	}
+
+	defer cursor.Close()
 
 	var posts []Post
 
 	if err = cursor.All(&posts); err != nil {
 		return nil, err
 	}
-
-	cursor.Close()
-
-	log.Print(len(posts))
 
 	if len(posts) == 0 {
 		return nil, errors.New("empty_result")
@@ -140,18 +137,17 @@ func GetOne(n uint64) (*Post, error) {
 func GetByID(id string) (*Post, error) {
 	table := viper.GetString("db.posts_table")
 
-	cursor, err := rethink.Table(table).Get(id).Run(db.Session)
+	cursor, err := db.Get().Table(table).Get(id).Run(db.Session)
 	if err != nil {
 		return nil, err
 	}
 
-	var p Post
+	defer cursor.Close()
 
+	var p Post
 	if err = cursor.One(&p); err != nil {
 		return nil, err
 	}
-
-	cursor.Close()
 
 	return &p, nil
 }
@@ -190,7 +186,7 @@ func Submit(p *Post) error {
 
 	table := viper.GetString("db.posts_table")
 
-	if _, err := rethink.Table(table).Insert(p).Run(db.Session); err != nil {
+	if _, err := db.Get().Table(table).Insert(p).RunWrite(db.Session); err != nil {
 		return err
 	}
 
@@ -225,7 +221,7 @@ func update(p *Post) error {
 	table := viper.GetString("db.posts_table")
 	io := rethink.InsertOpts{Conflict: "update"}
 
-	if _, err := rethink.Table(table).Insert(p, io).Run(db.Session); err != nil {
+	if _, err := db.Get().Table(table).Insert(p, io).Run(db.Session); err != nil {
 		return err
 	}
 
@@ -235,7 +231,7 @@ func update(p *Post) error {
 func updateStatus(id string, status bool) error {
 	table := viper.GetString("db.posts_table")
 
-	cursor, err := rethink.Table(table).Get(id).Run(db.Session)
+	cursor, err := db.Get().Table(table).Get(id).Run(db.Session)
 	if err != nil {
 		return err
 	}
@@ -252,7 +248,7 @@ func updateStatus(id string, status bool) error {
 
 	io := rethink.InsertOpts{Conflict: "update"}
 
-	if _, err = rethink.Table(table).Insert(&p, io).Run(db.Session); err != nil {
+	if _, err = db.Get().Table(table).Insert(&p, io).Run(db.Session); err != nil {
 		return err
 	}
 

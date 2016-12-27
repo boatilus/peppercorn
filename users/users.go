@@ -17,8 +17,7 @@ type User struct {
 	PPP   uint32 `gorethink:"posts_per_page"`
 	Title string `gorethink:"title,omitempty"`
 
-	Hash      string `gorethink:"hash"`
-	SessionID string `gorethink:"session_id,omitempty"`
+	Hash string `gorethink:"hash"`
 }
 
 const defaultPPP uint32 = 10
@@ -86,8 +85,7 @@ func NewFromDefaults(email string, name string, hash string) (*User, error) {
 func Exists(u *User) (bool, error) {
 	t := rethink.Or(rethink.Row.Field("email").Eq(u.Email), rethink.Row.Field("name").Eq(u.Name))
 
-	cursor, err := rethink.Table(viper.GetString("db.users_table")).Filter(t).Run(db.Session)
-
+	cursor, err := db.Get().Table(viper.GetString("db.users_table")).Filter(t).Run(db.Session)
 	if err != nil {
 		return false, err
 	}
@@ -122,7 +120,7 @@ func GetByEmail(email string) (*User, error) {
 
 	f := rethink.Row.Field("email").Eq(email)
 
-	cursor, err := rethink.Table(table).Filter(f).Run(db.Session)
+	cursor, err := db.Get().Table(table).Filter(f).Run(db.Session)
 	if err != nil {
 		return nil, err
 	}
@@ -143,7 +141,7 @@ func GetByName(name string) (*User, error) {
 
 	f := rethink.Row.Field("name").Eq(name)
 
-	cursor, err := rethink.Table(table).Filter(f).Run(db.Session)
+	cursor, err := db.Get().Table(table).Filter(f).Run(db.Session)
 	if err != nil {
 		return nil, err
 	}
@@ -163,7 +161,7 @@ func GetByName(name string) (*User, error) {
 func GetByID(id string) (*User, error) {
 	table := viper.GetString("db.users_table")
 
-	cursor, err := rethink.Table(table).Get(id).Run(db.Session)
+	cursor, err := db.Get().Table(table).Get(id).Run(db.Session)
 	if err != nil {
 		return nil, err
 	}

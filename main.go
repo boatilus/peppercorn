@@ -1,15 +1,19 @@
 package main
 
 import (
+	"crypto/tls"
 	"net/http"
+	"time"
+
+	"rsc.io/letsencrypt"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/boatilus/peppercorn/db"
 	"github.com/boatilus/peppercorn/routes"
 	"github.com/evalphobia/logrus_sentry"
 	"github.com/pressly/chi"
+	"github.com/pressly/chi/middleware"
 	"github.com/spf13/viper"
-	"github.com/urfave/negroni"
 )
 
 func init() {
@@ -20,9 +24,8 @@ func init() {
 		log.Fatal(err)
 	}
 
+	// Merely return and skip configuring the Sentry hook if no Sentry DSN specified in the config
 	dsn := viper.GetString("sentry.dsn")
-
-	// Merely return and skip configuring the Sentry hook if no Sentry DSN specified
 	if dsn == "" {
 		return
 	}
@@ -48,17 +51,40 @@ func main() {
 	}
 
 	r := chi.NewRouter()
+	r.Use(middleware.Logger)
+	r.Use(middleware.Recoverer)
+	r.Use(middleware.CloseNotify)
+	r.Use(middleware.Timeout(60 * time.Second))
 
 	r.Get("/", routes.IndexHandler)
 	r.Get("/page/:num", routes.PageHandler)
-	r.Get("/post/:num", routes.SingleHandler)
-	r.Get("/post/count", routes.CountHandler)
+	r.Get("/posts/:num", routes.SingleHandler)
+	r.Get("/posts/count", routes.CountHandler)
+	r.Get("/settings", routes.SettingsHandler)
 
-	n := negroni.Classic()
-	n.UseHandler(r)
+	// n := negroni.Classic()
+	// n.UseHandler(r)
 
 	port := viper.GetString("port")
+	if port == "" {
+		log.Fatal("No port specified; aborting..")
+	}
 
-	log.Printf("Listening on %v..", port)
-	log.Fatal(http.ListenAndServe(port, r))
+	srv := &http.Server{Addr: port, Handler: r}
+
+	log.Printf("Listening on %s..", port)
+
+	// TODO: Handle this much more elegantly
+	if port != ":8000" {
+		var m letsencrypt.Manager
+		if err := m.CacheFile("letsencrypt.cache"); err != nil {
+			log.Fatal(err)
+		}
+
+		srv.TLSConfig = &tls.Config{GetCertificate: m.GetCertificate}
+
+		log.Fatal(srv.ListenAndServeTLS("", ""))
+	} else {
+		log.Fatal(srv.ListenAndServe())
+	}
 }

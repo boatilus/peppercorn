@@ -93,3 +93,7 @@ func CountHandler(w http.ResponseWriter, _ *http.Request) {
 
 	io.WriteString(w, strconv.Itoa(n))
 }
+
+func SettingsHandler(w http.ResponseWriter, _ *http.Request) {
+	io.WriteString(w, "settings")
+}

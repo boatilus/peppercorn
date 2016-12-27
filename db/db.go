@@ -7,16 +7,16 @@ import (
 	rethink "gopkg.in/dancannon/gorethink.v2"
 )
 
-var dbName string
-
 // Session is passed to all Rethink queries
 var Session *rethink.Session
 
 // Opts defines our Rethink connection options
 var Opts rethink.ConnectOpts
 
+const Name = "peppercorn"
+
 func createIndex(table string, field string) {
-	res, _ := rethink.DB(dbName).Table(table).IndexCreate(field).RunWrite(Session)
+	res, _ := rethink.DB(Name).Table(table).IndexCreate(field).RunWrite(Session)
 	if res.Created == 1 {
 		log.Printf("Created '%s' index on '%s' table", field, table)
 	}
@@ -24,13 +24,6 @@ func createIndex(table string, field string) {
 
 // Connect..
 func Connect() error {
-	dbName = viper.GetString("db.name")
-	if dbName == "" {
-		log.Print("Could not read database name from config; defaulting to 'peppercorn'")
-
-		dbName = "peppercorn"
-	}
-
 	// DB address will default to 28015
 	Opts = rethink.ConnectOpts{
 		Address: viper.GetString("db.address"),
@@ -43,10 +36,10 @@ func Connect() error {
 	}
 
 	// Call DBCreate for "peppercorn", which will return an error if it already exists
-	res, _ := rethink.DBCreate(dbName).RunWrite(Session)
+	res, _ := rethink.DBCreate(Name).RunWrite(Session)
 	log.Printf("%d databases created", res.DBsCreated)
 
-	db := rethink.DB(dbName)
+	db := rethink.DB(Name)
 
 	res, _ = db.TableCreate("users").RunWrite(Session)
 	if res.TablesCreated == 1 {
@@ -56,6 +49,11 @@ func Connect() error {
 	res, _ = db.TableCreate("posts").RunWrite(Session)
 	if res.TablesCreated == 1 {
 		log.Print("'posts' table created")
+	}
+
+	res, _ = db.TableCreate("sessions").RunWrite(Session)
+	if res.TablesCreated == 1 {
+		log.Print("'sessions' table created")
 	}
 
 	createIndex("posts", "active")
@@ -69,6 +67,6 @@ func Connect() error {
 	return nil
 }
 
-func GetDB() rethink.Term {
-	return rethink.DB(dbName)
+func Get() rethink.Term {
+	return rethink.DB(Name)
 }

@@ -6,15 +6,13 @@ import (
 	"testing"
 	"time"
 
+	"github.com/boatilus/peppercorn/db"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	rethink "gopkg.in/dancannon/gorethink.v2"
 )
 
-var session *rethink.Session
-
 const tableName = "posts_test"
-const dbName = "peppercorn"
 
 type doc struct {
 	Active  bool
@@ -35,26 +33,26 @@ func makePostFromDoc(d doc) Post {
 }
 
 func setupDB() {
-	if !session.IsConnected() {
+	if !db.Session.IsConnected() {
 		panic("No DB connected")
 	}
 
-	rethink.DBCreate(dbName).Run(session)
+	rethink.DBCreate("peppercorn").Run(db.Session)
 
-	db := rethink.DB(dbName)
+	peppercorn := rethink.DB(db.Name)
 
 	// Due to a lack of mocking in gorethink, we'll tear down the test data and repopulate on each
 	// run of the tests
-	db.TableDrop(tableName).Run(session)
+	peppercorn.TableDrop(tableName).Run(db.Session)
 
-	if _, err := db.TableCreate(tableName).Run(session); err != nil {
+	if _, err := peppercorn.TableCreate(tableName).Run(db.Session); err != nil {
 		panic(err)
 	}
 
-	table := db.Table(tableName)
+	table := peppercorn.Table(tableName)
 
-	table.IndexCreate("time").Run(session)
-	table.IndexWait().Run(session)
+	table.IndexCreate("time").Run(db.Session)
+	table.IndexWait().Run(db.Session)
 
 	bytes, err := ioutil.ReadFile("posts.test_data.json")
 
@@ -75,11 +73,11 @@ func setupDB() {
 		posts[i].Time = time.Unix(docs[i].Time, 0)
 	}
 
-	if _, err := table.Insert(posts).RunWrite(session); err != nil {
+	if _, err := table.Insert(posts).RunWrite(db.Session); err != nil {
 		panic(err)
 	}
 
-	cursor, err := table.Count().Run(session)
+	cursor, err := table.Count().Run(db.Session)
 
 	if err != nil {
 		panic(err)
@@ -100,7 +98,7 @@ func init() {
 
 	var err error
 
-	if session, err = rethink.Connect(rethink.ConnectOpts{Address: "localhost:28015"}); err != nil {
+	if db.Session, err = rethink.Connect(rethink.ConnectOpts{Address: "localhost:28015"}); err != nil {
 		panic(err)
 	}
 

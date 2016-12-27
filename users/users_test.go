@@ -5,23 +5,20 @@ import (
 	"io/ioutil"
 	"testing"
 
+	"github.com/boatilus/peppercorn/db"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	rethink "gopkg.in/dancannon/gorethink.v2"
 )
 
-var session *rethink.Session
-
-const dbName = "peppercorn"
 const tableName = "users_test"
 
 type doc struct {
-	Email     string
-	Name      string
-	PPP       uint32
-	Title     string
-	Hash      string
-	SessionID string
+	Email string
+	Name  string
+	PPP   uint32
+	Title string
+	Hash  string
 }
 
 var docs []doc // Stores test data read in from JSON
@@ -31,43 +28,42 @@ func init() {
 
 	var err error
 
-	if session, err = rethink.Connect(rethink.ConnectOpts{Address: "localhost:28015"}); err != nil {
+	if db.Session, err = rethink.Connect(rethink.ConnectOpts{Address: "localhost:28015"}); err != nil {
 		panic(err)
 	}
 }
 
 func makeUserFromDoc(d doc) User {
 	return User{
-		Email:     d.Email,
-		Name:      d.Name,
-		PPP:       d.PPP,
-		Title:     d.Title,
-		Hash:      d.Hash,
-		SessionID: d.SessionID,
+		Email: d.Email,
+		Name:  d.Name,
+		PPP:   d.PPP,
+		Title: d.Title,
+		Hash:  d.Hash,
 	}
 }
 
 func setupDB() {
-	if !session.IsConnected() {
+	if !db.Session.IsConnected() {
 		panic("No DB connected")
 	}
 
-	rethink.DBCreate(dbName).Run(session)
+	rethink.DBCreate(db.Name).Run(db.Session)
 
-	db := rethink.DB(dbName)
+	peppercorn := rethink.DB(db.Name)
 
 	// Due to a lack of mocking in gorethink, we'll tear down the test data and repopulate on each
 	// run of the tests
-	db.TableDrop(tableName).Run(session)
+	peppercorn.TableDrop(tableName).Run(db.Session)
 
-	if _, err := db.TableCreate(tableName).Run(session); err != nil {
+	if _, err := peppercorn.TableCreate(tableName).Run(db.Session); err != nil {
 		panic(err)
 	}
 
-	table := db.Table(tableName)
+	table := peppercorn.Table(tableName)
 
-	table.IndexCreate("name").Run(session)
-	table.IndexWait().Run(session)
+	table.IndexCreate("name").Run(db.Session)
+	table.IndexWait().Run(db.Session)
 
 	bytes, err := ioutil.ReadFile("users.test_data.json")
 
@@ -89,7 +85,7 @@ func setupDB() {
 		users[i].Hash = docs[i].Hash
 	}
 
-	if _, err := table.Insert(users).RunWrite(session); err != nil {
+	if _, err := table.Insert(users).RunWrite(db.Session); err != nil {
 		panic(err)
 	}
 }
