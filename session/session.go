@@ -3,6 +3,7 @@ package session
 import (
 	"errors"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/boatilus/peppercorn/db"
@@ -10,7 +11,9 @@ import (
 )
 
 // Session maintains a session key (the RethinkDB ID), the user's IP address and the user agent for
-// that session's browser
+// that session's browser, as well as a timestamp when the session was created.
+//
+// TODO: Consider also adding a LastAccessed field, updating each time session is used
 type Session struct {
 	ID        string    `gorethink:"id,omitempty"`
 	UserID    string    `gorethink:"user"`
@@ -27,6 +30,8 @@ func Create(userID string, ip string, userAgent string) (string, error) {
 		return "", errors.New("RethinkDB session not connected")
 	}
 
+	log.Printf("Creating session for user %s [%s]", userID, ip)
+
 	table := viper.GetString("db.sessions_table")
 
 	s := Session{
@@ -41,18 +46,24 @@ func Create(userID string, ip string, userAgent string) (string, error) {
 		return "", err
 	}
 
+	log.Printf("Session for user %s created at %s", userID, s.Timestamp)
+
 	return res.GeneratedKeys[0], nil
 }
 
-func IsAuthenticated(id string) (bool, error) {
+// IsAuthenticated queries the session table for a valid session matching the ID, which is a user's
+// ID
+func IsAuthenticated(userID string) (bool, error) {
 	if !db.Session.IsConnected() {
 		return false, errors.New("RethinkDB session not connected")
 	}
 
+	log.Printf("Authenticating session for user %s..", userID)
+
 	table := viper.GetString("db.sessions_table")
 
 	// If there's a document in the DB for this ID, the session is good
-	res, err := db.Get().Table(table).Get(id).Run(db.Session)
+	res, err := db.Get().Table(table).Get(userID).Run(db.Session)
 	if err != nil {
 		return false, err
 	}
@@ -60,8 +71,10 @@ func IsAuthenticated(id string) (bool, error) {
 	defer res.Close()
 
 	if res.IsNil() {
-		return false, fmt.Errorf("Document for ID \"%s\" not found in \"%s\"", id, table)
+		return false, fmt.Errorf("Document for ID \"%s\" not found in \"%s\"", userID, table)
 	}
+
+	log.Printf("Session for user %s authenticated", userID)
 
 	// If the record was found, the session is good, as we remove invalid sessions from the DB
 	return true, nil

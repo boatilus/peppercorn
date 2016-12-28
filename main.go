@@ -62,7 +62,9 @@ func main() {
 	r.Get("/page/:num", routes.PageGetHandler)
 	r.Get("/posts/:num", routes.SingleGetHandler)
 	r.Get("/posts/count", routes.CountGetHandler)
-	r.Get("/settings", routes.SettingsGetHandler)
+	//r.Get("/settings", routes.SettingsGetHandler)
+
+	r.Post("/sign-in", routes.SignInPostHandler)
 
 	// n := negroni.Classic()
 	// n.UseHandler(r)

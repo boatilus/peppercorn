@@ -28,8 +28,13 @@ _testmain.go
 # macOS
 .DS_Store
 
-# Ignore configuration data
+# App configuration data
 config.json
 
-# Ignore Rethink data
+# RethinkDB data
 rethinkdb_data
+
+# VS Code data
+.vscode
+
+gen_pass.go

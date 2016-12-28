@@ -35,7 +35,7 @@ func validateData(email string, name string, ppp uint32, hash string) error {
 		return errors.New("invalid_ppp")
 	}
 
-	if len(hash) != 64 {
+	if len(hash) != 64 { // Should be 60?
 		return errors.New("invalid_hash")
 	}
 
@@ -97,9 +97,9 @@ func Exists(u *User) (bool, error) {
 
 // Validate compares a user's hash and a supplied password against each other and returns true
 // if they match, and false if not
-func Validate(hash string, password string) (bool, error) {
+func Validate(hash string, password string) bool {
 	// A non-error indicates the password and the hash are true
-	if err = bcrypt.CompareHashAndPassword([]byte(hash), []byte(password)); err != nil {
+	if err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password)); err != nil {
 		return false
 	}
 
