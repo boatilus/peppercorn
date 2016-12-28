@@ -1,6 +1,6 @@
 # peppercorn
 
-**peppercorn** is a simple "post stream"; a single-thread discussion forum concept, written in Go and backed by [RethinkDB](https://www.rethinkdb.com/). Development is early — there are only simple routes defined and models are incomplete.
+**peppercorn** is a simple "post stream"; a private, single-thread discussion forum concept, written in Go and backed by [RethinkDB](https://www.rethinkdb.com/). Development is early — there are only simple routes defined and models are incomplete.
 
 ## Running tests
 
