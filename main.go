@@ -8,6 +8,7 @@ import (
 	"rsc.io/letsencrypt"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/boatilus/peppercorn/cookie"
 	"github.com/boatilus/peppercorn/db"
 	"github.com/boatilus/peppercorn/routes"
 	"github.com/evalphobia/logrus_sentry"
@@ -49,6 +50,9 @@ func main() {
 	if err := db.Connect(); err != nil {
 		log.Fatal(err)
 	}
+
+	// Instantiate the secure cookie generator
+	cookie.CreateGenerator()
 
 	r := chi.NewRouter()
 	r.Use(middleware.RealIP)

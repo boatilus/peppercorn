@@ -10,11 +10,13 @@ import (
 )
 
 const tableName = "sessions_test"
+const sessionKey = "some value"
 
 var validKey string
 
 func init() {
 	viper.Set("db.sessions_table", tableName)
+	viper.Set("session_key", sessionKey)
 
 	var err error
 
@@ -49,6 +51,11 @@ func setupDB() {
 	}
 
 	validKey = res.GeneratedKeys[0]
+}
+
+func TestGetKey(t *testing.T) {
+	keyGot := GetKey()
+	assert.Equal(t, sessionKey, keyGot)
 }
 
 func TestCreate(t *testing.T) {

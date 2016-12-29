@@ -22,7 +22,7 @@ func IndexGetHandler(w http.ResponseWriter, _ *http.Request) {
 		return
 	}
 
-	io.WriteString(w, ps[0].Content+"; "+ps[1].Content)
+	io.WriteString(w, ps[0].Content /*+"; "+ps[1].Content*/)
 }
 
 func SignInGetHandler(w http.ResponseWriter, req *http.Request) {

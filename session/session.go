@@ -22,6 +22,11 @@ type Session struct {
 	Timestamp time.Time `gorethink:"timestamp"`
 }
 
+// GetKey returns the session key we'll implant in the cookie from viper
+func GetKey() string {
+	return viper.GetString("session_key")
+}
+
 // Create builds a session object given the user's ID, his IP address and his User-Agent, fills
 // the current time in the Timestamp field and inserts it into the sessions table. Returns a blank
 // string and an error on any failure.
@@ -63,14 +68,14 @@ func IsAuthenticated(userID string) (bool, error) {
 	table := viper.GetString("db.sessions_table")
 
 	// If there's a document in the DB for this ID, the session is good
-	res, err := db.Get().Table(table).Get(userID).Run(db.Session)
+	cursor, err := db.Get().Table(table).Get(userID).Run(db.Session)
 	if err != nil {
 		return false, err
 	}
 
-	defer res.Close()
+	defer cursor.Close()
 
-	if res.IsNil() {
+	if cursor.IsNil() {
 		return false, fmt.Errorf("Document for ID \"%s\" not found in \"%s\"", userID, table)
 	}
 

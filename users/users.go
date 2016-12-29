@@ -1,6 +1,7 @@
 package users
 
 import (
+	"context"
 	"errors"
 
 	"github.com/boatilus/peppercorn/db"
@@ -20,7 +21,23 @@ type User struct {
 	Hash string `gorethink:"hash"`
 }
 
+// contextKey and userKey are used to pass user data in request contexts
+type contextKey int
+
+const userKey contextKey = 0
+
 const defaultPPP uint32 = 10
+
+// NewContext returns a new Context that carries value u.
+func NewContext(ctx context.Context, user *User) context.Context {
+	return context.WithValue(ctx, userKey, user)
+}
+
+// FromContext returns the User value stored in ctx, if any.
+func FromContext(ctx context.Context) (*User, bool) {
+	u, ok := ctx.Value(userKey).(*User)
+	return u, ok
+}
 
 func validateData(email string, name string, ppp uint32, hash string) error {
 	if len(email) == 0 {
