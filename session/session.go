@@ -2,11 +2,11 @@ package session
 
 import (
 	"errors"
-	"fmt"
 	"log"
 	"time"
 
 	"github.com/boatilus/peppercorn/db"
+	"github.com/boatilus/peppercorn/users"
 	"github.com/spf13/viper"
 )
 
@@ -56,30 +56,36 @@ func Create(userID string, ip string, userAgent string) (string, error) {
 	return res.GeneratedKeys[0], nil
 }
 
-// IsAuthenticated queries the session table for a valid session matching the ID, which is a user's
-// ID
-func IsAuthenticated(userID string) (bool, error) {
+// IsAuthenticated queries the session table for a valid session matching the ID stored as the
+// cookie value
+func IsAuthenticated(id string) (bool, error) {
 	if !db.Session.IsConnected() {
 		return false, errors.New("RethinkDB session not connected")
 	}
 
-	log.Printf("Authenticating session for user %s..", userID)
+	//log.Printf("Authenticating session for user %s..", id)
 
 	table := viper.GetString("db.sessions_table")
 
 	// If there's a document in the DB for this ID, the session is good
-	cursor, err := db.Get().Table(table).Get(userID).Run(db.Session)
+	cursor, err := db.Get().Table(table).Get(id).Run(db.Session)
 	if err != nil {
 		return false, err
 	}
 
 	defer cursor.Close()
 
-	if cursor.IsNil() {
-		return false, fmt.Errorf("Document for ID \"%s\" not found in \"%s\"", userID, table)
+	// if cursor.IsNil() {
+	// 	return false, fmt.Errorf("Document with ID \"%s\" not found in \"%s\"", id, table)
+	// }
+
+	u := users.User{}
+
+	if err := cursor.One(&u); err != nil {
+		return false, err
 	}
 
-	log.Printf("Session for user %s authenticated", userID)
+	log.Printf("Session for user %s authenticated", u.ID)
 
 	// If the record was found, the session is good, as we remove invalid sessions from the DB
 	return true, nil

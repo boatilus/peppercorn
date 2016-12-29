@@ -10,10 +10,12 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/boatilus/peppercorn/cookie"
 	"github.com/boatilus/peppercorn/db"
+	"github.com/boatilus/peppercorn/middleware"
+	"github.com/boatilus/peppercorn/paths"
 	"github.com/boatilus/peppercorn/routes"
 	"github.com/evalphobia/logrus_sentry"
 	"github.com/pressly/chi"
-	"github.com/pressly/chi/middleware"
+	chiMiddleware "github.com/pressly/chi/middleware"
 	"github.com/spf13/viper"
 )
 
@@ -42,7 +44,6 @@ func init() {
 	}
 
 	log.AddHook(hook)
-
 	log.Print("Configured Sentry for logging hook")
 }
 
@@ -55,23 +56,20 @@ func main() {
 	cookie.CreateGenerator()
 
 	r := chi.NewRouter()
-	r.Use(middleware.RealIP)
-	r.Use(middleware.Logger)
-	r.Use(middleware.Recoverer)
-	r.Use(middleware.CloseNotify)
-	r.Use(middleware.Timeout(60 * time.Second))
+	r.Use(chiMiddleware.RealIP)
+	r.Use(chiMiddleware.Logger)
+	r.Use(chiMiddleware.Recoverer)
+	r.Use(chiMiddleware.CloseNotify)
+	r.Use(chiMiddleware.Timeout(60 * time.Second))
 
-	r.Get("/", routes.IndexGetHandler)
-	r.Get("/sign-in", routes.SignInGetHandler)
-	r.Get("/page/:num", routes.PageGetHandler)
-	r.Get("/posts/:num", routes.SingleGetHandler)
-	r.Get("/posts/count", routes.CountGetHandler)
+	r.With(middleware.Validate).Get("/", routes.IndexGetHandler)
+	r.Get(paths.Get.SignIn, routes.SignInGetHandler)
+	r.Get(paths.Get.Page, routes.PageGetHandler)
+	r.Get(paths.Get.Single, routes.SingleGetHandler)
+	r.Get(paths.Get.TotalPostCount, routes.CountGetHandler)
 	//r.Get("/settings", routes.SettingsGetHandler)
 
-	r.Post("/sign-in", routes.SignInPostHandler)
-
-	// n := negroni.Classic()
-	// n.UseHandler(r)
+	r.Post(paths.Post.SignIn, routes.SignInPostHandler)
 
 	port := viper.GetString("port")
 	if port == "" {

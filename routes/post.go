@@ -8,46 +8,8 @@ import (
 	"github.com/boatilus/peppercorn/users"
 )
 
-func Validate(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		c, err := req.Cookie(session.GetKey())
-		if err != http.ErrNoCookie {
-			// No cookie; no sesshie!
-			http.Redirect(w, req, "/sign-in", http.StatusUnauthorized)
-			return
-		}
-
-		userID, err := cookie.Decode(c)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		isAuthenticated, err := session.IsAuthenticated(userID)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		if !isAuthenticated {
-			// No session matches the value of the session cookie
-			http.Redirect(w, req, "/sign-in", http.StatusUnauthorized)
-			return
-		}
-
-		u, err := users.GetByID(userID)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		// We'll want to bind the user's data to the context so we needn't make another DB request for
-		// it.
-		ctx := users.NewContext(req.Context(), u)
-		next.ServeHTTP(w, req.WithContext(ctx))
-	})
-}
-
+// SignInPostHandler is, as you'd expect, where the sign-in form is POSTed. This handler does some
+// of the same work as session.Validate, but additionally creates sessions if the user's valid.
 func SignInPostHandler(w http.ResponseWriter, req *http.Request) {
 	// Query the request for a cookie. If present and valid, we don't need to proceed with signing
 	// the user in, so we'll simply redirect back to the index.

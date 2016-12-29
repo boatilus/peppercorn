@@ -54,7 +54,7 @@ func Create(value string) (*http.Cookie, error) {
 // an empty string and an error on any failure to do so
 func Decode(cookie *http.Cookie) (string, error) {
 	var val string
-	if err := cookieGen.Decode(viper.GetString("session_key"), cookie.Value, &val); err != nil {
+	if err := cookieGen.Decode(session.GetKey(), cookie.Value, &val); err != nil {
 		return "", err
 	}
 
