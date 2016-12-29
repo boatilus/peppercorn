@@ -1,5 +1,7 @@
 # peppercorn
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/boatilus/peppercorn)](https://goreportcard.com/report/github.com/boatilus/peppercorn)
+
 **peppercorn** is a simple "post stream"; a private, single-thread discussion forum concept, written in Go and backed by [RethinkDB](https://www.rethinkdb.com/). Development is early — there are only simple routes defined and models are incomplete.
 
 ## Running tests
