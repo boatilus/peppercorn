@@ -34,9 +34,9 @@ func NewContext(ctx context.Context, user *User) context.Context {
 }
 
 // FromContext returns the User value stored in ctx, if any.
-func FromContext(ctx context.Context) (*User, bool) {
-	u, ok := ctx.Value(userKey).(*User)
-	return u, ok
+func FromContext(ctx context.Context) *User {
+	u := ctx.Value(userKey).(*User)
+	return u
 }
 
 func validateData(email string, name string, ppp uint32, hash string) error {
