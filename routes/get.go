@@ -13,20 +13,27 @@ import (
 )
 
 // IndexHandler is called for the `/` (index) route and
-func IndexGetHandler(w http.ResponseWriter, _ *http.Request) {
-	//user, err := GetUserByID("de0dc022-e1d7-4985-ba53-0b4579ada365")
-	//user, err := GetUserByName("boat")
+func IndexGetHandler(w http.ResponseWriter, req *http.Request) {
+	u := users.FromContext(req.Context())
+	if u == nil {
+		http.Error(w, "Could not read user data from request context", http.StatusInternalServerError)
+	}
+
 	ps, err := posts.GetRange(1, 10)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	io.WriteString(w, ps[0].Content /*+"; "+ps[1].Content*/)
+	io.WriteString(w, "Hello "+u.Name+";"+ps[0].Content /*ps[0].Content /*+"; "+ps[1].Content*/)
 }
 
 func SignInGetHandler(w http.ResponseWriter, req *http.Request) {
 	templates.SignIn.Execute(w, nil)
+}
+
+func SignOutGetHandler(w http.ResponseWriter, req *http.Request) {
+
 }
 
 // Of the format: /page/{num}
