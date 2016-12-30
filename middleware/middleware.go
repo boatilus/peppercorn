@@ -35,23 +35,21 @@ func Validate(next http.Handler) http.Handler {
 			return
 		}
 
-		log.Print("c:", c)
-
 		id, err := cookie.Decode(c)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		log.Print("id:", id)
+		log.Print("id: ", id)
 
-		authenticated, err := session.IsAuthenticated(id)
+		authenticated, userID, err := session.IsAuthenticated(id)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		log.Print("authenticated:", authenticated)
+		log.Print("authenticated: ", authenticated)
 
 		if !authenticated {
 			// No session matches the value of the session cookie
@@ -59,7 +57,7 @@ func Validate(next http.Handler) http.Handler {
 			return
 		}
 
-		u, err := users.GetByID(id)
+		u, err := users.GetByID(userID)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return

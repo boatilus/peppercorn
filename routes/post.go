@@ -20,7 +20,7 @@ func SignInPostHandler(w http.ResponseWriter, req *http.Request) {
 			return
 		}
 
-		isAuthenticated, err := session.IsAuthenticated(id)
+		isAuthenticated, _, err := session.IsAuthenticated(id)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -53,7 +53,7 @@ func SignInPostHandler(w http.ResponseWriter, req *http.Request) {
 
 	u, err := users.GetByEmail(emails[0])
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusUnauthorized)
+		http.Error(w, "Invalid credentials supplied", http.StatusUnauthorized)
 		return
 	}
 

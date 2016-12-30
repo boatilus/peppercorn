@@ -24,9 +24,14 @@ func CreateGenerator() {
 	cookieGen = securecookie.New([]byte(hashKey), []byte(blockKey))
 }
 
-// Create accepts a string value (the user's ID) and returns an encoded cookie for that value.
-// Cookies are set with a Max-Age of 30 days
+// Create accepts a string value (the session ID) and returns an encoded cookie for that value.
+// Cookies are set with a Max-Age
 func Create(value string) (*http.Cookie, error) {
+	maxAge := viper.GetInt("cookie.max_age")
+	if maxAge == 0 {
+		maxAge = 30 * 24 * 60 * 60 // Default to 30 days if unspecified
+	}
+
 	if cookieGen == nil {
 		return nil, errors.New("Secure cookie generator was not initialized or set to nil")
 	}
@@ -39,12 +44,12 @@ func Create(value string) (*http.Cookie, error) {
 	}
 
 	cookie := http.Cookie{
-		Name:   key,
-		Value:  encoded,
-		Path:   "/",
-		MaxAge: 30 * 24 * 60 * 60, //  Destroy the cookie in 30 days
-		//Secure:   true,
+		Name:     key,
+		Value:    encoded,
+		Path:     "/",
+		MaxAge:   maxAge, // Destroy the cookie in 30 days
 		HttpOnly: true,
+		//Secure: true,
 	}
 
 	return &cookie, nil

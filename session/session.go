@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/boatilus/peppercorn/db"
-	"github.com/boatilus/peppercorn/users"
 	"github.com/spf13/viper"
 )
 
@@ -16,7 +15,7 @@ import (
 // TODO: Consider also adding a LastAccessed field, updating each time session is used
 type Session struct {
 	ID        string    `gorethink:"id,omitempty"`
-	UserID    string    `gorethink:"user"`
+	UserID    string    `gorethink:"user_id"`
 	IP        string    `gorethink:"ip"`
 	UserAgent string    `gorethink:"user_agent"`
 	Timestamp time.Time `gorethink:"timestamp"`
@@ -28,14 +27,14 @@ func GetKey() string {
 }
 
 // Create builds a session object given the user's ID, his IP address and his User-Agent, fills
-// the current time in the Timestamp field and inserts it into the sessions table. Returns a blank
-// string and an error on any failure.
+// the current time in the Timestamp field and inserts it into the sessions table. The return value
+// is the ID of the session document in the DB. Returns a blank string and an error on any failure.
 func Create(userID string, ip string, userAgent string) (string, error) {
 	if !db.Session.IsConnected() {
 		return "", errors.New("RethinkDB session not connected")
 	}
 
-	log.Printf("Creating session for user %s [%s]", userID, ip)
+	log.Printf("Creating session for user \"%s\" [%s]..", userID, ip)
 
 	table := viper.GetString("db.sessions_table")
 
@@ -51,26 +50,29 @@ func Create(userID string, ip string, userAgent string) (string, error) {
 		return "", err
 	}
 
-	log.Printf("Session for user %s created at %s", userID, s.Timestamp)
+	log.Printf("Session for user \"%s\" created at %s", userID, s.Timestamp)
 
 	return res.GeneratedKeys[0], nil
 }
 
 // IsAuthenticated queries the session table for a valid session matching the ID stored as the
-// cookie value
-func IsAuthenticated(id string) (bool, error) {
+// cookie value. It returns a bool indicating whether the user is authenticated, the user's ID if
+// authenticated, and an error. The boolean is false if unauthenticated, and the error is non-nil
+// if there was some issue talking to the DB (or, perhaps, because the user no longer exists)
+func IsAuthenticated(id string) (authenticated bool, userID string, err error) {
 	if !db.Session.IsConnected() {
-		return false, errors.New("RethinkDB session not connected")
+		return false, "", errors.New("RethinkDB session not connected")
 	}
 
-	//log.Printf("Authenticating session for user %s..", id)
+	log.Printf("Authenticating session ID \"%s\"..", id)
 
 	table := viper.GetString("db.sessions_table")
 
-	// If there's a document in the DB for this ID, the session is good
+	// If there's a document in the DB for this ID, the session must be good. We'll pull the document
+	// from the cursor and get the user ID
 	cursor, err := db.Get().Table(table).Get(id).Run(db.Session)
 	if err != nil {
-		return false, err
+		return false, "", err
 	}
 
 	defer cursor.Close()
@@ -79,14 +81,13 @@ func IsAuthenticated(id string) (bool, error) {
 	// 	return false, fmt.Errorf("Document with ID \"%s\" not found in \"%s\"", id, table)
 	// }
 
-	u := users.User{}
-
-	if err := cursor.One(&u); err != nil {
-		return false, err
+	s := Session{}
+	if err := cursor.One(&s); err != nil {
+		return false, "", err
 	}
 
-	log.Printf("Session for user %s authenticated", u.ID)
+	log.Printf("Session for user \"%s\" authenticated", s.UserID)
 
 	// If the record was found, the session is good, as we remove invalid sessions from the DB
-	return true, nil
+	return true, s.UserID, nil
 }
