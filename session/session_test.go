@@ -1,6 +1,9 @@
 package session
 
 import (
+	"io/ioutil"
+	"log"
+	"os"
 	"testing"
 
 	"github.com/boatilus/peppercorn/db"
@@ -44,8 +47,14 @@ func setupDB() {
 		panic(err)
 	}
 
+	s := Session{
+		UserID:    "any",
+		IP:        "108.213.25.224",
+		UserAgent: "UA",
+	}
+
 	// Insert a single document for its ID to check within IsAuthenticated
-	res, err := peppercorn.Table(tableName).Insert(&Session{}).RunWrite(db.Session)
+	res, err := peppercorn.Table(tableName).Insert(&s).RunWrite(db.Session)
 	if err != nil {
 		panic(err)
 	}
@@ -58,10 +67,18 @@ func TestGetKey(t *testing.T) {
 	assert.Equal(t, sessionKey, keyGot)
 }
 
+func TestGetTable(t *testing.T) {
+	tableGot := GetTable()
+	assert.Equal(t, tableName, tableGot)
+}
+
 func TestCreate(t *testing.T) {
 	assert := assert.New(t)
 
-	userID := "any"
+	log.SetOutput(ioutil.Discard)
+	defer log.SetOutput(os.Stderr)
+
+	userID := "user1"
 	ip := "108.213.25.224"
 	userAgent := "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2)"
 
@@ -70,11 +87,43 @@ func TestCreate(t *testing.T) {
 	assert.Len(id, 36) // A UUID is 36 characters
 }
 
+func TestGetByID(t *testing.T) {
+	assert := assert.New(t)
+	assert.NotEmpty(validKey)
+
+	log.SetOutput(ioutil.Discard)
+	defer log.SetOutput(os.Stderr)
+
+	s, err := GetByID(validKey)
+	assert.Nil(err)
+	assert.Equal("any", s.UserID)
+	assert.Equal("108.213.25.224", s.IP)
+	assert.Equal("UA", s.UserAgent)
+}
+
+func TestGetByUser(t *testing.T) {
+	assert := assert.New(t)
+	assert.NotEmpty(validKey)
+
+	log.SetOutput(ioutil.Discard)
+	defer log.SetOutput(os.Stderr)
+
+	ss, err := GetByUser("any")
+	assert.Nil(err)
+	assert.Equal(validKey, ss[0].ID)
+	assert.Equal("any", ss[0].UserID)
+	assert.Equal("108.213.25.224", ss[0].IP)
+	assert.Equal("UA", ss[0].UserAgent)
+}
+
 func TestIsAuthenticated(t *testing.T) {
 	assert := assert.New(t)
 	assert.NotEmpty(validKey)
 
-	isAuthenticated, err := IsAuthenticated(validKey)
+	log.SetOutput(ioutil.Discard)
+	defer log.SetOutput(os.Stderr)
+
+	isAuthenticated, _, err := IsAuthenticated(validKey)
 	assert.Nil(err)
 	assert.True(isAuthenticated)
 }

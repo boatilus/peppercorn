@@ -41,15 +41,11 @@ func Validate(next http.Handler) http.Handler {
 			return
 		}
 
-		log.Print("id: ", id)
-
 		authenticated, userID, err := session.IsAuthenticated(id)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-
-		log.Print("authenticated: ", authenticated)
 
 		if !authenticated {
 			// No session matches the value of the session cookie
