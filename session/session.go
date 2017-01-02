@@ -127,7 +127,7 @@ func Destroy(id string) error {
 	}
 
 	if res.Deleted != 1 {
-		return fmt.Errorf("No session deleted for \"%s\"", id)
+		return fmt.Errorf("No session to delete for \"%s\"", id)
 	}
 
 	return nil

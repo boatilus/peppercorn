@@ -127,3 +127,18 @@ func TestIsAuthenticated(t *testing.T) {
 	assert.Nil(err)
 	assert.True(isAuthenticated)
 }
+
+func TestDestroy(t *testing.T) {
+	assert := assert.New(t)
+	assert.NotEmpty(validKey)
+
+	log.SetOutput(ioutil.Discard)
+	defer log.SetOutput(os.Stderr)
+
+	// Failure cases
+	err := Destroy("random key")
+	assert.NotNil(err)
+
+	err = Destroy(validKey)
+	assert.Nil(err)
+}
