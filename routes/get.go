@@ -135,6 +135,26 @@ func CountGetHandler(w http.ResponseWriter, _ *http.Request) {
 	io.WriteString(w, strconv.Itoa(n))
 }
 
-func SettingsHandler(w http.ResponseWriter, _ *http.Request) {
-	io.WriteString(w, "settings")
+// Settings is the handler
+func SettingsGetHandler(w http.ResponseWriter, req *http.Request) {
+	u := users.FromContext(req.Context())
+	if u == nil {
+		http.Error(w, "Could not read user data from request context", http.StatusInternalServerError)
+	}
+
+	obEmail := u.Email // Obfuscate email
+
+	o := struct {
+		ObfuscatedEmail string
+		Name            string
+		Title           string
+		PPP             string
+	}{
+		obEmail,
+		u.Name,
+		u.Title,
+		strconv.FormatUint(uint64(u.PPP), 10),
+	}
+
+	templates.Settings.Execute(w, o)
 }

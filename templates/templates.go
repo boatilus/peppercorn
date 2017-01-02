@@ -8,6 +8,7 @@ import (
 
 var SignIn *template.Template
 var Head *template.Template
+var Settings *template.Template
 
 var cwd string
 var pathSep string
@@ -25,6 +26,7 @@ func init() {
 	// TODO: Async these
 	SignIn = parseTemplate("sign-in")
 	Head = parseTemplate("head")
+	Settings = parseTemplate("settings")
 }
 
 func parseTemplate(name string) *template.Template {

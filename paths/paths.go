@@ -12,6 +12,8 @@ var Get struct {
 	Single string
 	// TotalPostCount is the path to a single number reflecting the total number of posts
 	TotalPostCount string
+	// Settings is the path to the user's settings
+	Settings string
 }
 
 // Post is a struct containing routing paths to POST requests
@@ -26,6 +28,7 @@ func init() {
 	Get.Page = "/page/:num"
 	Get.Single = "/posts/:num"
 	Get.TotalPostCount = "/posts/count"
+	Get.Settings = "/settings"
 
 	Post.SignIn = "/sign-in"
 }
