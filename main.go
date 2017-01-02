@@ -5,8 +5,6 @@ import (
 	"net/http"
 	"time"
 
-	"rsc.io/letsencrypt"
-
 	log "github.com/Sirupsen/logrus"
 	"github.com/boatilus/peppercorn/cookie"
 	"github.com/boatilus/peppercorn/db"
@@ -17,6 +15,7 @@ import (
 	"github.com/pressly/chi"
 	chiMiddleware "github.com/pressly/chi/middleware"
 	"github.com/spf13/viper"
+	"rsc.io/letsencrypt"
 )
 
 func init() {
@@ -64,6 +63,7 @@ func main() {
 
 	r.With(middleware.Validate).Get("/", routes.IndexGetHandler)
 	r.Get(paths.Get.SignIn, routes.SignInGetHandler)
+	r.Get(paths.Get.SignOut, routes.SignOutGetHandler)
 	r.Get(paths.Get.Page, routes.PageGetHandler)
 	r.Get(paths.Get.Single, routes.SingleGetHandler)
 	r.Get(paths.Get.TotalPostCount, routes.CountGetHandler)

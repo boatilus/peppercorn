@@ -3,10 +3,14 @@ package routes
 import (
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"strconv"
 
+	"github.com/boatilus/peppercorn/cookie"
+	"github.com/boatilus/peppercorn/paths"
 	"github.com/boatilus/peppercorn/posts"
+	"github.com/boatilus/peppercorn/session"
 	"github.com/boatilus/peppercorn/templates"
 	"github.com/boatilus/peppercorn/users"
 	"github.com/pressly/chi"
@@ -33,7 +37,32 @@ func SignInGetHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func SignOutGetHandler(w http.ResponseWriter, req *http.Request) {
+	// Destroy session
+	c, err := req.Cookie(session.GetKey())
+	if err != nil {
 
+	}
+
+	sid, err := cookie.Decode(c)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	log.Printf("Destroying session for SID \"%s\"", sid)
+
+	// Setting the Max-Age attribute to -1 effectively destroys the cookie, but we'll also null the
+	// content if the client decides to ignore Max-Age
+	c.MaxAge = -1
+	c.Value = ""
+
+	http.SetCookie(w, c)
+
+	if err = session.Destroy(sid); err != nil {
+		log.Printf("Error in deleting session with SID \"%s\"", sid)
+	}
+
+	http.Redirect(w, req, paths.Get.SignIn, http.StatusTemporaryRedirect)
 }
 
 // Of the format: /page/{num}

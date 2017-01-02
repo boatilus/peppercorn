@@ -2,8 +2,10 @@ package paths
 
 // Get is a struct containing routing paths to GET requests
 var Get struct {
-	// SignIn is path to the sign-in form
+	// SignIn is the path to the sign-in form
 	SignIn string
+	// SignOut is the path to the sign-out route
+	SignOut string
 	// Page is the path to a single page of posts
 	Page string
 	// Single is the path to a single post at :num
@@ -20,6 +22,7 @@ var Post struct {
 
 func init() {
 	Get.SignIn = "/sign-in"
+	Get.SignOut = "/sign-out"
 	Get.Page = "/page/:num"
 	Get.Single = "/posts/:num"
 	Get.TotalPostCount = "/posts/count"
