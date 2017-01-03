@@ -3,6 +3,8 @@ package main
 import (
 	"crypto/tls"
 	"net/http"
+	"os"
+	"path/filepath"
 	"time"
 
 	log "github.com/Sirupsen/logrus"
@@ -75,6 +77,11 @@ func main() {
 	if port == "" {
 		log.Fatal("No port specified; aborting..")
 	}
+
+	// TODO: How do we serve pre-gzip'ed files?
+	workDir, _ := os.Getwd()
+	filesDir := filepath.Join(workDir, "static")
+	r.FileServer("/static", http.Dir(filesDir))
 
 	srv := &http.Server{Addr: port, Handler: r}
 

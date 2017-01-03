@@ -2,34 +2,82 @@
 <html>
   <head>
     <title>Settings</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/static/style/lib/cutestrap.min.css">
+    <style type="text/css">
+      body {
+        margin: 1em 10%;
+        width: 80%;
+      }
+
+      @media (max-width: 600px) {
+        body {
+          margin-left: 5%;
+          margin-right: 5%;
+        }
+      }
+      
+      input:invalid {
+        box-shadow: 0 0 5px 1px red;
+      }
+    </style>
   </head>
 
   <body>
+    <h1>Settings</h1>
+
     <form method="patch" action="/settings">
-      <p>
-        <label for="email">Email address</label>
-        <input name="email" type="text" placeholder="{{.ObfuscatedEmail}}">
-      </p>
+      <label class="textfield">
+        <input name="email" type="email" value="{{.ObfuscatedEmail}}" disabled />
+        <span class="textfield__label">Email Address</span>
+      </label>
 
-      <p>
-        <label for="name">Name</label>
-        <input name="name" type="text" placeholder="{{.Name}}">
-      </p>
+      <label class="textfield">
+        <input name="password" type="password" placeholder="********" autocomplete="off" />
+        <span class="textfield__label">Password (8 characters or greater)</span>
+      </label>
 
-      <p>
-        <label for="title">Title</label>
-        <input name="title" type="text" placeholder="{{.Title}}">
-      </p>
+      <label class="textfield">
+        <input
+          name="name"
+          type="text"
+          value="{{.Name}}"
+          autocomplete="off"
+          autocorrect="off"
+          autocapitalize="off"
+          spellcheck="false"
+          pattern=".{1,24}"
+          required 
+        />
+        <span class="textfield__label">Handle <abbr title="This field is mandatory">*</abbr></span>
+      </label>
 
-      <p>
-        <label for="posts_per_page">Posts per page</label>
+      <label class="textfield">
+        <input
+          name="title"
+          type="text"
+          value="{{.Title}}"
+          autocomplete="off"
+          pattern=".{0}|.{1,36}"
+          required
+        />
+        <span class="textfield__label">Title (36 characters or fewer)</span>
+      </label>
+
+      <label class="textfield">
+        <input name="avatar" type="url" value="{{.Avatar}}" pattern="https?://.+" />
+        <span class="textfield__label">Avatar</span>
+      </label>
+
+      <label class="select">
         <select name="posts_per_page">
-          <option value="10">10</option>
-          <option value="20">20</option>
-          <option value="50">50</option>
-          <option value="100">100</option>
+          <option>10</option>
+          <option>20</option>
+          <option>50</option>
+          <option>100</option>
         </select>
-      </p>
+        <span class="select__label" for="select">Posts per Page</span>
+      </label>
 
       <input type="submit" value="Save changes">
     </form>

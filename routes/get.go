@@ -13,6 +13,7 @@ import (
 	"github.com/boatilus/peppercorn/session"
 	"github.com/boatilus/peppercorn/templates"
 	"github.com/boatilus/peppercorn/users"
+	"github.com/boatilus/peppercorn/utility"
 	"github.com/pressly/chi"
 )
 
@@ -142,17 +143,19 @@ func SettingsGetHandler(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, "Could not read user data from request context", http.StatusInternalServerError)
 	}
 
-	obEmail := u.Email // Obfuscate email
+	obEmail := utility.ObfuscateEmail(u.Email) // Obfuscate email
 
 	o := struct {
 		ObfuscatedEmail string
 		Name            string
 		Title           string
+		Avatar          string
 		PPP             string
 	}{
 		obEmail,
 		u.Name,
 		u.Title,
+		u.Avatar,
 		strconv.FormatUint(uint64(u.PPP), 10),
 	}
 
