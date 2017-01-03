@@ -136,8 +136,8 @@ func CountGetHandler(w http.ResponseWriter, _ *http.Request) {
 	io.WriteString(w, strconv.Itoa(n))
 }
 
-// Settings is the handler
-func SettingsGetHandler(w http.ResponseWriter, req *http.Request) {
+// MeGetHandler is the handler
+func MeGetHandler(w http.ResponseWriter, req *http.Request) {
 	u := users.FromContext(req.Context())
 	if u == nil {
 		http.Error(w, "Could not read user data from request context", http.StatusInternalServerError)
@@ -159,5 +159,5 @@ func SettingsGetHandler(w http.ResponseWriter, req *http.Request) {
 		strconv.FormatUint(uint64(u.PPP), 10),
 	}
 
-	templates.Settings.Execute(w, o)
+	templates.Me.Execute(w, o)
 }

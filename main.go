@@ -69,7 +69,7 @@ func main() {
 	r.With(middleware.Validate).Get(paths.Get.Page, routes.PageGetHandler)
 	r.With(middleware.Validate).Get(paths.Get.Single, routes.SingleGetHandler)
 	r.With(middleware.Validate).Get(paths.Get.TotalPostCount, routes.CountGetHandler)
-	r.With(middleware.Validate).Get(paths.Get.Settings, routes.SettingsGetHandler)
+	r.With(middleware.Validate).Get(paths.Get.Me, routes.MeGetHandler)
 
 	r.Post(paths.Post.SignIn, routes.SignInPostHandler)
 
