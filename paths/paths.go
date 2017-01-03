@@ -20,6 +20,8 @@ var Get struct {
 var Post struct {
 	// SignIn is the path to which the sign-in form is POSTed
 	SignIn string
+	// Me is the path to changes to the user's settings are PATCHed
+	Me string
 }
 
 func init() {
@@ -31,4 +33,5 @@ func init() {
 	Get.Me = "/me"
 
 	Post.SignIn = "/sign-in"
+	Post.Me = "/me"
 }

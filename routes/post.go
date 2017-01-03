@@ -2,8 +2,10 @@ package routes
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/boatilus/peppercorn/cookie"
+	"github.com/boatilus/peppercorn/paths"
 	"github.com/boatilus/peppercorn/session"
 	"github.com/boatilus/peppercorn/users"
 )
@@ -95,4 +97,68 @@ func SignInPostHandler(w http.ResponseWriter, req *http.Request) {
 	from = "/"
 
 	http.Redirect(w, req, from, http.StatusTemporaryRedirect)
+}
+
+func MePostHandler(w http.ResponseWriter, req *http.Request) {
+	u := users.FromContext(req.Context())
+	if u == nil {
+		http.Error(w, "Could not read user data from request context", http.StatusInternalServerError)
+	}
+
+	if err := req.ParseForm(); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// If there are no changes to make, skip DB update OP entirely.
+	modified := false
+
+	if avatar := req.Form["avatar"]; u.Avatar != avatar[0] {
+		modified = true
+		u.Avatar = avatar[0]
+	}
+
+	if name := req.Form["name"]; u.Name != name[0] {
+		modified = true
+		u.Name = name[0]
+	}
+
+	if title := req.Form["title"]; u.Title != title[0] {
+		modified = true
+		u.Title = title[0]
+	}
+
+	ppp := req.Form["posts_per_page"]
+
+	// We need to coerce `ppp` into a uint64, then coerce that into a uint32.
+	var ppp32 uint32
+	var ppp64 uint64
+	var err error
+
+	if len(ppp) == 1 {
+		ppp64, err = strconv.ParseUint(ppp[0], 10, 32)
+		ppp32 = uint32(ppp64)
+	}
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if u.PPP != ppp32 {
+		modified = true
+		u.PPP = ppp32
+	}
+
+	if !modified {
+		http.Redirect(w, req, paths.Get.Me, http.StatusSeeOther)
+		return
+	}
+
+	if err := users.Update(u); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, req, paths.Get.Me, http.StatusSeeOther)
 }

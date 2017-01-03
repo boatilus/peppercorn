@@ -63,6 +63,7 @@ func main() {
 	r.Use(chiMiddleware.CloseNotify)
 	r.Use(chiMiddleware.Timeout(60 * time.Second))
 
+	// GET
 	r.With(middleware.Validate).Get("/", routes.IndexGetHandler)
 	r.Get(paths.Get.SignIn, routes.SignInGetHandler)
 	r.With(middleware.Validate).Get(paths.Get.SignOut, routes.SignOutGetHandler)
@@ -71,7 +72,9 @@ func main() {
 	r.With(middleware.Validate).Get(paths.Get.TotalPostCount, routes.CountGetHandler)
 	r.With(middleware.Validate).Get(paths.Get.Me, routes.MeGetHandler)
 
+	// POST
 	r.Post(paths.Post.SignIn, routes.SignInPostHandler)
+	r.With(middleware.Validate).Post(paths.Post.Me, routes.MePostHandler)
 
 	port := viper.GetString("port")
 	if port == "" {
