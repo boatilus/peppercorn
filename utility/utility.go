@@ -6,27 +6,22 @@ import "strings"
 func ObfuscateEmail(address string) string {
 	s := strings.Split(address, "@")
 
-	if len(s) == 1 {
+	// There's no ampersand present, more than one, or nothing preceding it, so we don't have a valid
+	// local part.
+	if len(s) == 1 || len(s) > 2 || len(s[0]) == 0 {
 		return address
 	}
 
-	if len(s[0]) == 1 {
-		s[0] = s[0] + "**"
-	} else {
-		s[0] = string(s[0][0]) + string(s[0][1]) + "***"
-	}
-
+	lp := string(s[0][0]) + "***"
 	domain := strings.Split(s[1], ".")
 
-	if len(domain) == 1 {
+	// There's no period present or more than one, or it does not have at least one character before
+	// the dot, so we don't have a valid domain.
+	if len(domain) == 1 || len(domain) > 2 || len(domain[0]) == 0 {
 		return address
 	}
 
-	if len(domain[0]) == 0 {
-		return address
-	}
+	d := string(domain[0][0]) + "***"
 
-	domain[0] = string(domain[0][0]) + "***"
-
-	return s[0] + "@" + domain[0] + "." + domain[1]
+	return lp + "@" + d + "." + domain[1]
 }
