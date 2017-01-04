@@ -2,7 +2,6 @@ package utility
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 	"time"
 
@@ -24,7 +23,6 @@ func ObfuscateEmail(address string) string {
 		return address
 	}
 
-	lp := string(s[0][0]) + "***"
 	domain := strings.Split(s[1], ".")
 
 	// There's no period present or more than one, or it does not have at least one character before
@@ -33,9 +31,7 @@ func ObfuscateEmail(address string) string {
 		return address
 	}
 
-	d := string(domain[0][0]) + "***"
-
-	return lp + "@" + d + "." + domain[1]
+	return fmt.Sprintf("%s***@%s***.%s", string(s[0][0]), string(domain[0][0]), domain[1])
 }
 
 // ParseUserAgent accepts a User-Agent string and returns a struct filled with data we should
@@ -52,8 +48,6 @@ func ParseUserAgent(userAgent string) *UserAgent {
 	}
 }
 
-const timeKitchen = "3:04 PM"
-
 // FormatTime gives us a Ruby-style "X period ago"-type string from a date if the the date is
 // fewer than 60 minutes earlier. Otherwise, returns a kitchen time if the post falls as the same
 // date as the current time, and a full date of the format "January 2, 2006 at 3:04 PM" otherwise.
@@ -66,15 +60,15 @@ func FormatTime(t time.Time, current time.Time) string {
 		return "less than a minute ago"
 	}
 
-	if seconds < 100 {
+	if seconds < 120 {
 		return "about a minute ago"
 	}
 
 	if minutes < 60 {
-		return strconv.FormatInt(minutes, 10) + " minutes ago"
+		return fmt.Sprintf("%d minutes ago", minutes)
 	}
 
-	kitchen := t.Format(timeKitchen)
+	kitchen := t.Format("3:04 PM")
 
 	if t.Day() == current.Day() {
 		return kitchen
@@ -82,5 +76,5 @@ func FormatTime(t time.Time, current time.Time) string {
 
 	year, month, day := t.Date()
 
-	return fmt.Sprintf("%s %v, %v at %s", month, day, year, kitchen)
+	return fmt.Sprintf("%s %d, %d at %s", month, day, year, kitchen)
 }
