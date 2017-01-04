@@ -8,6 +8,7 @@ import (
 	"github.com/mssola/user_agent"
 )
 
+// UserAgent is the type returned from ParseUserAgent()
 type UserAgent struct {
 	Browser string
 	OS      string
@@ -38,7 +39,6 @@ func ObfuscateEmail(address string) string {
 // display to users
 func ParseUserAgent(userAgent string) *UserAgent {
 	ua := user_agent.New(userAgent)
-
 	browser, _ := ua.Browser() // Ignore version
 	osInfo := ua.OSInfo()
 

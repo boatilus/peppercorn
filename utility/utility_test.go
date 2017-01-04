@@ -26,6 +26,23 @@ func TestObfuscateEmail(t *testing.T) {
 	}
 }
 
+func TestParseUserAgent(t *testing.T) {
+	cases := []struct {
+		ua          string
+		wantBrowser string
+		wantOS      string
+	}{
+		{"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.97 Safari/537.11", "Chrome", "Linux "},
+		{"Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36", "Chrome", "Windows 10"},
+	}
+
+	for _, c := range cases {
+		got := ParseUserAgent(c.ua)
+		assert.Equal(t, c.wantBrowser, got.Browser)
+		assert.Equal(t, c.wantOS, got.OS)
+	}
+}
+
 func TestFormatTime(t *testing.T) {
 	ref, err := time.Parse(time.RubyDate, "Mon Jan 02 15:04:05 -0700 2006")
 	assert.Nil(t, err)
