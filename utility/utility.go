@@ -1,10 +1,11 @@
 package utility
 
 import (
+	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
-	"github.com/justincampbell/timeago"
 	"github.com/mssola/user_agent"
 )
 
@@ -51,17 +52,35 @@ func ParseUserAgent(userAgent string) *UserAgent {
 	}
 }
 
-const timeFmt = "January 2, 2016 at 15:04"
+const timeKitchen = "3:04 PM"
 
 // FormatTime gives us a Ruby-style "X period ago"-type string from a date if the the date is
-// younger than two days from the current time, or a date in the format of
-// "August 12, 2016 at 3:09 PM" if older.
+// fewer than 60 minutes earlier. Otherwise, returns a kitchen time if the post falls as the same
+// date as the current time, and a full date of the format "January 2, 2006 at 3:04 PM" otherwise.
 func FormatTime(t time.Time, current time.Time) string {
 	d := current.Sub(t)
+	seconds := int64(d.Seconds())
+	minutes := seconds / 60
 
-	if d*time.Hour < 4 {
-		return timeago.FromDuration(d) + " ago"
+	if seconds < 60 {
+		return "less than a minute ago"
 	}
 
-	return t.Format(timeFmt)
+	if seconds < 100 {
+		return "about a minute ago"
+	}
+
+	if minutes < 60 {
+		return strconv.FormatInt(minutes, 10) + " minutes ago"
+	}
+
+	kitchen := t.Format(timeKitchen)
+
+	if t.Day() == current.Day() {
+		return kitchen
+	}
+
+	year, month, day := t.Date()
+
+	return fmt.Sprintf("%s %v, %v at %s", month, day, year, kitchen)
 }
