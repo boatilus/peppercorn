@@ -73,7 +73,7 @@ func Create(u *User) error {
 	}
 
 	if exists {
-		return fmt.Errorf("A user already exists with email \"%s\" or name \"%s\"", u.Email, u.Name)
+		return fmt.Errorf("A user already exists with email %q or name %q", u.Email, u.Name)
 	}
 
 	res, err := db.Get().Table(GetTable()).Insert(u).RunWrite(db.Session)

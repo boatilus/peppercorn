@@ -62,7 +62,7 @@ func Update(u *User) error {
 
 	// An update returns a WriteResponse with a value for `Replaced`, not `Updated`
 	if res.Replaced != 1 {
-		return fmt.Errorf("Failed to update user \"%s\" with new data", u.ID)
+		return fmt.Errorf("Failed to update user %q with new data", u.ID)
 	}
 
 	return nil
