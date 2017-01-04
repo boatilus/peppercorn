@@ -20,8 +20,12 @@ To run the tests, first [install RethinkDB](https://rethinkdb.com/docs/install/)
   
 Launch a RethinkDB server with default options:
 
-    rethinkdb
+    rethinkdb --daemon
   
+`go get` [Stretchr's](https://github.com/stretchr) `testify/assert` package:
+
+    go get -u github.com/stretchr/testify/assert
+
 Run all tests, including subpackages (the optional `-v` flag specifies verbose output)
 
     go test -v ./...
