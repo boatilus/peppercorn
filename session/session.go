@@ -59,7 +59,7 @@ func Create(userID string, ip string, userAgent string) (string, error) {
 	return res.GeneratedKeys[0], nil
 }
 
-// GetByID queries the DB for a session with a given ID and returns it. Returns nil and an error
+// GetByID queries the DB for a session with a given SID and returns it. Returns nil and an error
 // on failure.
 func GetByID(id string) (*Session, error) {
 	if !db.Session.IsConnected() {

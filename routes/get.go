@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/boatilus/peppercorn/cookie"
 	"github.com/boatilus/peppercorn/paths"
@@ -141,6 +142,36 @@ func MeGetHandler(w http.ResponseWriter, req *http.Request) {
 	u := users.FromContext(req.Context())
 	if u == nil {
 		http.Error(w, "Could not read user data from request context", http.StatusInternalServerError)
+		return
+	}
+
+	ss, err := session.GetByUser(u.ID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Reduce the session data retrieved into something more easily-consumable.
+	type sessionData struct {
+		Device    string
+		IP        string
+		Timestamp string
+	}
+
+	var sessions []sessionData
+
+	now := time.Now()
+
+	for i := range ss {
+		data := utility.ParseUserAgent(ss[i].UserAgent)
+
+		s := sessionData{
+			Device:    fmt.Sprintf("%s on %s", data.Browser, data.OS),
+			IP:        ss[i].IP,
+			Timestamp: utility.FormatTime(ss[i].Timestamp, now),
+		}
+
+		sessions = append(sessions, s)
 	}
 
 	obEmail := utility.ObfuscateEmail(u.Email) // Obfuscate email
@@ -151,13 +182,15 @@ func MeGetHandler(w http.ResponseWriter, req *http.Request) {
 		Title           string
 		Avatar          string
 		PPP             string
+		Sessions        []sessionData
 	}{
 		obEmail,
 		u.Name,
 		u.Title,
 		u.Avatar,
 		strconv.FormatUint(uint64(u.PPP), 10),
+		sessions,
 	}
 
-	templates.Me.Execute(w, o)
+	templates.Me.Execute(w, &o)
 }

@@ -26,3 +26,7 @@ func TestObfuscateEmail(t *testing.T) {
 		assert.Equal(t, c.want, ObfuscateEmail(c.email))
 	}
 }
+
+func TestFormatTime(t *testing.T) {
+
+}
