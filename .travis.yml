@@ -15,6 +15,7 @@ before_install:
   - sudo apt-get install -qq rethinkdb
 
 install:
+  - go get -u github.com/stretchr/testify/assert
   - go get -u github.com/boatilus/peppercorn
 
 before_script:
