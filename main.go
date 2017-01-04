@@ -20,6 +20,13 @@ import (
 	"rsc.io/letsencrypt"
 )
 
+// Follows semantic versioning: http://semver.org/
+const (
+	versionMajor = 0
+	versionMinor = 1
+	versionPatch = 0
+)
+
 func init() {
 	viper.SetConfigName("config")
 	viper.AddConfigPath(".")
@@ -28,7 +35,7 @@ func init() {
 		log.Fatal(err)
 	}
 
-	// Merely return and skip configuring the Sentry hook if no Sentry DSN specified in the config
+	// Merely return and skip configuring the Sentry hook if no Sentry DSN specified in the config.
 	dsn := viper.GetString("sentry.dsn")
 	if dsn == "" {
 		return
@@ -53,7 +60,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// Instantiate the secure cookie generator
+	// Instantiate the secure cookie generator.
 	cookie.CreateGenerator()
 
 	r := chi.NewRouter()
@@ -63,6 +70,7 @@ func main() {
 	r.Use(chiMiddleware.CloseNotify)
 	r.Use(chiMiddleware.Timeout(60 * time.Second))
 
+	// TODO: Refactor these routes by protected/unprotected
 	// GET
 	r.With(middleware.Validate).Get("/", routes.IndexGetHandler)
 	r.Get(paths.Get.SignIn, routes.SignInGetHandler)
