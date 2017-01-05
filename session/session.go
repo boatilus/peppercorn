@@ -61,12 +61,12 @@ func Create(userID string, ip string, userAgent string) (string, error) {
 
 // GetByID queries the DB for a session with a given SID and returns it. Returns nil and an error
 // on failure.
-func GetByID(id string) (*Session, error) {
+func GetByID(sid string) (*Session, error) {
 	if !db.Session.IsConnected() {
 		return nil, errors.New("RethinkDB session not connected")
 	}
 
-	cursor, err := db.Get().Table(GetTable()).Get(id).Run(db.Session)
+	cursor, err := db.Get().Table(GetTable()).Get(sid).Run(db.Session)
 	if err != nil {
 		return nil, err
 	}
@@ -81,8 +81,9 @@ func GetByID(id string) (*Session, error) {
 	return &s, nil
 }
 
-// GetByUser queries the DB for any sessions for a given user and returns them. Returns an empty
-// slice of Sessions and an error on failure.
+// GetByUser queries the DB for any sessions for a given user and returns them, sorted by the
+// timestamp in descending order (newest first). Returns an empty slice of Sessions and an error on
+// failure.
 //
 // TODO: Consider paginating results
 func GetByUser(userID string) ([]Session, error) {
@@ -90,16 +91,21 @@ func GetByUser(userID string) ([]Session, error) {
 		return nil, errors.New("RethinkDB session not connected")
 	}
 
-	log.Printf("Retrieving sessions for user \"%s\"", userID)
+	log.Printf("Retrieving sessions for user %q", userID)
 
-	t := rethink.Or(rethink.Row.Field("user_id").Eq(userID))
+	t := db.Get().Table(GetTable()).GetAllByIndex("user_id", userID).OrderBy(rethink.Desc("timestamp"))
+	// obo := rethink.OrderByOpts{Index: rethink.Desc("timestamp")}
 
-	cursor, err := db.Get().Table(GetTable()).Filter(t).Run(db.Session)
+	cursor, err := t.Run(db.Session)
 	if err != nil {
 		return nil, err
 	}
 
 	defer cursor.Close()
+
+	if cursor.IsNil() {
+		return nil, fmt.Errorf("No session(s) exist for user %q", userID)
+	}
 
 	var ss []Session
 
@@ -107,9 +113,26 @@ func GetByUser(userID string) ([]Session, error) {
 		return nil, err
 	}
 
-	log.Printf("Retrieved %v session(s) for user \"%s\"", len(ss), userID)
+	log.Printf("Retrieved %v session(s) for user %q", len(ss), userID)
 
 	return ss, nil
+}
+
+// GetByIndex retrieves a user's session at a specified index. Returns a nil session and an error
+// on any failure.
+func GetByIndex(userID string, index int) (*Session, error) {
+	log.Printf("Retrieving session user %q at index %d..", userID, index)
+
+	if index < 0 {
+		return nil, errors.New("Cannot retrieve session for index < 0")
+	}
+
+	ss, err := GetByUser(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &ss[index], nil
 }
 
 // Destroy removes a session from the database, thereby preventing a user from accessing that

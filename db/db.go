@@ -75,6 +75,7 @@ func createIndices() {
 	_, _ = db.Table(usersTable).IndexWait().RunWrite(Session)
 
 	createIndex(sessionsTable, "user_id")
+	createIndex(sessionsTable, "timestamp")
 	_, _ = db.Table(sessionsTable).IndexWait().RunWrite(Session)
 }
 

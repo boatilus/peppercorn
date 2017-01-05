@@ -3,8 +3,8 @@ package session
 import (
 	"io/ioutil"
 	"log"
-	"os"
 	"testing"
+	"time"
 
 	"github.com/boatilus/peppercorn/db"
 	"github.com/spf13/viper"
@@ -15,7 +15,8 @@ import (
 const tableName = "sessions_test"
 const sessionKey = "some value"
 
-var validKey string
+var validKeys []string
+var sessions []Session
 
 func init() {
 	viper.Set("db.sessions_table", tableName)
@@ -27,6 +28,7 @@ func init() {
 		panic(err)
 	}
 
+	log.SetOutput(ioutil.Discard)
 	setupDB()
 }
 
@@ -42,24 +44,41 @@ func setupDB() {
 	// Due to a lack of mocking in gorethink, we'll tear down the test data and repopulate on each
 	// run of the tests
 	peppercorn.TableDrop(tableName).Run(db.Session)
-
 	if _, err := peppercorn.TableCreate(tableName).Run(db.Session); err != nil {
 		panic(err)
 	}
 
-	s := Session{
-		UserID:    "any",
-		IP:        "108.213.25.224",
-		UserAgent: "UA",
+	table := peppercorn.Table(tableName)
+
+	// Create indices on "user_id" and "timestamp" fields
+	if _, err := table.IndexCreate("user_id").RunWrite(db.Session); err != nil {
+		panic(err)
 	}
 
-	// Insert a single document for its ID to check within IsAuthenticated
-	res, err := peppercorn.Table(tableName).Insert(&s).RunWrite(db.Session)
+	if _, err := table.IndexCreate("timestamp").RunWrite(db.Session); err != nil {
+		panic(err)
+	}
+
+	table.IndexWait().RunWrite(db.Session)
+
+	now := time.Now().UTC()
+
+	sessions = []Session{
+		{UserID: "user1", IP: "108.213.25.224", UserAgent: "UA", Timestamp: now},
+		{UserID: "user1", IP: "39.391.49.193", UserAgent: "UA2", Timestamp: now.Add(-4 * time.Hour)},
+		{UserID: "user2", IP: "193.31.49.118", UserAgent: "UA3", Timestamp: now},
+	}
+
+	res, err := peppercorn.Table(tableName).Insert(&sessions).RunWrite(db.Session)
 	if err != nil {
 		panic(err)
 	}
 
-	validKey = res.GeneratedKeys[0]
+	validKeys = make([]string, 3)
+
+	for i := range res.GeneratedKeys {
+		validKeys[i] = res.GeneratedKeys[i]
+	}
 }
 
 func TestGetKey(t *testing.T) {
@@ -75,70 +94,94 @@ func TestGetTable(t *testing.T) {
 func TestCreate(t *testing.T) {
 	assert := assert.New(t)
 
-	log.SetOutput(ioutil.Discard)
-	defer log.SetOutput(os.Stderr)
-
-	userID := "user1"
+	userID := "user3"
 	ip := "108.213.25.224"
 	userAgent := "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2)"
 
 	id, err := Create(userID, ip, userAgent)
-	assert.Nil(err)
+	if !assert.NoError(err) {
+		t.FailNow()
+	}
+
 	assert.Len(id, 36) // A UUID is 36 characters
 }
 
 func TestGetByID(t *testing.T) {
 	assert := assert.New(t)
-	assert.NotEmpty(validKey)
+	assert.NotEmpty(validKeys[0])
 
-	log.SetOutput(ioutil.Discard)
-	defer log.SetOutput(os.Stderr)
+	s, err := GetByID(validKeys[0])
+	if !assert.NoError(err) {
+		t.FailNow()
+	}
 
-	s, err := GetByID(validKey)
-	assert.Nil(err)
-	assert.Equal("any", s.UserID)
+	assert.Equal("user1", s.UserID)
 	assert.Equal("108.213.25.224", s.IP)
 	assert.Equal("UA", s.UserAgent)
 }
 
 func TestGetByUser(t *testing.T) {
 	assert := assert.New(t)
-	assert.NotEmpty(validKey)
 
-	log.SetOutput(ioutil.Discard)
-	defer log.SetOutput(os.Stderr)
+	ss, err := GetByUser("user1")
+	if !assert.NoError(err) {
+		t.FailNow()
+	}
 
-	ss, err := GetByUser("any")
-	assert.Nil(err)
-	assert.Equal(validKey, ss[0].ID)
-	assert.Equal("any", ss[0].UserID)
-	assert.Equal("108.213.25.224", ss[0].IP)
-	assert.Equal("UA", ss[0].UserAgent)
+	assert.Len(ss, 2)
+	assert.True(ss[0].Timestamp.After(ss[1].Timestamp))
+
+	for i, s := range ss {
+		assert.Equal(validKeys[i], s.ID)
+		assert.Equal("user1", s.UserID)
+		assert.Equal(sessions[i].IP, s.IP)
+		assert.Equal(sessions[i].UserAgent, s.UserAgent)
+	}
+}
+
+func TestGetByIndex(t *testing.T) {
+	assert := assert.New(t)
+
+	s0, err := GetByIndex("user1", 0)
+	if !assert.NoError(err) {
+		t.FailNow()
+	}
+
+	assert.Equal(validKeys[0], s0.ID)
+	assert.Equal("user1", s0.UserID)
+	assert.Equal(sessions[0].IP, s0.IP)
+	assert.Equal(sessions[0].UserAgent, s0.UserAgent)
+
+	s1, err := GetByIndex("user1", 1)
+	if !assert.NoError(err) {
+		t.FailNow()
+	}
+
+	assert.Equal(validKeys[1], s1.ID)
+	assert.Equal("user1", s1.UserID)
+	assert.Equal(sessions[1].IP, s1.IP)
+	assert.Equal(sessions[1].UserAgent, s1.UserAgent)
+
+	assert.True(s0.Timestamp.After(s1.Timestamp))
 }
 
 func TestIsAuthenticated(t *testing.T) {
 	assert := assert.New(t)
-	assert.NotEmpty(validKey)
+	assert.NotEmpty(validKeys[0])
 
-	log.SetOutput(ioutil.Discard)
-	defer log.SetOutput(os.Stderr)
-
-	isAuthenticated, _, err := IsAuthenticated(validKey)
-	assert.Nil(err)
+	isAuthenticated, _, err := IsAuthenticated(validKeys[0])
+	assert.NoError(err)
 	assert.True(isAuthenticated)
 }
 
 func TestDestroy(t *testing.T) {
 	assert := assert.New(t)
-	assert.NotEmpty(validKey)
-
-	log.SetOutput(ioutil.Discard)
-	defer log.SetOutput(os.Stderr)
+	assert.NotEmpty(validKeys[0])
 
 	// Failure cases
 	err := Destroy("random key")
-	assert.NotNil(err)
+	assert.Error(err)
 
-	err = Destroy(validKey)
-	assert.Nil(err)
+	err = Destroy(validKeys[0])
+	assert.NoError(err)
 }
