@@ -2,18 +2,17 @@ package main
 
 import (
 	"crypto/tls"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/boatilus/peppercorn/cookie"
 	"github.com/boatilus/peppercorn/db"
 	"github.com/boatilus/peppercorn/middleware"
 	"github.com/boatilus/peppercorn/paths"
 	"github.com/boatilus/peppercorn/routes"
-	"github.com/evalphobia/logrus_sentry"
 	"github.com/pressly/chi"
 	chiMiddleware "github.com/pressly/chi/middleware"
 	"github.com/spf13/viper"
@@ -40,19 +39,6 @@ func init() {
 	if dsn == "" {
 		return
 	}
-
-	hook, err := logrus_sentry.NewSentryHook(dsn, []log.Level{
-		log.PanicLevel,
-		log.FatalLevel,
-		log.ErrorLevel,
-	})
-
-	if err != nil {
-		log.Error("Could not add Sentry logging hook:", err)
-	}
-
-	log.AddHook(hook)
-	log.Print("Configured Sentry for logging hook")
 }
 
 func main() {
