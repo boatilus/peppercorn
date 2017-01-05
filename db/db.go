@@ -1,7 +1,7 @@
 package db
 
 import (
-	log "github.com/Sirupsen/logrus"
+	"log"
 
 	"github.com/spf13/viper"
 	rethink "gopkg.in/dancannon/gorethink.v2"
@@ -68,15 +68,15 @@ func createIndices() {
 	createIndex(postsTable, "active")
 	createIndex(postsTable, "author")
 	createIndex(postsTable, "time")
-	res, _ = db.Table(postsTable).IndexWait().RunWrite(Session)
+	db.Table(postsTable).IndexWait().RunWrite(Session)
 
 	createIndex(usersTable, "email")
 	createIndex(usersTable, "name")
-	_, _ = db.Table(usersTable).IndexWait().RunWrite(Session)
+	db.Table(usersTable).IndexWait().RunWrite(Session)
 
 	createIndex(sessionsTable, "user_id")
 	createIndex(sessionsTable, "timestamp")
-	_, _ = db.Table(sessionsTable).IndexWait().RunWrite(Session)
+	db.Table(sessionsTable).IndexWait().RunWrite(Session)
 }
 
 func createIndex(table string, field string) {

@@ -40,7 +40,7 @@ func Create(userID string, ip string, userAgent string) (string, error) {
 		return "", errors.New("RethinkDB session not connected")
 	}
 
-	log.Printf("Creating session for user \"%s\" [%s]..", userID, ip)
+	log.Printf("Creating session for user %q [%s]..", userID, ip)
 
 	s := Session{
 		UserID:    userID,
@@ -54,7 +54,7 @@ func Create(userID string, ip string, userAgent string) (string, error) {
 		return "", err
 	}
 
-	log.Printf("Session for user \"%s\" created at %s", userID, s.Timestamp)
+	log.Printf("Session for user %q created at %s", userID, s.Timestamp)
 
 	return res.GeneratedKeys[0], nil
 }
@@ -73,7 +73,11 @@ func GetByID(sid string) (*Session, error) {
 
 	defer cursor.Close()
 
-	s := Session{}
+	if cursor.IsNil() {
+		return nil, fmt.Errorf("No session exists with SID %q", sid)
+	}
+
+	var s Session
 	if err := cursor.One(&s); err != nil {
 		return nil, err
 	}
@@ -91,10 +95,9 @@ func GetByUser(userID string) ([]Session, error) {
 		return nil, errors.New("RethinkDB session not connected")
 	}
 
-	log.Printf("Retrieving sessions for user %q", userID)
+	log.Printf("Retrieving sessions for user %q..", userID)
 
 	t := db.Get().Table(GetTable()).GetAllByIndex("user_id", userID).OrderBy(rethink.Desc("timestamp"))
-	// obo := rethink.OrderByOpts{Index: rethink.Desc("timestamp")}
 
 	cursor, err := t.Run(db.Session)
 	if err != nil {
@@ -108,7 +111,6 @@ func GetByUser(userID string) ([]Session, error) {
 	}
 
 	var ss []Session
-
 	if err = cursor.All(&ss); err != nil {
 		return nil, err
 	}
@@ -120,37 +122,48 @@ func GetByUser(userID string) ([]Session, error) {
 
 // GetByIndex retrieves a user's session at a specified index. Returns a nil session and an error
 // on any failure.
-func GetByIndex(userID string, index int) (*Session, error) {
-	log.Printf("Retrieving session user %q at index %d..", userID, index)
+func GetByIndex(userID string, index uint64) (*Session, error) {
+	log.Printf("Retrieving session for user %q at index %d..", userID, index)
 
-	if index < 0 {
-		return nil, errors.New("Cannot retrieve session for index < 0")
-	}
+	t := db.Get().Table(GetTable()).GetAllByIndex("user_id", userID).OrderBy(rethink.Desc("timestamp")).Nth(index)
 
-	ss, err := GetByUser(userID)
+	cursor, err := t.Run(db.Session)
 	if err != nil {
 		return nil, err
 	}
 
-	return &ss[index], nil
+	defer cursor.Close()
+
+	if cursor.IsNil() {
+		return nil, fmt.Errorf("No session(s) exist for user %q", userID)
+	}
+
+	var s Session
+	if err = cursor.One(&s); err != nil {
+		return nil, err
+	}
+
+	log.Printf("Retrieved session %q for user %q", s, userID)
+
+	return &s, nil
 }
 
 // Destroy removes a session from the database, thereby preventing a user from accessing that
 // session. Returns nil on success; an error on failure.
-func Destroy(id string) error {
+func Destroy(sid string) error {
 	if !db.Session.IsConnected() {
 		return errors.New("RethinkDB session not connected")
 	}
 
-	log.Printf("Destroying session \"%s\"..", id)
+	log.Printf("Destroying session %q..", sid)
 
-	res, err := db.Get().Table(GetTable()).Get(id).Delete().RunWrite(db.Session)
+	res, err := db.Get().Table(GetTable()).Get(sid).Delete().RunWrite(db.Session)
 	if err != nil {
 		return err
 	}
 
 	if res.Deleted != 1 {
-		return fmt.Errorf("No session to delete for \"%s\"", id)
+		return fmt.Errorf("No session to delete with SID %q", sid)
 	}
 
 	return nil
@@ -160,32 +173,32 @@ func Destroy(id string) error {
 // cookie value. It returns a bool indicating whether the user is authenticated, the user's ID if
 // authenticated, and an error. The boolean is false if unauthenticated, and the error is non-nil
 // if there was some issue talking to the DB (or, perhaps, because the user no longer exists)
-func IsAuthenticated(id string) (authenticated bool, userID string, err error) {
+func IsAuthenticated(sid string) (authenticated bool, userID string, err error) {
 	if !db.Session.IsConnected() {
 		return false, "", errors.New("RethinkDB session not connected")
 	}
 
-	log.Printf("Authenticating session ID \"%s\"..", id)
+	log.Printf("Authenticating session ID %q..", sid)
 
 	// If there's a document in the DB for this ID, the session must be good. We'll pull the document
 	// from the cursor and get the user ID
-	cursor, err := db.Get().Table(GetTable()).Get(id).Run(db.Session)
+	cursor, err := db.Get().Table(GetTable()).Get(sid).Run(db.Session)
 	if err != nil {
 		return false, "", err
 	}
 
 	defer cursor.Close()
 
-	// if cursor.IsNil() {
-	// 	return false, fmt.Errorf("Document with ID \"%s\" not found in \"%s\"", id, table)
-	// }
+	if cursor.IsNil() {
+		return false, "", fmt.Errorf("No session with SID %q found", sid)
+	}
 
-	s := Session{}
+	var s Session
 	if err := cursor.One(&s); err != nil {
 		return false, "", err
 	}
 
-	log.Printf("Session for user \"%s\" authenticated", s.UserID)
+	log.Printf("Session for user %q authenticated", s.UserID)
 
 	// If the record was found, the session is good, as we remove invalid sessions from the DB
 	return true, s.UserID, nil
