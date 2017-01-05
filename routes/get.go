@@ -194,3 +194,26 @@ func MeGetHandler(w http.ResponseWriter, req *http.Request) {
 
 	templates.Me.Execute(w, &o)
 }
+
+// MeRevokeGetHandler is the handler called from the /me route to destroy a single session by :num,
+// or all sessions with "all"
+func MeRevokeGetHandler(w http.ResponseWriter, req *http.Request) {
+	u := users.FromContext(req.Context())
+	if u == nil {
+		http.Error(w, "Could not read user data from request context", http.StatusInternalServerError)
+		return
+	}
+
+	i, err := strconv.ParseUint(chi.URLParam(req, "num"), 10, 64)
+	if err != nil || i < 0 {
+		http.Error(w, "", http.StatusBadRequest)
+		return
+	}
+
+	if err := session.DestroyByIndex(u.ID, i); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, req, paths.Get.Me, http.StatusSeeOther)
+}

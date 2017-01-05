@@ -169,6 +169,28 @@ func Destroy(sid string) error {
 	return nil
 }
 
+// DestroyByIndex deletes a session from the database for a given user, given its index.
+func DestroyByIndex(userID string, index uint64) error {
+	if !db.Session.IsConnected() {
+		return errors.New("RethinkDB session not connected")
+	}
+
+	log.Printf("Destroy session for user %q at index %d..", userID, index)
+
+	t := db.Get().Table(GetTable()).GetAllByIndex("user_id", userID).OrderBy(rethink.Desc("timestamp")).Nth(index).Delete()
+
+	res, err := t.RunWrite(db.Session)
+	if err != nil {
+		return err
+	}
+
+	if res.Deleted != 1 {
+		return fmt.Errorf("Failed to delete session for user %q at index %d", userID, index)
+	}
+
+	return nil
+}
+
 // IsAuthenticated queries the session table for a valid session matching the ID stored as the
 // cookie value. It returns a bool indicating whether the user is authenticated, the user's ID if
 // authenticated, and an error. The boolean is false if unauthenticated, and the error is non-nil
@@ -178,7 +200,7 @@ func IsAuthenticated(sid string) (authenticated bool, userID string, err error) 
 		return false, "", errors.New("RethinkDB session not connected")
 	}
 
-	log.Printf("Authenticating session ID %q..", sid)
+	log.Printf("Authenticating SID %q..", sid)
 
 	// If there's a document in the DB for this ID, the session must be good. We'll pull the document
 	// from the cursor and get the user ID
@@ -190,7 +212,7 @@ func IsAuthenticated(sid string) (authenticated bool, userID string, err error) 
 	defer cursor.Close()
 
 	if cursor.IsNil() {
-		return false, "", fmt.Errorf("No session with SID %q found", sid)
+		return false, "", nil
 	}
 
 	var s Session

@@ -14,6 +14,8 @@ var Get struct {
 	TotalPostCount string
 	// Me is the path to the user's info page and settings
 	Me string
+	// MeRevoke is the path to remove a single session
+	MeRevoke string
 }
 
 // Post is a struct containing routing paths to POST requests
@@ -31,6 +33,7 @@ func init() {
 	Get.Single = "/posts/:num"
 	Get.TotalPostCount = "/posts/count"
 	Get.Me = "/me"
+	Get.MeRevoke = "/me/revoke/:num"
 
 	Post.SignIn = "/sign-in"
 	Post.Me = "/me"

@@ -3,6 +3,7 @@ package cookie
 import (
 	"errors"
 	"net/http"
+	"time"
 
 	"github.com/boatilus/peppercorn/session"
 	"github.com/gorilla/securecookie"
@@ -48,6 +49,7 @@ func Create(value string) (*http.Cookie, error) {
 		Value:    encoded,
 		Path:     "/",
 		MaxAge:   maxAge, // Destroy the cookie in 30 days
+		Expires:  time.Now().Add(30 * 24 * time.Hour),
 		HttpOnly: true,
 		//Secure: true,
 	}

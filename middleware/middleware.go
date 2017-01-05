@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/boatilus/peppercorn/cookie"
 	"github.com/boatilus/peppercorn/paths"
@@ -47,7 +48,11 @@ func Validate(next http.Handler) http.Handler {
 		}
 
 		if !authenticated {
-			// No session matches the value of the session cookie
+			// No session matches the value of the session cookie, so destroy the cookie.
+			c.MaxAge = -1
+			c.Expires = time.Date(2000, time.January, 1, 1, 0, 0, 0, time.UTC)
+
+			http.SetCookie(w, c)
 			http.Redirect(w, req, paths.Get.SignIn, http.StatusUnauthorized)
 			return
 		}

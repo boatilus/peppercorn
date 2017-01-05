@@ -176,12 +176,19 @@ func TestIsAuthenticated(t *testing.T) {
 
 func TestDestroy(t *testing.T) {
 	assert := assert.New(t)
-	assert.NotEmpty(validKeys[0])
+	assert.NotEmpty(validKeys[2])
 
 	// Failure cases
 	err := Destroy("random key")
 	assert.Error(err)
 
-	err = Destroy(validKeys[0])
+	err = Destroy(validKeys[2])
+	assert.NoError(err)
+}
+
+func TestDestoyByIndex(t *testing.T) {
+	assert := assert.New(t)
+
+	err := DestroyByIndex("user1", 0)
 	assert.NoError(err)
 }

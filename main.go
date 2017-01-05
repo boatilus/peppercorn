@@ -65,6 +65,7 @@ func main() {
 	r.With(middleware.Validate).Get(paths.Get.Single, routes.SingleGetHandler)
 	r.With(middleware.Validate).Get(paths.Get.TotalPostCount, routes.CountGetHandler)
 	r.With(middleware.Validate).Get(paths.Get.Me, routes.MeGetHandler)
+	r.With(middleware.Validate).Get(paths.Get.MeRevoke, routes.MeRevokeGetHandler)
 
 	// POST
 	r.Post(paths.Post.SignIn, routes.SignInPostHandler)
