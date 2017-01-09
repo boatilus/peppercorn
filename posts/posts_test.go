@@ -51,6 +51,8 @@ func setupDB() {
 
 	table := peppercorn.Table(tableName)
 
+	table.IndexCreate("active").Run(db.Session)
+	table.IndexCreate("author").Run(db.Session)
 	table.IndexCreate("time").Run(db.Session)
 	table.IndexWait().Run(db.Session)
 

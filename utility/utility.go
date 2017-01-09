@@ -2,9 +2,11 @@ package utility
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
+	"github.com/dustin/go-humanize"
 	"github.com/mssola/user_agent"
 )
 
@@ -77,4 +79,14 @@ func FormatTime(t time.Time, current time.Time) string {
 	year, month, day := t.Date()
 
 	return fmt.Sprintf("%s %d, %d at %s", month, day, year, kitchen)
+}
+
+// PrettifyUint64 accepts a `uint64` and returns a string formtted with comma thousands
+// separators (if necessary).
+func PrettifyUint64(n uint64) string {
+	if n < 1000 {
+		return strconv.FormatUint(n, 10)
+	}
+
+	return humanize.Comma(int64(n))
 }

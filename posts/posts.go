@@ -2,9 +2,12 @@ package posts
 
 import (
 	"errors"
+	"fmt"
+	"log"
 	"time"
 
 	"github.com/boatilus/peppercorn/db"
+	"github.com/boatilus/peppercorn/utility"
 	"github.com/spf13/viper"
 	rethink "gopkg.in/dancannon/gorethink.v2"
 )
@@ -16,6 +19,25 @@ type Post struct {
 	Author  string    `gorethink:"user_id"`
 	Content string    `gorethink:"content"`
 	Time    time.Time `gorethink:"time"`
+}
+
+// Zip is a concatenation of a Post and a User. We return this from GetAndJoin
+type Zip struct {
+	ID         string    `gorethink:"id"`
+	Active     bool      `gorethink:"active"`
+	AuthorID   string    `gorethink:"user_id"`
+	Content    string    `gorethink:"content"`
+	Time       time.Time `gorethink:"time"`
+	Avatar     string    `gorethink:"avatar"`
+	AuthorName string    `gorethink:"name"`
+	Title      string    `gorethink:"title"`
+	Count      uint64
+	PrettyTime string
+}
+
+// GetTable returns the name of the posts table from Viper.
+func GetTable() string {
+	return viper.GetString("db.posts_table")
 }
 
 // New fills and returns a Post object given an author and a post. The `Active` property
@@ -37,13 +59,9 @@ func New(author string, content string) (*Post, error) {
 	return &p, nil
 }
 
-// Count returns the number of active posts as an int
+// Count returns the number of active posts as an int.
 func Count() (int, error) {
-	table := viper.GetString("db.posts_table")
-
-	f := rethink.Row.Field("active").Eq(true)
-
-	cursor, err := db.Get().Table(table).Filter(f).Count().Run(db.Session)
+	cursor, err := db.Get().Table(GetTable()).GetAllByIndex("active", true).Count().Run(db.Session)
 	if err != nil {
 		return 0, err
 	}
@@ -59,11 +77,9 @@ func Count() (int, error) {
 	return n, nil
 }
 
-// CountAll returns the total number of posts, including inactive posts, as an int
+// CountAll returns the total number of posts, including inactive posts, as an int.
 func CountAll() (int, error) {
-	table := viper.GetString("db.posts_table")
-
-	cursor, err := db.Get().Table(table).Count().Run(db.Session)
+	cursor, err := db.Get().Table(GetTable()).Count().Run(db.Session)
 	if err != nil {
 		return 0, err
 	}
@@ -71,7 +87,6 @@ func CountAll() (int, error) {
 	defer cursor.Close()
 
 	var n int
-
 	if err = cursor.One(&n); err != nil {
 		return 0, err
 	}
@@ -82,9 +97,7 @@ func CountAll() (int, error) {
 // GetRange returns a range of posts specified by `first` -- the first post in the range --
 // and `limit`, the number of posts.
 func GetRange(first uint64, limit uint64) ([]Post, error) {
-	table := viper.GetString("db.posts_table")
-
-	// Don't let users try to load any page prior to the, uh, first one
+	// Don't let users try to load any page prior to the, uh, first one.
 	if first < 1 {
 		first = 1
 	}
@@ -95,11 +108,8 @@ func GetRange(first uint64, limit uint64) ([]Post, error) {
 	}
 
 	// We want to order displayed posts by time posted (ascending), showing only active posts,
-	// skipping all those we don't need and limiting the number of results to `limit`
-	o := rethink.OrderByOpts{Index: "time"}
-	f := rethink.Row.Field("active").Eq(true)
-
-	cursor, err := db.Get().Table(table).OrderBy(o).Filter(f).Skip(first - 1).Limit(limit).Run(db.Session)
+	// skipping all those we don't need and limiting the number of results to `limit`.
+	cursor, err := db.Get().Table(GetTable()).GetAllByIndex("active", true).OrderBy(rethink.Asc("time")).Skip(first - 1).Limit(limit).Run(db.Session)
 	if err != nil {
 		return nil, err
 	}
@@ -119,7 +129,63 @@ func GetRange(first uint64, limit uint64) ([]Post, error) {
 	return posts, nil
 }
 
-// GetOne simply returns a single Post, given a post number
+func GetRangeJoined(first uint64, limit uint64) ([]Zip, error) {
+	// Don't let users try to load any page prior to the, uh, first one.
+	if first < 1 {
+		first = 1
+	}
+
+	// Always enforce a limit of 100.
+	if limit > 100 {
+		limit = 100
+	}
+
+	// We want to order displayed posts by time posted (ascending), showing only active posts,
+	// skipping inactive posts and limiting the number of results to `limit`.
+	//
+	// This requires some pretty insane query machinery to be efficient, which follows...
+	table := db.Get().Table(GetTable())
+	usersTable := db.Get().Table("users")
+	btOpts := rethink.BetweenOpts{Index: "active_time"}
+	min := []interface{}{true, rethink.MinVal}
+	max := []interface{}{true, rethink.MaxVal}
+	oOpts := rethink.OrderByOpts{Index: rethink.Asc("active_time")}
+	eqjOpts := rethink.EqJoinOpts{Ordered: true}
+	t := table.Between(min, max, btOpts).OrderBy(oOpts).Slice(first-1, limit)
+
+	cursor, err := t.EqJoin("user_id", usersTable, eqjOpts).Zip().Run(db.Session)
+	if err != nil {
+		return nil, err
+	}
+
+	defer cursor.Close()
+
+	if cursor.IsNil() {
+		return nil, fmt.Errorf("No posts found with first %q and limit %q", first, limit)
+	}
+
+	var posts []Zip
+	if err := cursor.All(&posts); err != nil {
+		return nil, err
+	}
+
+	if len(posts) == 0 {
+		return nil, errors.New("empty_result")
+	}
+
+	// Much to my dismay, the most performant way to get humanized timestamps is (probably) to handle
+	// it here :( Since we're at it, we'll add each post number, as we have the data we need to do so.
+	now := time.Now().UTC()
+
+	for i := range posts {
+		posts[i].Count = first + uint64(i)
+		posts[i].PrettyTime = utility.FormatTime(posts[i].Time, now)
+	}
+
+	return posts, nil
+}
+
+// GetOne simply returns a single Post, given a post number.
 func GetOne(n uint64) (*Post, error) {
 	if n < 1 {
 		return nil, errors.New("no_negative_allowed")
@@ -133,16 +199,18 @@ func GetOne(n uint64) (*Post, error) {
 	return &posts[0], nil
 }
 
-// GetByID returns a single post given its ID
+// GetByID returns a single post given its ID.
 func GetByID(id string) (*Post, error) {
-	table := viper.GetString("db.posts_table")
-
-	cursor, err := db.Get().Table(table).Get(id).Run(db.Session)
+	cursor, err := db.Get().Table(GetTable()).Get(id).Run(db.Session)
 	if err != nil {
 		return nil, err
 	}
 
 	defer cursor.Close()
+
+	if cursor.IsNil() {
+		return nil, fmt.Errorf("No post found with index %q", id)
+	}
 
 	var p Post
 	if err = cursor.One(&p); err != nil {
@@ -152,8 +220,31 @@ func GetByID(id string) (*Post, error) {
 	return &p, nil
 }
 
+func GetByIDAndJoin(id string) (*Zip, error) {
+	log.Printf("Getting post with ID %q and joining with field %q", id, "user_id")
+
+	cursor, err := db.Get().Table(GetTable()).GetAllByIndex("id", id).EqJoin("user_id", db.Get().Table("users")).Zip().Run(db.Session)
+	if err != nil {
+		return nil, err
+	}
+
+	defer cursor.Close()
+
+	if cursor.IsNil() {
+		return nil, fmt.Errorf("No post found with ID %q", id)
+	}
+
+	var z Zip
+	err = cursor.One(&z)
+	if err != nil {
+		return nil, err
+	}
+
+	return &z, nil
+}
+
 // Edit accepts a post number and the content to update a post with. Errs if `n < 1` or if
-// content length is 0, and for any database error
+// content length is 0, and for any database error.
 func Edit(n uint64, newContent string) error {
 	if n < 1 {
 		return errors.New("Cannot attempt to edit post 0")
@@ -178,15 +269,13 @@ func Edit(n uint64, newContent string) error {
 }
 
 // Submit accepts a complete Post and inserts it into the database, returnign an error on any
-// failure
+// failure.
 func Submit(p *Post) error {
 	if p != nil && !validate(p) {
 		return errors.New("invalid Post supplied")
 	}
 
-	table := viper.GetString("db.posts_table")
-
-	if _, err := db.Get().Table(table).Insert(p).RunWrite(db.Session); err != nil {
+	if _, err := db.Get().Table(GetTable()).Insert(p).RunWrite(db.Session); err != nil {
 		return err
 	}
 
@@ -218,10 +307,9 @@ func validate(p *Post) bool {
 }
 
 func update(p *Post) error {
-	table := viper.GetString("db.posts_table")
 	io := rethink.InsertOpts{Conflict: "update"}
 
-	if _, err := db.Get().Table(table).Insert(p, io).Run(db.Session); err != nil {
+	if _, err := db.Get().Table(GetTable()).Insert(p, io).Run(db.Session); err != nil {
 		return err
 	}
 
@@ -229,15 +317,12 @@ func update(p *Post) error {
 }
 
 func updateStatus(id string, status bool) error {
-	table := viper.GetString("db.posts_table")
-
-	cursor, err := db.Get().Table(table).Get(id).Run(db.Session)
+	cursor, err := db.Get().Table(GetTable()).Get(id).Run(db.Session)
 	if err != nil {
 		return err
 	}
 
 	var p Post
-
 	if err = cursor.One(&p); err != nil {
 		return err
 	}
@@ -248,7 +333,7 @@ func updateStatus(id string, status bool) error {
 
 	io := rethink.InsertOpts{Conflict: "update"}
 
-	if _, err = db.Get().Table(table).Insert(&p, io).Run(db.Session); err != nil {
+	if _, err = db.Get().Table(GetTable()).Insert(&p, io).Run(db.Session); err != nil {
 		return err
 	}
 

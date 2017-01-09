@@ -66,8 +66,18 @@ func createIndices() {
 	}
 
 	createIndex(postsTable, "active")
-	createIndex(postsTable, "author")
+	createIndex(postsTable, "user_id")
 	createIndex(postsTable, "time")
+
+	// The `active_time` compound index can be used to sort active posts by date efficiently, as this
+	// can't be achieved in RethinkDB by indexed calls to both `getAll` and `orderBy`.
+	res, _ = rethink.DB(Name).Table(postsTable).IndexCreateFunc("active_time", func(row rethink.Term) interface{} {
+		return []interface{}{row.Field("active"), row.Field("time")}
+	}).RunWrite(Session)
+	if res.Created == 1 {
+		log.Printf("Created %q compound index on %q table", "active_time", postsTable)
+	}
+
 	db.Table(postsTable).IndexWait().RunWrite(Session)
 
 	createIndex(usersTable, "email")

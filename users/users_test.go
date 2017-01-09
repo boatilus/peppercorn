@@ -24,6 +24,7 @@ type doc struct {
 
 const tableName = "users_test"
 
+var validKeys []string
 var docs []doc // Stores test data read in from JSON
 
 func init() {
@@ -98,9 +99,16 @@ func setupDB() {
 		users[i].IsAdmin = docs[i].IsAdmin
 	}
 
-	if _, err := table.Insert(users).RunWrite(db.Session); err != nil {
+	res, err := table.Insert(users).RunWrite(db.Session)
+	if err != nil {
 		panic(err)
 	}
+
+	if res.Inserted == 0 {
+		panic("Inserted 0 docs")
+	}
+
+	validKeys = res.GeneratedKeys
 }
 
 func TestGetTable(t *testing.T) {
@@ -223,6 +231,19 @@ func TestCreate(t *testing.T) {
 
 	err := Create(&want)
 	assert.Nil(t, err)
+}
+
+func TestGetByID(t *testing.T) {
+	assert := assert.New(t)
+
+	for i := range validKeys {
+		got, err := GetByID(validKeys[i])
+		if !assert.NoError(err) {
+			t.FailNow()
+		}
+
+		assert.Equal(docs[i].PPP, got.PPP)
+	}
 }
 
 func TestGetByEmail(t *testing.T) {

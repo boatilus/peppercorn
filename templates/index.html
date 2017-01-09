@@ -1,42 +1,61 @@
-<!doctype HTML>
+<!DOCTYPE html>
 <html>
   <head>
-    <title></title>
-    <link rel="stylesheet" href="cutestrap.min.css" />
-    <style type="text/css">
-      main {
-        margin: 0 auto;
-        width: 48em;
-      }
-      
-      article { background: #eee }
-      hr { display: none }
-    </style>
+    <title>Make a Post</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/static/style/main.css">
   </head>
-  
+
   <body>
     <main>
-      <header>
-        <h1><a href="/">Make a Post</a></h1>
+      <header id="top">
+        <div id="head">
+          <h1><a href="/">Make a Post</a></h1>
+          <aside>
+            <a href="/me">Settings</a>
+            <a id="head-sign_out" href="/sign-out">Sign out</a>
+          </aside>
+        </div>
+
+        <nav>
+          <ul>
+            <li><a href="/page/29035">29,035</a></li>
+            <li class="nav-current">29,036</li>
+            <li><a href="/page/29037">29,037</a></li>
+          </ul>
+        </nav>
       </header>
       <hr>
       
-      <article>
-        <header>
-          <h1><a href="/{user}" rel="author">{username}</a></h1>
-          <h2>{title}</h2>
-       </header>
-        
-        <section><p>{text}</p></section>
-      </article>
+      {{ range $i, $e := .Posts }}
+        <article style="background-image: url('{{ $e.Avatar }}')">
+          <button class="article-actions">Reply</button>
+          
+          <header>
+            <hgroup>
+              <h1><a href="/users/{{ $e.AuthorName }}" rel="author">{{ $e.AuthorName }}</a></h1>
+              <h2>{{ $e.Title }}</h2>
+            </hgroup>
+
+            <div class="article-meta">
+              <small>
+                <time>{{ $e.PrettyTime }}</time>
+                <a class="article-link" href="/posts/{{ $e.ID }}">{{ $e.Count | prettifyUint64 }}</a>
+              </small>
+            </div>
+        </header>
+          
+          <section>
+            {{ $e.Content }}
+          </section>
+        </article>
+      {{ end }}
       <hr>
-      
-      <article>
-        <h1><a href="/{user}" rel="author">{username}</a></h1>
-        <h2>{title}</h2>
-        
-        <section><p>{text}</p></section>
-      </article>
+
+      <form method="post" action="/posts">
+        <textarea name="reply" rows="8" placeholder="Reply.." autocomplete="off" minlength="1" required></textarea>
+        <button type="submit">Reply</button>
+      </form>
     </main>
   </body>
 </html>

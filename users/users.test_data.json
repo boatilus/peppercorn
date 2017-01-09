@@ -2,16 +2,15 @@
   {
     "email": "user1@test.com",
     "name": "user1",
-    "ppp": 10,
+    "posts_per_page": 10,
     "title": "user1 title",
     "hash": "$2a$08$8Mph3BRCFQy8epejUoB7m.OeFZtNcgyb.3/1jsTj8qWhPPfNMHYMu"
   },
   {
     "email": "user2@test.com",
     "name": "user2",
-    "ppp": 20,
+    "posts_per_page": 20,
     "title": "user2 title",
-    "hash": "$2a$08$ALb1nD4nfIpBXKgBdWc.meAOkaE4g7jXPzBq/W1zZLvWtVmtfprW6",
-    "session_id": "ACqFUxNdXhsL4bPOh8gTobZGVDDeC7rDSyCSbDrIx8xYeV-hkpci3Uld3VK27HcxxqZ6lWQOkNGQoDNHiy57FFgyer5iX0VZCUl3RgBUGeA3pvmSFM8c8-PfreKR-wMTh27GdeDRlvJxtETR2rZcnwhH6As9GeQHXJ027DlHijw="
+    "hash": "$2a$08$ALb1nD4nfIpBXKgBdWc.meAOkaE4g7jXPzBq/W1zZLvWtVmtfprW6"
   }
 ]
