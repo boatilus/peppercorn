@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/boatilus/peppercorn/db"
+	_ "github.com/icrowley/fake"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	rethink "gopkg.in/dancannon/gorethink.v2"
@@ -37,24 +38,39 @@ func setupDB() {
 		panic("No DB connected")
 	}
 
-	rethink.DBCreate("peppercorn").Run(db.Session)
+	rethink.DBCreate("peppercorn").RunWrite(db.Session)
 
 	peppercorn := rethink.DB(db.Name)
 
-	// Due to a lack of mocking in gorethink, we'll tear down the test data and repopulate on each
-	// run of the tests
-	peppercorn.TableDrop(tableName).Run(db.Session)
+	c, err := peppercorn.TableList().Contains(tableName).Run(db.Session)
+	if err != nil {
+		panic(err)
+	}
 
-	if _, err := peppercorn.TableCreate(tableName).Run(db.Session); err != nil {
+	var hasTable bool
+
+	err = c.One(&hasTable)
+	if err != nil {
 		panic(err)
 	}
 
 	table := peppercorn.Table(tableName)
 
-	table.IndexCreate("active").Run(db.Session)
-	table.IndexCreate("author").Run(db.Session)
-	table.IndexCreate("time").Run(db.Session)
-	table.IndexWait().Run(db.Session)
+	if !hasTable {
+		_, err := peppercorn.TableCreate(tableName).RunWrite(db.Session)
+		if err != nil {
+			panic(err)
+		}
+
+		table.IndexCreate("active").Run(db.Session)
+		table.IndexCreate("author").Run(db.Session)
+		table.IndexCreate("time").Run(db.Session)
+		table.IndexWait().Run(db.Session)
+	} else {
+		// Due to a lack of mocking in gorethink, we'll tear down the test data and repopulate on each
+		// run of the tests.
+		table.Delete().RunWrite(db.Session)
+	}
 
 	bytes, err := ioutil.ReadFile("posts.test_data.json")
 
