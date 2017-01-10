@@ -41,6 +41,17 @@ func IndexGetHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	numPages := data.PostCount / int(data.CurrentUser.PPP)
+	if numPages == 0 {
+		numPages = 1
+	}
+
+	log.Print("numPages: ", numPages)
+
+	pages := []string
+
+	
+
 	data.Posts, err = posts.GetRangeJoined(1, uint64(data.CurrentUser.PPP))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
