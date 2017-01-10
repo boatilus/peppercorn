@@ -31,7 +31,7 @@ func Connect() error {
 
 	// Call DBCreate for "peppercorn", which will return an error if it already exists
 	res, _ := rethink.DBCreate(Name).RunWrite(Session)
-	log.Printf("%d databases created", res.DBsCreated)
+	log.Printf("%d database(s) created", res.DBsCreated)
 
 	createIndices()
 
@@ -67,7 +67,6 @@ func createIndices() {
 
 	createIndex(postsTable, "active")
 	createIndex(postsTable, "user_id")
-	createIndex(postsTable, "time")
 
 	// The `active_time` compound index can be used to sort active posts by date efficiently, as this
 	// can't be achieved in RethinkDB by indexed calls to both `getAll` and `orderBy`.
@@ -92,6 +91,6 @@ func createIndices() {
 func createIndex(table string, field string) {
 	res, _ := rethink.DB(Name).Table(table).IndexCreate(field).RunWrite(Session)
 	if res.Created == 1 {
-		log.Printf("Created \"%s\" index on \"%s\" table", field, table)
+		log.Printf("Created %q index on %q table", field, table)
 	}
 }
