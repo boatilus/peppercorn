@@ -220,7 +220,9 @@ func GetByID(id string) (*Post, error) {
 	return &p, nil
 }
 
-func GetByIDAndJoin(id string) (*Zip, error) {
+// GetByIDJoined returns a  "zipped" struct containing post data and the merged user data for that
+// post. Returns a nil `Zip` and an error on any failure.
+func GetByIDJoined(id string) (*Zip, error) {
 	log.Printf("Getting post with ID %q and joining with field %q", id, "user_id")
 
 	cursor, err := db.Get().Table(GetTable()).GetAllByIndex("id", id).EqJoin("user_id", db.Get().Table("users")).Zip().Run(db.Session)
@@ -268,25 +270,25 @@ func Edit(n uint64, newContent string) error {
 	return nil
 }
 
-// Submit accepts a complete Post and inserts it into the database, returnign an error on any
-// failure.
-func Submit(p *Post) error {
+// Submit accepts a complete Post and inserts it into the database, returning the ID a nil error
+// on success, or an error on any failure.
+func Submit(p *Post) (id string, err error) {
 	if p != nil && !validate(p) {
-		return errors.New("invalid Post supplied")
+		return "", errors.New("invalid Post supplied")
 	}
 
 	res, err := db.Get().Table(GetTable()).Insert(p).RunWrite(db.Session)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	if res.Inserted == 0 {
-		return fmt.Errorf("Failure in inserting post by user %q", p.Author)
+		return "", fmt.Errorf("Failure in inserting post by user %q", p.Author)
 	}
 
 	log.Printf("Inserted post with ID %q", res.GeneratedKeys[0])
 
-	return nil
+	return res.GeneratedKeys[0], nil
 }
 
 func Activate(id string) error {

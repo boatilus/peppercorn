@@ -19,13 +19,6 @@ import (
 	"rsc.io/letsencrypt"
 )
 
-// Follows semantic versioning: http://semver.org/
-const (
-	versionMajor = 0
-	versionMinor = 1
-	versionPatch = 1
-)
-
 func init() {
 	viper.SetConfigName("config")
 	viper.AddConfigPath(".")
@@ -55,6 +48,7 @@ func main() {
 	r.Use(chiMiddleware.Recoverer)
 	r.Use(chiMiddleware.CloseNotify)
 	r.Use(chiMiddleware.Timeout(60 * time.Second))
+	r.Use(chiMiddleware.DefaultCompress)
 
 	// TODO: Refactor these routes by protected/unprotected
 	// GET

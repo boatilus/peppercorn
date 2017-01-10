@@ -7,7 +7,7 @@ html {
 }
 
 @media (min-width: 736px) {
-  html { padding-bottom: 2em }
+  html { padding-bottom: 1em }
 }
 
 body {
@@ -158,9 +158,13 @@ article p {
 @media (max-width: 736px) {
   article {
     background-image: none !important;
-    margin-bottom: 0.7em;
+    border-bottom: 1px solid #555;
     padding-left: 8px;
     padding-right: 8px;
+  }
+  
+  article:nth-child(odd) {
+    background-color: #444;
   }
 
   article header { flex-direction: column }
@@ -236,4 +240,14 @@ textarea::-webkit-input-placeholder { color: #888 }
     outline-offset: -1px;
     padding: 0.4em 0.7em;
   }
+}
+
+footer {
+  color: #555;
+  margin-top: 1em;
+  text-align: right;
+}
+
+@media (max-width: 736px) {
+  footer { display: none }
 }

@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/boatilus/peppercorn/version"
 	"github.com/dustin/go-humanize"
 	"github.com/mssola/user_agent"
 )
@@ -89,4 +90,9 @@ func PrettifyUint64(n uint64) string {
 	}
 
 	return humanize.Comma(int64(n))
+}
+
+// GetVersionString returns the version as a string.
+func GetVersionString() string {
+	return version.GetString()
 }

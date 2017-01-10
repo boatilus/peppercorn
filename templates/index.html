@@ -40,7 +40,7 @@
             <div class="article-meta">
               <small>
                 <time>{{ $e.PrettyTime }}</time>
-                <a class="article-link" href="/posts/{{ $e.ID }}">{{ $e.Count | prettifyUint64 }}</a>
+                <!--a class="article-link" href="/posts/{{ $e.ID }}">-->{{ $e.Count | prettifyUint64 }}<!--</a>-->
               </small>
             </div>
         </header>
@@ -52,10 +52,14 @@
       {{ end }}
       <hr>
 
-      <form method="post" action="/posts">
+      <form id="bottom" method="post" action="/posts">
         <textarea name="reply" rows="8" placeholder="Reply.." autocomplete="off" minlength="1" required></textarea>
         <button type="submit">Reply</button>
       </form>
     </main>
+
+    <footer>
+      {{ getVersion }}
+    </footer>
   </body>
 </html>

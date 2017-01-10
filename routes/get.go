@@ -18,16 +18,6 @@ import (
 	"github.com/pressly/chi"
 )
 
-func stringInSlice(a string, list []string) bool {
-	for _, b := range list {
-		if b == a {
-			return true
-		}
-	}
-
-	return false
-}
-
 // IndexHandler is called for the `/` (index) route and
 func IndexGetHandler(w http.ResponseWriter, req *http.Request) {
 	var data struct {
@@ -56,8 +46,6 @@ func IndexGetHandler(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
-	log.Printf("%+v", data)
 
 	templates.Index.Execute(w, data)
 }

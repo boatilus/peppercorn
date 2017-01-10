@@ -182,18 +182,17 @@ func PostsPostHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	reply := r[0]
-
-	p, err := posts.New(u.ID, reply)
+	p, err := posts.New(u.ID, r[0])
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	if err := posts.Submit(p); err != nil {
+	_, err = posts.Submit(p)
+	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	http.Redirect(w, req, "/", http.StatusSeeOther)
+	http.Redirect(w, req, "/"+"#bottom", http.StatusSeeOther)
 }

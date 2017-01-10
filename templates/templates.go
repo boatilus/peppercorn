@@ -22,6 +22,7 @@ func init() {
 	funcMap = template.FuncMap{
 		"prettyTime":     utility.FormatTime,
 		"prettifyUint64": utility.PrettifyUint64,
+		"getVersion":     utility.GetVersionString,
 	}
 
 	pathSep = string(os.PathSeparator)
