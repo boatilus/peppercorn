@@ -1,6 +1,7 @@
 package utility
 
 import (
+	"regexp"
 	"testing"
 	"time"
 
@@ -85,3 +86,52 @@ func TestPrettifyUint64(t *testing.T) {
 		assert.Equal(t, c.want, PrettifyUint64(c.num))
 	}
 }
+
+func TestGetVersionString(t *testing.T) {
+	// We'll just look for a correct format..
+	got := GetVersionString()
+
+	assert.Regexp(t, regexp.MustCompile(`\d+.\d+.\d+`), got)
+}
+
+func TestCommifyInt64(t *testing.T) {
+	cases := []struct {
+		num  int64
+		want string
+	}{
+		{0, "0"},
+		{1, "1"},
+		{999, "999"},
+		{1000, "1,000"},
+		{10000, "10,000"},
+		{100000, "100,000"},
+		{399313, "399,313"},
+		{9223372036854775807, "9,223,372,036,854,775,807"},
+		{-1, "-1"},
+		{-999, "-999"},
+		{-1000, "-1,000"},
+		{-10000, "-10,000"},
+		{-100000, "-100,000"},
+		{-399313, "-399,313"},
+		{-9223372036854775808, "-9,223,372,036,854,775,808"},
+	}
+
+	for _, c := range cases {
+		assert.Equal(t, c.want, CommifyInt64(c.num))
+	}
+}
+
+func benchmarkCommifyInt64(b *testing.B, v int64) {
+	for n := 0; n < b.N; n++ {
+		CommifyInt64(v)
+	}
+}
+
+func BenchmarkCommifyInt64_0(b *testing.B)       { benchmarkCommifyInt64(b, 0) }
+func BenchmarkCommifyInt64_8(b *testing.B)       { benchmarkCommifyInt64(b, 8) }
+func BenchmarkCommifyInt64_17(b *testing.B)      { benchmarkCommifyInt64(b, 17) }
+func BenchmarkCommifyInt64_371(b *testing.B)     { benchmarkCommifyInt64(b, 371) }
+func BenchmarkCommifyInt64_1993(b *testing.B)    { benchmarkCommifyInt64(b, 1993) }
+func BenchmarkCommifyInt64_72759(b *testing.B)   { benchmarkCommifyInt64(b, 72759) }
+func BenchmarkCommifyInt64_497167(b *testing.B)  { benchmarkCommifyInt64(b, 497167) }
+func BenchmarkCommifyInt64_8881679(b *testing.B) { benchmarkCommifyInt64(b, 8881679) }

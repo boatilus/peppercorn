@@ -2,12 +2,12 @@ package utility
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/boatilus/peppercorn/version"
-	"github.com/dustin/go-humanize"
 	"github.com/mssola/user_agent"
 )
 
@@ -84,15 +84,61 @@ func FormatTime(t time.Time, current time.Time) string {
 
 // PrettifyUint64 accepts a `uint64` and returns a string formtted with comma thousands
 // separators (if necessary).
-func PrettifyUint64(n uint64) string {
-	if n < 1000 {
-		return strconv.FormatUint(n, 10)
-	}
-
-	return humanize.Comma(int64(n))
+func CommifyUint64(n uint64) string {
+	return CommifyInt64(int64(n))
 }
 
 // GetVersionString returns the version as a string.
 func GetVersionString() string {
 	return version.GetString()
+}
+
+// Commify accepts an integer and returns the commified representation of it.
+func CommifyInt64(v int64) string {
+	if v == 0 {
+		return "0"
+	}
+
+	// We'll simply return the string-formatted value if it's non-zero and between -999 and 999
+	if v < 1000 && v > 0 || v > -1000 && v < 0 {
+		return strconv.FormatInt(v, 10)
+	}
+
+	// MinInt64 can't be negated to a usable value, so it has to be special-cased.
+	if v == math.MinInt64 {
+		return "-9,223,372,036,854,775,808"
+	}
+
+	isNegative := v < 0
+	if isNegative {
+		// Negate the value, as negativity causes issues for string formatting for our purposes.
+		v = -v
+	}
+
+	var parts [7]string
+	j := 6
+
+	for v > 999 {
+		mod := v % 1000
+
+		switch {
+		case mod < 10:
+			parts[j] = "00" + strconv.FormatInt(mod, 10)
+		case mod < 100:
+			parts[j] = "0" + strconv.FormatInt(mod, 10)
+		default:
+			parts[j] = strconv.FormatInt(mod, 10)
+		}
+
+		v = v / 1000
+		j--
+	}
+
+	parts[j] = strconv.FormatInt(v, 10)
+
+	if isNegative {
+		return "-" + strings.Join(parts[j:], ",")
+	}
+
+	return strings.Join(parts[j:], ",")
 }
