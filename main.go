@@ -70,6 +70,7 @@ func main() {
 	// POST
 	r.Post(paths.Post.SignIn, routes.SignInPostHandler)
 	r.With(middleware.Validate).Post(paths.Post.Me, routes.MePostHandler)
+	r.With(middleware.Validate).Post(paths.Post.SubmitPost, routes.PostsPostHandler)
 
 	port := viper.GetString("port")
 	if port == "" {

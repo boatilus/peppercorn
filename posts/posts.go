@@ -275,9 +275,16 @@ func Submit(p *Post) error {
 		return errors.New("invalid Post supplied")
 	}
 
-	if _, err := db.Get().Table(GetTable()).Insert(p).RunWrite(db.Session); err != nil {
+	res, err := db.Get().Table(GetTable()).Insert(p).RunWrite(db.Session)
+	if err != nil {
 		return err
 	}
+
+	if res.Inserted == 0 {
+		return fmt.Errorf("Failure in inserting post by user %q", p.Author)
+	}
+
+	log.Printf("Inserted post with ID %q", res.GeneratedKeys[0])
 
 	return nil
 }

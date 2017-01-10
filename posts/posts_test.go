@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/boatilus/peppercorn/db"
-	_ "github.com/icrowley/fake"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	rethink "gopkg.in/dancannon/gorethink.v2"

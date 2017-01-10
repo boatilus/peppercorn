@@ -6,6 +6,7 @@ import (
 
 	"github.com/boatilus/peppercorn/cookie"
 	"github.com/boatilus/peppercorn/paths"
+	"github.com/boatilus/peppercorn/posts"
 	"github.com/boatilus/peppercorn/session"
 	"github.com/boatilus/peppercorn/users"
 )
@@ -161,4 +162,38 @@ func MePostHandler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	http.Redirect(w, req, paths.Get.Me, http.StatusSeeOther)
+}
+
+// PostsPostHandler handles the form a user submits in creating a new post.
+func PostsPostHandler(w http.ResponseWriter, req *http.Request) {
+	u := users.FromContext(req.Context())
+	if u == nil {
+		http.Error(w, "Could not read user data from request context", http.StatusInternalServerError)
+	}
+
+	if err := req.ParseForm(); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	r := req.Form["reply"]
+	if len(r) == 0 {
+		http.Error(w, "Post length cannot be 0", http.StatusBadRequest)
+		return
+	}
+
+	reply := r[0]
+
+	p, err := posts.New(u.ID, reply)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if err := posts.Submit(p); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, req, "/", http.StatusSeeOther)
 }
