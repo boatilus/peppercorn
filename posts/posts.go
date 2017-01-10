@@ -12,7 +12,7 @@ import (
 	rethink "gopkg.in/dancannon/gorethink.v2"
 )
 
-// Post contains all the information stored for a single post
+// Post contains all the information stored for a single post.
 type Post struct {
 	ID      string    `gorethink:"id,omitempty"`
 	Active  bool      `gorethink:"active"`
@@ -21,7 +21,7 @@ type Post struct {
 	Time    time.Time `gorethink:"time"`
 }
 
-// Zip is a concatenation of a Post and a User. We return this from GetAndJoin
+// Zip is a concatenation of a Post and a User. We return this from GetAndJoin.
 type Zip struct {
 	ID         string    `gorethink:"id"`
 	Active     bool      `gorethink:"active"`
@@ -145,14 +145,33 @@ func GetRangeJoined(first uint64, limit uint64) ([]Zip, error) {
 	//
 	// This requires some pretty insane query machinery to be efficient, which follows...
 	table := db.Get().Table(GetTable())
+
+	// We'll join against the `id` primary index against docs in the users table.
 	usersTable := db.Get().Table("users")
+
+	// For the Between term, we need to filter to all active posts (`true`) and between the minimum
+	// date through the maximum possible date by querying against the `active_time` compound index.
+	// We're required to specify MinVal and MaxVal here.
 	btOpts := rethink.BetweenOpts{Index: "active_time"}
 	min := []interface{}{true, rethink.MinVal}
 	max := []interface{}{true, rethink.MaxVal}
+
+	// We'll similarly order by the `active_time` index...
 	oOpts := rethink.OrderByOpts{Index: rethink.Asc("active_time")}
+
+	// EqJoin will negate the ordering specified by OrderBy unless we specify the `Ordered` option.
 	eqjOpts := rethink.EqJoinOpts{Ordered: true}
+
+	// The Slice term gives us effective pagination of results, but must be performed after filtering
+	// and ordering.
+	//
+	// TODO: Consider whether moving the OrderBy term later in the chain can improve performance,
+	// as per: https://www.rethinkdb.com/docs/optimization/
 	t := table.Between(min, max, btOpts).OrderBy(oOpts).Slice(first-1, limit)
 
+	// Zipping a user document into the post document without Excepting the user's ID field doesn't
+	// trample over the post document's ID field, so we don't need to do anything else but run
+	// the full query.
 	cursor, err := t.EqJoin("user_id", usersTable, eqjOpts).Zip().Run(db.Session)
 	if err != nil {
 		return nil, err
@@ -220,7 +239,7 @@ func GetByID(id string) (*Post, error) {
 	return &p, nil
 }
 
-// GetByIDJoined returns a  "zipped" struct containing post data and the merged user data for that
+// GetByIDJoined returns a zipped struct containing post data and the merged user data for that
 // post. Returns a nil `Zip` and an error on any failure.
 func GetByIDJoined(id string) (*Zip, error) {
 	log.Printf("Getting post with ID %q and joining with field %q", id, "user_id")
