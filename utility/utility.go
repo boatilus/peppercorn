@@ -78,7 +78,7 @@ func FormatTime(t time.Time, current time.Time) string {
 	return t.Format("January 2, 2006 at 3:04 PM")
 }
 
-// PrettifyUint64 accepts a `uint64` and returns a string formtted with comma thousands
+// CommifyUint64 accepts a `uint64` and returns a string formtted with comma thousands
 // separators (if necessary).
 func CommifyUint64(n uint64) string {
 	return CommifyInt64(int64(n))
@@ -89,7 +89,7 @@ func GetVersionString() string {
 	return version.GetString()
 }
 
-// Commify accepts an integer and returns the commified representation of it.
+// CommifyInt64 accepts an `int64` and returns the commified representation of it.
 func CommifyInt64(v int64) string {
 	if v == 0 {
 		return "0"
