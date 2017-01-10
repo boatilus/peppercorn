@@ -36,25 +36,27 @@ Run all tests, including subpackages (the optional `-v` flag specifies verbose o
 
 Your `config` should look like this and be placed in the app's working directory:
 
-    {
-      "test": true,
-      "port": ":8000",
-      "bcrypt_cost": 10,
-      "session_key": "anyString",
-      "cookie": {
-        "hash_key": "a 64-character string for HMAC",
-        "block_key": "a 32-character string for AES-256"
-      },
-      "db": {
-        "address": "localhost:28015",
-        "name": "peppercorn",
-        "users_table": "users",
-        "posts_table": "posts",
-        "sessions_table": "sessions"
-      },
-      "sentry": {
-        "dsn": "your Sentry DSN, if desired"
-      }
+```JSON
+{
+    "test": true,
+    "port": ":8000",
+    "bcrypt_cost": 10,
+    "session_key": "anyString",
+    "cookie": {
+    "hash_key": "a 64-character string for HMAC",
+    "block_key": "a 32-character string for AES-256"
+    },
+    "db": {
+    "address": "localhost:28015",
+    "name": "peppercorn",
+    "users_table": "users",
+    "posts_table": "posts",
+    "sessions_table": "sessions"
+    },
+    "sentry": {
+    "dsn": "your Sentry DSN, if desired"
     }
+}
+```
     
 Remove or change `test` to false for deployment to production and modify `bcrypt_cost` to suit your specific security needs and your runtime environment. [This article by Joseph Wynn](https://wildlyinaccurate.com/bcrypt-choosing-a-work-factor/) explains how one might go about choosing a suitable cost (work factor).

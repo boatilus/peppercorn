@@ -68,25 +68,6 @@ func TestFormatTime(t *testing.T) {
 	}
 }
 
-func TestPrettifyUint64(t *testing.T) {
-	cases := []struct {
-		num  uint64
-		want string
-	}{
-		{0, "0"},
-		{1, "1"},
-		{999, "999"},
-		{1000, "1,000"},
-		{10000, "10,000"},
-		{100000, "100,000"},
-		{399313, "399,313"},
-	}
-
-	for _, c := range cases {
-		assert.Equal(t, c.want, PrettifyUint64(c.num))
-	}
-}
-
 func TestGetVersionString(t *testing.T) {
 	// We'll just look for a correct format..
 	got := GetVersionString()
