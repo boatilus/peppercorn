@@ -71,15 +71,11 @@ func FormatTime(t time.Time, current time.Time) string {
 		return fmt.Sprintf("%d minutes ago", minutes)
 	}
 
-	kitchen := t.Format("3:04 PM")
-
 	if t.Day() == current.Day() {
-		return kitchen
+		return t.Format("3:04 PM")
 	}
 
-	year, month, day := t.Date()
-
-	return fmt.Sprintf("%s %d, %d at %s", month, day, year, kitchen)
+	return t.Format("January 2, 2006 at 3:04 PM")
 }
 
 // PrettifyUint64 accepts a `uint64` and returns a string formtted with comma thousands

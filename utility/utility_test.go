@@ -27,6 +27,17 @@ func TestObfuscateEmail(t *testing.T) {
 	}
 }
 
+func benchmarkObfuscateEmail(b *testing.B, v string) {
+	for n := 0; n < b.N; n++ {
+		ObfuscateEmail(v)
+	}
+}
+
+func BenchmarkObfuscateEmail_full(b *testing.B)        { benchmarkObfuscateEmail(b, "user@test.com") }
+func BenchmarkObfuscateEmail_shortname(b *testing.B)   { benchmarkObfuscateEmail(b, "u@test.com") }
+func BenchmarkObfuscateEmail_shortdomain(b *testing.B) { benchmarkObfuscateEmail(b, "user@t.com") }
+func BenchmarkObfuscateEmail_justamp(b *testing.B)     { benchmarkObfuscateEmail(b, "@") }
+
 func TestParseUserAgent(t *testing.T) {
 	cases := []struct {
 		ua          string
@@ -66,6 +77,51 @@ func TestFormatTime(t *testing.T) {
 	for _, c := range cases {
 		assert.Equal(t, c.want, FormatTime(c.then, ref))
 	}
+}
+
+func benchmarkFormatTime(b *testing.B, t time.Time, current time.Time) {
+	for n := 0; n < b.N; n++ {
+		FormatTime(t, current)
+	}
+}
+
+func setupBenchmarkFormatTime() time.Time {
+	ref, err := time.Parse(time.RubyDate, "Mon Jan 02 15:04:05 -0700 2006")
+	if err != nil {
+		panic(err)
+	}
+
+	return ref
+}
+
+func BenchmarkFormatTime_LT_min(b *testing.B) {
+	ref := setupBenchmarkFormatTime()
+
+	benchmarkFormatTime(b, ref, ref)
+}
+
+func BenchmarkFormatTime_about_min(b *testing.B) {
+	ref := setupBenchmarkFormatTime()
+
+	benchmarkFormatTime(b, ref.Add(-70*time.Second), ref)
+}
+
+func BenchmarkFormatTime_min_ago(b *testing.B) {
+	ref := setupBenchmarkFormatTime()
+
+	benchmarkFormatTime(b, ref.Add(-2*time.Minute), ref)
+}
+
+func BenchmarkFormatTime_timestamp(b *testing.B) {
+	ref := setupBenchmarkFormatTime()
+
+	benchmarkFormatTime(b, ref.Add(-15*time.Hour), ref)
+}
+
+func BenchmarkFormatTime_fulldate(b *testing.B) {
+	ref := setupBenchmarkFormatTime()
+
+	benchmarkFormatTime(b, ref.Add(-36*time.Hour), ref)
 }
 
 func TestGetVersionString(t *testing.T) {
