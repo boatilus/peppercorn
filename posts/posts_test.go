@@ -3,6 +3,7 @@ package posts
 import (
 	"encoding/json"
 	"io/ioutil"
+	"log"
 	"testing"
 	"time"
 
@@ -118,6 +119,8 @@ func init() {
 	if db.Session, err = rethink.Connect(rethink.ConnectOpts{Address: "localhost:28015"}); err != nil {
 		panic(err)
 	}
+
+	log.SetOutput(ioutil.Discard)
 
 	setupDB()
 }
@@ -275,9 +278,9 @@ func TestSubmit(t *testing.T) {
 
 	p, _ := New("user", "content")
 
-	err := Submit(p)
-
+	id, err := Submit(p)
 	assert.Nil(err)
+	assert.NotEmpty(id)
 
 	n, err := Count()
 	assert.Nil(err)
@@ -292,7 +295,7 @@ func TestSubmit(t *testing.T) {
 	assert.Equal(p.Time.Hour(), pt.Time.Hour())     // If the hour and second are equal we can be
 	assert.Equal(p.Time.Second(), pt.Time.Second()) // reasonably confident the times are equal
 
-	err = Submit(nil)
-
+	id, err = Submit(nil)
 	assert.NotNil(err)
+	assert.Empty(id)
 }
