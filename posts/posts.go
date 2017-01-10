@@ -161,7 +161,7 @@ func GetRangeJoined(first uint64, limit uint64) ([]Zip, error) {
 	defer cursor.Close()
 
 	if cursor.IsNil() {
-		return nil, fmt.Errorf("No posts found with first %q and limit %q", first, limit)
+		return nil, fmt.Errorf(`No posts found with first "%d" and limit "%d"`, first, limit)
 	}
 
 	var posts []Zip
@@ -209,7 +209,7 @@ func GetByID(id string) (*Post, error) {
 	defer cursor.Close()
 
 	if cursor.IsNil() {
-		return nil, fmt.Errorf("No post found with index %q", id)
+		return nil, fmt.Errorf("No post found at index %q", id)
 	}
 
 	var p Post
