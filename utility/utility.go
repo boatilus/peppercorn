@@ -75,7 +75,7 @@ func FormatTime(t time.Time, current time.Time) string {
 		return t.Format("3:04 PM")
 	}
 
-	return t.Format("January 2, 2006 at 3:04 PM")
+	return t.Format("January 2, 2006 at 3:04 PM MST")
 }
 
 // CommifyUint64 accepts a `uint64` and returns a string formtted with comma thousands

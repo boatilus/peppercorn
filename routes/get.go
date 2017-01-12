@@ -48,9 +48,7 @@ func IndexGetHandler(w http.ResponseWriter, req *http.Request) {
 
 	log.Print("numPages: ", numPages)
 
-	pages := []string
-
-	
+	var _ []string
 
 	data.Posts, err = posts.GetRangeJoined(1, uint64(data.CurrentUser.PPP))
 	if err != nil {

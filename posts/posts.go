@@ -41,7 +41,7 @@ func GetTable() string {
 }
 
 // New fills and returns a Post object given an author and a post. The `Active` property
-// is `true` by default, and `Time` is always `time.Now()`. RethinkDB will truncate .Time
+// is `true` by default, and `Time` is always `time.Now().UTC()`. RethinkDB will truncate .Time
 // to millisecond precision.
 func New(author string, content string) (*Post, error) {
 	p := Post{
@@ -49,7 +49,7 @@ func New(author string, content string) (*Post, error) {
 		Active:  true,
 		Author:  author,
 		Content: content,
-		Time:    time.Now(),
+		Time:    time.Now().UTC(),
 	}
 
 	if !validate(&p) {
