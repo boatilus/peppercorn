@@ -56,6 +56,18 @@ func IndexGetHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	loc, err := time.LoadLocation(data.CurrentUser.Timezone)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	now := time.Now()
+
+	for i := range data.Posts {
+		data.Posts[i].PrettyTime = utility.FormatTime(data.Posts[i].Time.In(loc), now)
+	}
+
 	templates.Index.Execute(w, data)
 }
 

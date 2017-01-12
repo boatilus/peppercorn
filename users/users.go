@@ -9,14 +9,15 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// User contains all the information relevant to a single user
+// User contains all the information relevant to a single user.
 type User struct {
-	ID     string `gorethink:"id,omitempty"`
-	Avatar string `gorethink:"avatar,omitempty"`
-	Email  string `gorethink:"email"`
-	Name   string `gorethink:"name"`
-	PPP    uint32 `gorethink:"posts_per_page"`
-	Title  string `gorethink:"title,omitempty"`
+	ID       string `gorethink:"id,omitempty"`
+	Avatar   string `gorethink:"avatar,omitempty"`
+	Email    string `gorethink:"email"`
+	Name     string `gorethink:"name"`
+	PPP      uint32 `gorethink:"posts_per_page"`
+	Title    string `gorethink:"title,omitempty"`
+	Timezone string `gorethink:"timezone"` // IANA time zone string
 
 	Hash    string `gorethink:"hash"`
 	IsAdmin bool   `gorethink:"is_admin,omitempty"`

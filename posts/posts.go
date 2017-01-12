@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/boatilus/peppercorn/db"
-	"github.com/boatilus/peppercorn/utility"
 	"github.com/spf13/viper"
 	rethink "gopkg.in/dancannon/gorethink.v2"
 )
@@ -192,13 +191,9 @@ func GetRangeJoined(first uint64, limit uint64) ([]Zip, error) {
 		return nil, errors.New("empty_result")
 	}
 
-	// Much to my dismay, the most performant way to get humanized timestamps is (probably) to handle
-	// it here :( Since we're at it, we'll add each post number, as we have the data we need to do so.
-	now := time.Now().UTC()
-
+	// Add each post number, as we have the data we need to do so.
 	for i := range posts {
 		posts[i].Count = first + uint64(i)
-		posts[i].PrettyTime = utility.FormatTime(posts[i].Time, now)
 	}
 
 	return posts, nil
