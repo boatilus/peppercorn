@@ -219,6 +219,7 @@ func MeGetHandler(w http.ResponseWriter, req *http.Request) {
 		Title           string
 		Avatar          string
 		PPP             string
+		Timezone        string
 		Sessions        []sessionData
 	}{
 		obEmail,
@@ -226,6 +227,7 @@ func MeGetHandler(w http.ResponseWriter, req *http.Request) {
 		u.Title,
 		u.Avatar,
 		strconv.FormatUint(uint64(u.PPP), 10),
+		u.Timezone,
 		sessions,
 	}
 
