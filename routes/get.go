@@ -18,7 +18,7 @@ import (
 	"github.com/pressly/chi"
 )
 
-// IndexHandler is called for the `/` (index) route and
+// IndexGetHandler is called for the `/` (index) route and
 func IndexGetHandler(w http.ResponseWriter, req *http.Request) {
 	var data struct {
 		CurrentUser *users.User
@@ -56,6 +56,7 @@ func IndexGetHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	// Load the user's timezone setting so we can provide correct post timestamps.
 	loc, err := time.LoadLocation(data.CurrentUser.Timezone)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -106,40 +107,63 @@ func SignOutGetHandler(w http.ResponseWriter, req *http.Request) {
 
 // Of the format: /page/{num}
 func PageGetHandler(w http.ResponseWriter, req *http.Request) {
+	var data struct {
+		CurrentUser *users.User
+		PostCount   int
+		Posts       []posts.Zip
+	}
+
+	data.CurrentUser = users.FromContext(req.Context())
+	if data.CurrentUser == nil {
+		http.Error(w, "Could not read user data from request context", http.StatusInternalServerError)
+		return
+	}
+
+	var err error
+
+	// TODO: We can run these following two queries in parallel.
+	data.PostCount, err = posts.Count()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	totalPages := (data.PostCount / int(data.CurrentUser.PPP)) + 1
 	num := chi.URLParam(req, "num")
-
-	n, err := strconv.ParseUint(num, 10, 64)
+	page, err := strconv.ParseInt(num, 10, 32)
 	if err != nil {
-		msg := fmt.Sprintf("Bad request for route 'page/%v'. Expected '%v' to be a positive integer", num, num)
-
-		http.Error(w, msg, http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	// TODO: Replace with session data
-	user, err := users.GetByID("9b00b4c6-fdcd-44f3-b797-fe009ddd9042")
+	begin := ((int(page) * int(data.CurrentUser.PPP)) - int(data.CurrentUser.PPP)) + 1
+
+	log.Print("totalPages: ", totalPages)
+	log.Print("page: ", page)
+	log.Print("begin: ", begin)
+
+	var _ []string
+
+	data.Posts, err = posts.GetRangeJoined(uint64(begin), uint64(data.CurrentUser.PPP))
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusForbidden)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	if user.PPP == 0 {
-		user.PPP = 10
-	}
-
-	start := (n * uint64(user.PPP)) - uint64(user.PPP) + 1
-	ps, err := posts.GetRange(start, uint64(user.PPP))
+	// Load the user's timezone setting so we can provide correct post timestamps.
+	loc, err := time.LoadLocation(data.CurrentUser.Timezone)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	if len(ps) == 0 {
-		http.NotFound(w, req)
-		return
-	} else {
-		io.WriteString(w, "Number of posts found: "+strconv.Itoa(len(ps)))
+	now := time.Now()
+
+	for i := range data.Posts {
+		data.Posts[i].PrettyTime = utility.FormatTime(data.Posts[i].Time.In(loc), now)
 	}
+
+	templates.Index.Execute(w, data)
 }
 
 // SingleHandler is called for GET requests for the `/post/{num}` route and renders a single post

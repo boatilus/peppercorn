@@ -28,9 +28,7 @@
       <hr>
       
       {{ range $i, $e := .Posts }}
-        <article style="background-image: url('{{ $e.Avatar }}')">
-          <button class="article-actions">Reply</button>
-          
+        <article style="background-image: url('{{ $e.Avatar }}')">          
           <header>
             <hgroup>
               <h1><a href="/users/{{ $e.AuthorName }}" rel="author">{{ $e.AuthorName }}</a></h1>

@@ -166,7 +166,10 @@ func GetRangeJoined(first uint64, limit uint64) ([]Zip, error) {
 	//
 	// TODO: Consider whether moving the OrderBy term later in the chain can improve performance,
 	// as per: https://www.rethinkdb.com/docs/optimization/
-	t := table.Between(min, max, btOpts).OrderBy(oOpts).Slice(first-1, limit)
+	begin := first - 1
+	end := begin + limit
+
+	t := table.Between(min, max, btOpts).OrderBy(oOpts).Slice(begin, end)
 
 	// Zipping a user document into the post document without Excepting the user's ID field doesn't
 	// trample over the post document's ID field, so we don't need to do anything else but run
