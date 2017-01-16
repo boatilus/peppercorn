@@ -3,6 +3,20 @@
   <head>
     <title>Make a Post</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="/static/script/lib/markdown-it.min.8.2.2.js"></script>
+    <script type="text/javascript">
+      const md = window.markdownit();
+      
+      document.addEventListener('DOMContentLoaded', function() {
+        let posts = document.getElementsByClassName('post-content');
+
+        for (let i = 0; i < posts.length; i++) {
+          const trimmedContent = posts[i].textContent.trim()
+
+          posts[i].innerHTML = md.render(trimmedContent)
+        }
+      });
+    </script>
     <link rel="stylesheet" href="/static/style/main.css">
   </head>
 
@@ -43,9 +57,7 @@
             </div>
         </header>
           
-          <section>
-            {{ $e.Content }}
-          </section>
+          <section class="post-content">{{ $e.Content }}</section>
         </article>
       {{ end }}
       <hr>
