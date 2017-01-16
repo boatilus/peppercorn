@@ -16,6 +16,7 @@ import (
 	"github.com/boatilus/peppercorn/users"
 	"github.com/boatilus/peppercorn/utility"
 	"github.com/pressly/chi"
+	"github.com/spf13/viper"
 )
 
 // IndexGetHandler is called for the `/` (index) route and
@@ -236,21 +237,26 @@ func MeGetHandler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	obEmail := utility.ObfuscateEmail(u.Email) // Obfuscate email
+	pppOptions := viper.GetStringSlice("ppp_options")
 
 	o := struct {
 		ObfuscatedEmail string
 		Name            string
 		Title           string
 		Avatar          string
+		PPPOptions      []string
 		PPP             string
-		Timezone        string
+		Timezones       []string
+		UserTimezone    string
 		Sessions        []sessionData
 	}{
 		obEmail,
 		u.Name,
 		u.Title,
 		u.Avatar,
+		pppOptions,
 		strconv.FormatUint(uint64(u.PPP), 10),
+		viper.GetStringSlice("timezones"),
 		u.Timezone,
 		sessions,
 	}

@@ -72,17 +72,20 @@
 
       <label class="select">
         <select name="posts_per_page">
-          <option>10</option>
-          <option>20</option>
-          <option>50</option>
-          <option>100</option>
+            {{ range .PPPOptions }}
+              <option {{ if eq . $.PPP }}selected{{ end }}>{{ . }}</option>
+            {{ end }}
         </select>
         <span class="select__label" for="select">Posts per Page</span>
       </label>
 
-      <label class="textfield">
-        <input name="timezone" type="text" value="{{.Timezone}}" />
-        <span class="textfield__label">Timezone</span>
+      <label class="select">
+        <select name="timezone">
+          {{ range .Timezones }}
+            <option {{ if eq . $.UserTimezone }}selected{{ end }}>{{ . }}</option>
+          {{ end }}
+        </select>
+        <span class="select__label">Timezone</span>
       </label>
 
       <input type="submit" value="Save changes">

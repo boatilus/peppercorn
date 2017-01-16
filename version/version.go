@@ -6,7 +6,7 @@ import "fmt"
 const (
 	versionMajor = 0
 	versionMinor = 1
-	versionPatch = 2
+	versionPatch = 3
 )
 
 // GetString returns the version as a string.
