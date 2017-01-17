@@ -1,9 +1,17 @@
 html {
   background: black;
   color: #a6a6a6;
-  font-family: "San Francisco Text", "Helvetica Neue", Arial;
+  font-family: -apple-system;
+  font-family: "-apple-system", BlinkMacSystemFont, "Helvetica Neue", Arial;
   font-size: 0.95em;
   font-weight: 300;
+}
+
+@media (max-width: 736px) {
+  html {
+    color: #bfbfbf;
+    font-size: 1em;
+  }
 }
 
 @media (min-width: 736px) {
@@ -135,7 +143,7 @@ nav li {
 
 article {
   background: #333;
-  padding-top: 0.3em;
+  padding-top: 0.4em;
 }
 
 article header { display: flex }
@@ -144,6 +152,8 @@ article h1 {
   font-size: larger;
   margin: 0;
 }
+
+article h2 { font-weight: normal }
 
 article p {
   line-height: 135%;
@@ -159,17 +169,19 @@ article p {
   article {
     background-image: none !important;
     border-bottom: 1px solid #555;
+    padding-bottom: 1em;
     padding-left: 8px;
     padding-right: 8px;
   }
   
-  article:nth-child(odd) {
-    background-color: #444;
+  article:nth-child(even) {
+    background-color: #222;
   }
 
   article header { flex-direction: column }
   article h1 { font-size: 110% }
   article h2 { display: none }
+  article img { max-width: 100%; }
   .article-actions { right: 8px }
   .article-meta { margin-bottom: 0.6em }
   .article-link { display: none }
@@ -177,19 +189,24 @@ article p {
 
 @media (min-width: 736px) {
   article {
-    background-position: 0 1em;
+    background-position: 0 0.5em;
     background-size: 80px auto;
     background-repeat: no-repeat;
     box-sizing: border-box;
     margin-bottom: 1.5em;
-    min-height: 100px;
+    min-height: 110px;
     padding-bottom: 0.5em;
     padding-right: 1em;
     padding-left: 95px;
   }
 
+  article:nth-child(even) {
+    background-color: #222;
+  }
+
   article header {
     align-items: center;
+    padding-bottom: 0.5em;
     justify-content: space-between;
   }
 
@@ -203,6 +220,8 @@ article p {
     font-size: 100%;
     margin-left: 0.75em;
   }
+
+  article img { max-width: 800px; }
 
   .article-actions {
     margin-left: 800px;
