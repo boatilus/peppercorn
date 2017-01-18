@@ -18,6 +18,13 @@ type UserAgent struct {
 	OS      string
 }
 
+// crReplacer is used for RemoveCRs.
+var crReplacer *strings.Replacer
+
+func init() {
+	crReplacer = strings.NewReplacer("\r", "")
+}
+
 // ObfuscateEmail accepts an email address and returns parts of it obfuscated with asterisks.
 func ObfuscateEmail(address string) string {
 	s := strings.Split(address, "@")
@@ -151,4 +158,10 @@ func ComputePages(totalPosts db.CountType, paginateEvery db.CountType) db.CountT
 	}
 
 	return pageCount
+}
+
+// RemoveCRs accepts a string and returns a new string with any instances of a Carriage Return
+// character removed.
+func RemoveCRs(s string) string {
+	return crReplacer.Replace(s)
 }

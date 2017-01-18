@@ -193,3 +193,18 @@ func TestComputePages(t *testing.T) {
 		assert.Equal(t, c.want, ComputePages(c.numPosts, c.pageEvery))
 	}
 }
+
+func TestRemoveCRs(t *testing.T) {
+	cases := []struct {
+		in   string
+		want string
+	}{
+		{"Hello\r\nWorld!", "Hello\nWorld!"},
+		{"Hello\r\nWorld! I like...\r\n...cake.", "Hello\nWorld! I like...\n...cake."},
+		{"\r\r\n", "\n"},
+	}
+
+	for _, c := range cases {
+		assert.Equal(t, c.want, RemoveCRs(c.in))
+	}
+}
