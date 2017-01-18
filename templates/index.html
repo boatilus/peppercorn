@@ -74,7 +74,7 @@
             <div class="article-meta">
               <small>
                 <time>{{ .PrettyTime }}</time>
-                <a class="article-link">{{ .Count | commifyUint64 }}</a>
+                <a class="article-link">{{ commify .Count }}</a>
               </small>
             </div>
         </header>

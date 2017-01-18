@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/boatilus/peppercorn/db"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -175,9 +176,9 @@ func BenchmarkCommifyInt64_8881679(b *testing.B) { benchmarkCommifyInt64(b, 8881
 
 func TestComputePages(t *testing.T) {
 	cases := []struct {
-		numPosts  int32
-		pageEvery int32
-		want      int32
+		numPosts  db.CountType
+		pageEvery db.CountType
+		want      db.CountType
 	}{
 		{1, 5, 1},
 		{5, 5, 1},

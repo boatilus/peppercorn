@@ -30,7 +30,7 @@ type Zip struct {
 	Avatar     string    `gorethink:"avatar"`
 	AuthorName string    `gorethink:"name"`
 	Title      string    `gorethink:"title"`
-	Count      uint64
+	Count      db.CountType
 	PrettyTime string
 }
 
@@ -58,8 +58,8 @@ func New(author string, content string) (*Post, error) {
 	return &p, nil
 }
 
-// Count returns the number of active posts as an int.
-func Count() (int, error) {
+// Count returns the number of active posts as a `count`.
+func Count() (db.CountType, error) {
 	cursor, err := db.Get().Table(GetTable()).GetAllByIndex("active", true).Count().Run(db.Session)
 	if err != nil {
 		return 0, err
@@ -67,8 +67,7 @@ func Count() (int, error) {
 
 	defer cursor.Close()
 
-	var n int
-
+	var n db.CountType
 	if err = cursor.One(&n); err != nil {
 		return 0, err
 	}
@@ -76,8 +75,8 @@ func Count() (int, error) {
 	return n, nil
 }
 
-// CountAll returns the total number of posts, including inactive posts, as an int.
-func CountAll() (int, error) {
+// CountAll returns the total number of posts, including inactive posts, as a `count`.
+func CountAll() (db.CountType, error) {
 	cursor, err := db.Get().Table(GetTable()).Count().Run(db.Session)
 	if err != nil {
 		return 0, err
@@ -85,7 +84,7 @@ func CountAll() (int, error) {
 
 	defer cursor.Close()
 
-	var n int
+	var n db.CountType
 	if err = cursor.One(&n); err != nil {
 		return 0, err
 	}
@@ -95,7 +94,7 @@ func CountAll() (int, error) {
 
 // GetRange returns a range of posts specified by `first` -- the first post in the range --
 // and `limit`, the number of posts.
-func GetRange(first uint64, limit uint64) ([]Post, error) {
+func GetRange(first db.CountType, limit db.CountType) ([]Post, error) {
 	// Don't let users try to load any page prior to the, uh, first one.
 	if first < 1 {
 		first = 1
@@ -116,7 +115,6 @@ func GetRange(first uint64, limit uint64) ([]Post, error) {
 	defer cursor.Close()
 
 	var posts []Post
-
 	if err = cursor.All(&posts); err != nil {
 		return nil, err
 	}
@@ -128,7 +126,7 @@ func GetRange(first uint64, limit uint64) ([]Post, error) {
 	return posts, nil
 }
 
-func GetRangeJoined(first uint64, limit uint64) ([]Zip, error) {
+func GetRangeJoined(first db.CountType, limit db.CountType) ([]Zip, error) {
 	// Don't let users try to load any page prior to the, uh, first one.
 	if first < 1 {
 		first = 1
@@ -196,14 +194,14 @@ func GetRangeJoined(first uint64, limit uint64) ([]Zip, error) {
 
 	// Add each post number, as we have the data we need to do so.
 	for i := range posts {
-		posts[i].Count = first + uint64(i)
+		posts[i].Count = first + db.CountType(i)
 	}
 
 	return posts, nil
 }
 
 // GetOne simply returns a single Post, given a post number.
-func GetOne(n uint64) (*Post, error) {
+func GetOne(n db.CountType) (*Post, error) {
 	if n < 1 {
 		return nil, errors.New("no_negative_allowed")
 	}
@@ -230,7 +228,7 @@ func GetByID(id string) (*Post, error) {
 	}
 
 	var p Post
-	if err = cursor.One(&p); err != nil {
+	if err := cursor.One(&p); err != nil {
 		return nil, err
 	}
 
@@ -254,8 +252,7 @@ func GetByIDJoined(id string) (*Zip, error) {
 	}
 
 	var z Zip
-	err = cursor.One(&z)
-	if err != nil {
+	if err := cursor.One(&z); err != nil {
 		return nil, err
 	}
 
@@ -264,7 +261,7 @@ func GetByIDJoined(id string) (*Zip, error) {
 
 // Edit accepts a post number and the content to update a post with. Errs if `n < 1` or if
 // content length is 0, and for any database error.
-func Edit(n uint64, newContent string) error {
+func Edit(n db.CountType, newContent string) error {
 	if n < 1 {
 		return errors.New("Cannot attempt to edit post 0")
 	}

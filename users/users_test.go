@@ -15,7 +15,7 @@ type doc struct {
 	Avatar string
 	Email  string
 	Name   string
-	PPP    uint32
+	PPP    db.CountType
 	Title  string
 
 	Hash    string

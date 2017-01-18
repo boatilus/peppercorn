@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/boatilus/peppercorn/db"
 	"github.com/boatilus/peppercorn/version"
 	"github.com/mssola/user_agent"
 )
@@ -78,15 +79,15 @@ func FormatTime(t time.Time, current time.Time) string {
 	return t.Format("January 2, 2006 at 3:04 PM")
 }
 
-// CommifyUint64 accepts a `uint64` and returns a string formtted with comma thousands
-// separators (if necessary).
-func CommifyUint64(n uint64) string {
-	return CommifyInt64(int64(n))
-}
-
 // GetVersionString returns the version as a string.
 func GetVersionString() string {
 	return version.GetString()
+}
+
+// CommifyCountType accepts a `db.CountType` and returns a string formtted with comma thousands
+// separators (if necessary).
+func CommifyCountType(n db.CountType) string {
+	return CommifyInt64(int64(n))
 }
 
 // CommifyInt64 accepts an `int64` and returns the commified representation of it.
@@ -139,7 +140,9 @@ func CommifyInt64(v int64) string {
 	return strings.Join(parts[j:], ",")
 }
 
-func ComputePages(totalPosts int32, paginateEvery int32) int32 {
+// ComputePages calculates the total number of pages given the total number of posts and the
+// pagination value.
+func ComputePages(totalPosts db.CountType, paginateEvery db.CountType) db.CountType {
 	pageCount := totalPosts / paginateEvery
 	pageModulo := totalPosts % paginateEvery
 

@@ -122,7 +122,7 @@ func GetByUser(userID string) ([]Session, error) {
 
 // GetByIndex retrieves a user's session at a specified index. Returns a nil session and an error
 // on any failure.
-func GetByIndex(userID string, index uint64) (*Session, error) {
+func GetByIndex(userID string, index db.CountType) (*Session, error) {
 	log.Printf("Retrieving session for user %q at index %d..", userID, index)
 
 	t := db.Get().Table(GetTable()).GetAllByIndex("user_id", userID).OrderBy(rethink.Desc("timestamp")).Nth(index)
@@ -170,7 +170,7 @@ func Destroy(sid string) error {
 }
 
 // DestroyByIndex deletes a session from the database for a given user, given its index.
-func DestroyByIndex(userID string, index uint64) error {
+func DestroyByIndex(userID string, index db.CountType) error {
 	if !db.Session.IsConnected() {
 		return errors.New("RethinkDB session not connected")
 	}

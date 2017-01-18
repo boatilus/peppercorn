@@ -11,13 +11,13 @@ type UserOpts struct {
 	Avatar string
 	Email  string
 	Name   string
-	PPP    uint32
+	PPP    db.CountType
 	Title  string
 
 	IsAdmin bool
 }
 
-const defaultPPP uint32 = 10
+const defaultPPP db.CountType = 10
 
 // New validates and creates a User object with all properties supplied
 func New(opts UserOpts, password string) (*User, error) {

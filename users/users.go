@@ -11,13 +11,13 @@ import (
 
 // User contains all the information relevant to a single user.
 type User struct {
-	ID       string `gorethink:"id,omitempty"`
-	Avatar   string `gorethink:"avatar,omitempty"`
-	Email    string `gorethink:"email"`
-	Name     string `gorethink:"name"`
-	PPP      uint32 `gorethink:"posts_per_page"`
-	Title    string `gorethink:"title,omitempty"`
-	Timezone string `gorethink:"timezone"` // IANA time zone string
+	ID       string       `gorethink:"id,omitempty"`
+	Avatar   string       `gorethink:"avatar,omitempty"`
+	Email    string       `gorethink:"email"`
+	Name     string       `gorethink:"name"`
+	PPP      db.CountType `gorethink:"posts_per_page"`
+	Title    string       `gorethink:"title,omitempty"`
+	Timezone string       `gorethink:"timezone"` // IANA time zone string
 
 	Hash    string `gorethink:"hash"`
 	IsAdmin bool   `gorethink:"is_admin,omitempty"`
@@ -69,7 +69,7 @@ func Update(u *User) error {
 	return nil
 }
 
-func validateData(email string, name string, ppp uint32, password string) error {
+func validateData(email string, name string, ppp db.CountType, password string) error {
 	if len(email) == 0 {
 		return errors.New("invalid_email")
 	}

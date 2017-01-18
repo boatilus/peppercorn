@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/boatilus/peppercorn/db"
 	"github.com/boatilus/peppercorn/utility"
 )
 
@@ -20,11 +21,11 @@ var funcMap template.FuncMap
 
 func init() {
 	funcMap = template.FuncMap{
-		"inc":           func(n int32) int32 { return n + 1 },
-		"dec":           func(n int32) int32 { return n - 1 },
-		"prettyTime":    utility.FormatTime,
-		"commifyUint64": utility.CommifyUint64,
-		"getVersion":    utility.GetVersionString,
+		"inc":        func(n db.CountType) db.CountType { return n + 1 },
+		"dec":        func(n db.CountType) db.CountType { return n - 1 },
+		"prettyTime": utility.FormatTime,
+		"commify":    utility.CommifyCountType,
+		"getVersion": utility.GetVersionString,
 	}
 
 	pathSep = string(os.PathSeparator)

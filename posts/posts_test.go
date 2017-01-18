@@ -169,22 +169,22 @@ func TestCount(t *testing.T) {
 	n, err := Count()
 
 	assert.Nil(t, err)
-	assert.Equal(t, n, 6)
+	assert.Equal(t, n, db.CountType(6))
 }
 
 func TestCountAll(t *testing.T) {
 	n, err := CountAll()
 
 	assert.Nil(t, err)
-	assert.Equal(t, n, 7)
+	assert.Equal(t, n, db.CountType(7))
 }
 
 func TestGetRange(t *testing.T) {
 	assert := assert.New(t)
 
 	cases := []struct {
-		first uint64
-		limit uint64
+		first db.CountType
+		limit db.CountType
 		want  []Post
 	}{
 		{1, 2, []Post{makePostFromDoc(docs[0]), makePostFromDoc(docs[1])}},
@@ -215,7 +215,7 @@ func TestGetOne(t *testing.T) {
 	assert := assert.New(t)
 
 	cases := []struct {
-		in   uint64
+		in   db.CountType
 		want Post
 	}{
 		{1, makePostFromDoc(docs[0])},
@@ -233,7 +233,7 @@ func TestGetOne(t *testing.T) {
 		assert.True(got.Time.Equal(c.want.Time))
 	}
 
-	failCases := [3]uint64{0, 7, 12}
+	failCases := [3]db.CountType{0, 7, 12}
 
 	for _, c := range failCases {
 		_, err := GetOne(c)
@@ -284,7 +284,7 @@ func TestSubmit(t *testing.T) {
 
 	n, err := Count()
 	assert.Nil(err)
-	assert.Equal(n, 7)
+	assert.Equal(n, db.CountType(7))
 
 	pt, err := GetOne(7)
 	assert.Nil(err)

@@ -16,6 +16,9 @@ var Opts rethink.ConnectOpts
 // Name is the hard-coded database name
 const Name = "peppercorn"
 
+// CountType is the universal type to which we'll resolve any integral data in the DB.
+type CountType int32
+
 // Connect should be called on entry to the application
 func Connect() error {
 	// DB address will default to 28015

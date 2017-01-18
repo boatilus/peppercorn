@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/boatilus/peppercorn/cookie"
+	"github.com/boatilus/peppercorn/db"
 	"github.com/boatilus/peppercorn/paths"
 	"github.com/boatilus/peppercorn/posts"
 	"github.com/boatilus/peppercorn/session"
@@ -132,13 +133,13 @@ func MePostHandler(w http.ResponseWriter, req *http.Request) {
 	ppp := req.Form["posts_per_page"]
 
 	// We need to coerce `ppp` into a uint64, then coerce that into a uint32.
-	var ppp32 uint32
-	var ppp64 uint64
+	var ppp32 db.CountType
+	var ppp64 int64
 	var err error
 
 	if len(ppp) == 1 {
-		ppp64, err = strconv.ParseUint(ppp[0], 10, 32)
-		ppp32 = uint32(ppp64)
+		ppp64, err = strconv.ParseInt(ppp[0], 10, 32)
+		ppp32 = db.CountType(ppp64)
 	}
 
 	if err != nil {

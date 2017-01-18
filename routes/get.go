@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/boatilus/peppercorn/cookie"
+	"github.com/boatilus/peppercorn/db"
 	"github.com/boatilus/peppercorn/paths"
 	"github.com/boatilus/peppercorn/posts"
 	"github.com/boatilus/peppercorn/session"
@@ -61,10 +62,10 @@ func SignOutGetHandler(w http.ResponseWriter, req *http.Request) {
 func PageGetHandler(w http.ResponseWriter, req *http.Request) {
 	var data struct {
 		CurrentUser *users.User
-		PostCount   int
+		PostCount   db.CountType
 		Posts       []posts.Zip
-		PageNum     int32
-		TotalPages  int32
+		PageNum     db.CountType
+		TotalPages  db.CountType
 	}
 
 	data.CurrentUser = users.FromContext(req.Context())
@@ -82,7 +83,7 @@ func PageGetHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	data.TotalPages = utility.ComputePages(int32(data.PostCount), int32(data.CurrentUser.PPP))
+	data.TotalPages = utility.ComputePages(data.PostCount, data.CurrentUser.PPP)
 
 	num := chi.URLParam(req, "num")
 
@@ -95,14 +96,14 @@ func PageGetHandler(w http.ResponseWriter, req *http.Request) {
 			return
 		}
 
-		data.PageNum = int32(pageNum)
+		data.PageNum = db.CountType(pageNum)
 	}
 
 	// To get the first post to load for this page, we must take into account the user's
 	// posts-per-page setting.
-	begin := ((int(data.PageNum) * int(data.CurrentUser.PPP)) - int(data.CurrentUser.PPP)) + 1
+	begin := ((data.PageNum * data.CurrentUser.PPP) - data.CurrentUser.PPP) + 1
 
-	data.Posts, err = posts.GetRangeJoined(uint64(begin), uint64(data.CurrentUser.PPP))
+	data.Posts, err = posts.GetRangeJoined(begin, data.CurrentUser.PPP)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -129,7 +130,7 @@ func PageGetHandler(w http.ResponseWriter, req *http.Request) {
 func SingleGetHandler(w http.ResponseWriter, req *http.Request) {
 	num := chi.URLParam(req, "num")
 
-	n, err := strconv.ParseUint(num, 10, 64)
+	n, err := strconv.ParseInt(num, 10, 32)
 	if err != nil {
 		msg := fmt.Sprintf("Bad request for route '/post/%v'. Expected '%v' to be a positive integer", num, num)
 
@@ -137,7 +138,7 @@ func SingleGetHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	p, err := posts.GetOne(n)
+	p, err := posts.GetOne(db.CountType(n))
 	if err != nil {
 		http.NotFound(w, req)
 		return
@@ -153,7 +154,7 @@ func CountGetHandler(w http.ResponseWriter, _ *http.Request) {
 		return
 	}
 
-	io.WriteString(w, strconv.Itoa(n))
+	io.WriteString(w, strconv.Itoa(int(n)))
 }
 
 // MeGetHandler is the handler
@@ -212,7 +213,7 @@ func MeGetHandler(w http.ResponseWriter, req *http.Request) {
 		u.Title,
 		u.Avatar,
 		pppOptions,
-		strconv.FormatUint(uint64(u.PPP), 10),
+		strconv.FormatInt(int64(u.PPP), 10),
 		viper.GetStringSlice("timezones"),
 		u.Timezone,
 		sessions,
@@ -230,13 +231,13 @@ func MeRevokeGetHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	i, err := strconv.ParseUint(chi.URLParam(req, "num"), 10, 64)
+	i, err := strconv.ParseInt(chi.URLParam(req, "num"), 10, 32)
 	if err != nil || i < 0 {
 		http.Error(w, "", http.StatusBadRequest)
 		return
 	}
 
-	if err := session.DestroyByIndex(u.ID, i); err != nil {
+	if err := session.DestroyByIndex(u.ID, db.CountType(i)); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
