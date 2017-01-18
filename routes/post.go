@@ -10,6 +10,7 @@ import (
 	"github.com/boatilus/peppercorn/posts"
 	"github.com/boatilus/peppercorn/session"
 	"github.com/boatilus/peppercorn/users"
+	"github.com/boatilus/peppercorn/utility"
 )
 
 // SignInPostHandler is, as you'd expect, where the sign-in form is POSTed. This handler does some
@@ -183,7 +184,10 @@ func PostsPostHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	p, err := posts.New(u.ID, r[0])
+	// Normalize reply text to LF.
+	s := utility.RemoveCRs(r[0])
+
+	p, err := posts.New(u.ID, s)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
