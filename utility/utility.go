@@ -138,3 +138,14 @@ func CommifyInt64(v int64) string {
 
 	return strings.Join(parts[j:], ",")
 }
+
+func ComputePages(totalPosts int32, paginateEvery int32) int32 {
+	pageCount := totalPosts / paginateEvery
+	pageModulo := totalPosts % paginateEvery
+
+	if pageModulo != 0 {
+		pageCount++
+	}
+
+	return pageCount
+}

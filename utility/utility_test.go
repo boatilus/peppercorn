@@ -172,3 +172,23 @@ func BenchmarkCommifyInt64_1993(b *testing.B)    { benchmarkCommifyInt64(b, 1993
 func BenchmarkCommifyInt64_72759(b *testing.B)   { benchmarkCommifyInt64(b, 72759) }
 func BenchmarkCommifyInt64_497167(b *testing.B)  { benchmarkCommifyInt64(b, 497167) }
 func BenchmarkCommifyInt64_8881679(b *testing.B) { benchmarkCommifyInt64(b, 8881679) }
+
+func TestComputePages(t *testing.T) {
+	cases := []struct {
+		numPosts  int32
+		pageEvery int32
+		want      int32
+	}{
+		{1, 5, 1},
+		{5, 5, 1},
+		{6, 5, 2},
+		{7, 5, 2},
+		{9, 5, 2},
+		{10, 5, 2},
+		{11, 5, 3},
+	}
+
+	for _, c := range cases {
+		assert.Equal(t, c.want, ComputePages(c.numPosts, c.pageEvery))
+	}
+}

@@ -50,9 +50,13 @@
 
         <nav>
           <ul>
-            <li><a href="/page/29035">29,035</a></li>
-            <li class="nav-current">29,036</li>
-            <li><a href="/page/29037">29,037</a></li>
+            {{ if ne .PageNum 1 }}
+              <li><a href="/page/{{ dec .PageNum }}">{{ dec .PageNum }}</a></li>
+            {{ end }}
+            <li class="nav-current">{{ .PageNum }}</li>
+            {{ if ne .PageNum .TotalPages }}
+              <li><a href="/page/{{ inc .PageNum }}">{{ inc .PageNum }}</a></li>
+            {{ end }}
           </ul>
         </nav>
       </header>

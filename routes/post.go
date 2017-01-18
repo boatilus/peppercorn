@@ -194,5 +194,5 @@ func PostsPostHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	http.Redirect(w, req, "/"+"#bottom", http.StatusSeeOther)
+	http.Redirect(w, req, "/page/latest", http.StatusSeeOther)
 }

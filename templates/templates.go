@@ -20,6 +20,8 @@ var funcMap template.FuncMap
 
 func init() {
 	funcMap = template.FuncMap{
+		"inc":           func(n int32) int32 { return n + 1 },
+		"dec":           func(n int32) int32 { return n - 1 },
 		"prettyTime":    utility.FormatTime,
 		"commifyUint64": utility.CommifyUint64,
 		"getVersion":    utility.GetVersionString,

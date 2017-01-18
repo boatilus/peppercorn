@@ -21,56 +21,7 @@ import (
 
 // IndexGetHandler is called for the `/` (index) route and
 func IndexGetHandler(w http.ResponseWriter, req *http.Request) {
-	var data struct {
-		CurrentUser *users.User
-		PostCount   int
-		Posts       []posts.Zip
-	}
-
-	data.CurrentUser = users.FromContext(req.Context())
-	if data.CurrentUser == nil {
-		http.Error(w, "Could not read user data from request context", http.StatusInternalServerError)
-		return
-	}
-
-	var err error
-
-	// TODO: We can run these following two queries in parallel.
-	data.PostCount, err = posts.Count()
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	numPages := data.PostCount / int(data.CurrentUser.PPP)
-	if numPages == 0 {
-		numPages = 1
-	}
-
-	log.Print("numPages: ", numPages)
-
-	var _ []string
-
-	data.Posts, err = posts.GetRangeJoined(1, uint64(data.CurrentUser.PPP))
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	// Load the user's timezone setting so we can provide correct post timestamps.
-	loc, err := time.LoadLocation(data.CurrentUser.Timezone)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	now := time.Now()
-
-	for i := range data.Posts {
-		data.Posts[i].PrettyTime = utility.FormatTime(data.Posts[i].Time.In(loc), now)
-	}
-
-	templates.Index.Execute(w, data)
+	http.Redirect(w, req, "/page/1", http.StatusSeeOther)
 }
 
 func SignInGetHandler(w http.ResponseWriter, req *http.Request) {
@@ -112,6 +63,8 @@ func PageGetHandler(w http.ResponseWriter, req *http.Request) {
 		CurrentUser *users.User
 		PostCount   int
 		Posts       []posts.Zip
+		PageNum     int32
+		TotalPages  int32
 	}
 
 	data.CurrentUser = users.FromContext(req.Context())
@@ -129,21 +82,25 @@ func PageGetHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	totalPages := (data.PostCount / int(data.CurrentUser.PPP)) + 1
+	data.TotalPages = utility.ComputePages(int32(data.PostCount), int32(data.CurrentUser.PPP))
+
 	num := chi.URLParam(req, "num")
-	page, err := strconv.ParseInt(num, 10, 32)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
+
+	if num == "latest" {
+		data.PageNum = data.TotalPages
+	} else {
+		pageNum, err := strconv.ParseInt(num, 10, 32)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		data.PageNum = int32(pageNum)
 	}
 
-	begin := ((int(page) * int(data.CurrentUser.PPP)) - int(data.CurrentUser.PPP)) + 1
-
-	log.Print("totalPages: ", totalPages)
-	log.Print("page: ", page)
-	log.Print("begin: ", begin)
-
-	var _ []string
+	// To get the first post to load for this page, we must take into account the user's
+	// posts-per-page setting.
+	begin := ((int(data.PageNum) * int(data.CurrentUser.PPP)) - int(data.CurrentUser.PPP)) + 1
 
 	data.Posts, err = posts.GetRangeJoined(uint64(begin), uint64(data.CurrentUser.PPP))
 	if err != nil {
