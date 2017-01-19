@@ -172,10 +172,23 @@ func GetRangeJoined(first db.CountType, limit db.CountType) ([]Zip, error) {
 	// Zipping a user document into the post document without Excepting the user's ID field doesn't
 	// trample over the post document's ID field, so we don't need to do anything else but run
 	// the full query.
-	cursor, err := t.EqJoin("user_id", usersTable, eqjOpts).Zip().Run(db.Session)
+	cursor, err := t.EqJoin("user_id", usersTable, eqjOpts).Without(map[string]interface{}{
+		"right": "id",
+	}).Zip().Run(db.Session)
 	if err != nil {
 		return nil, err
 	}
+
+	// The above is equivalent to:
+	// r
+	//	.db("peppercorn")
+	//	.table("posts")
+	// 	.between([true, r.minval], [true, r.maxval], {index: "active_time" })
+	//	.orderBy({index: r.asc("active_time")})
+	//	.slice(0, 5)
+	//	.eqJoin("user_id", r.db("peppercorn").table("users"), { ordered: true})
+	//	.without({ right: "id" })
+	//	.zip()
 
 	defer cursor.Close()
 
@@ -259,26 +272,28 @@ func GetByIDJoined(id string) (*Zip, error) {
 	return &z, nil
 }
 
-// Edit accepts a post number and the content to update a post with. Errs if `n < 1` or if
+// Edit accepts a post ID and the content to update a post with. Errs if `id` is empty or if
 // content length is 0, and for any database error.
-func Edit(n db.CountType, newContent string) error {
-	if n < 1 {
-		return errors.New("Cannot attempt to edit post 0")
+func Edit(id string, newContent string) error {
+	if len(id) == 0 {
+		return errors.New("Empty ID supplied")
 	}
 
 	if len(newContent) == 0 {
 		return errors.New("Post content length cannot be 0")
 	}
 
-	p, err := GetOne(n)
+	log.Printf("Editing post with ID %q..", id)
+
+	data := map[string]interface{}{"content": newContent}
+
+	res, err := db.Get().Table(GetTable()).Get(id).Update(data).RunWrite(db.Session)
 	if err != nil {
 		return err
 	}
 
-	p.Content = newContent
-
-	if err = update(p); err != nil {
-		return err
+	if res.Replaced != 1 {
+		return errors.New("Unable to insert changes to document")
 	}
 
 	return nil

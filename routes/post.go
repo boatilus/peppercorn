@@ -131,6 +131,11 @@ func MePostHandler(w http.ResponseWriter, req *http.Request) {
 		u.Title = title[0]
 	}
 
+	if timezone := req.Form["timezone"]; u.Timezone != timezone[0] {
+		modified = true
+		u.Timezone = timezone[0]
+	}
+
 	ppp := req.Form["posts_per_page"]
 
 	// We need to coerce `ppp` into a uint64, then coerce that into a uint32.

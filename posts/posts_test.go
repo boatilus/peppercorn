@@ -261,15 +261,15 @@ func TestEdit(t *testing.T) {
 
 	p, _ := GetOne(3)
 
-	err := Edit(3, "edited content")
+	err := Edit(p.ID, "edited content")
 	assert.Nil(err)
 
-	pEdit, _ := GetOne(3)
+	pEdit, _ := GetByID(p.ID)
 
-	assert.Equal(p.ID, pEdit.ID)
-	assert.Equal(p.Active, pEdit.Active)
-	assert.Equal(p.Author, pEdit.Author)
-	assert.Equal(pEdit.Content, "edited content")
+	assert.Equal(pEdit.ID, p.ID)
+	assert.Equal(pEdit.Active, p.Active)
+	assert.Equal(pEdit.Author, p.Author)
+	assert.Equal("edited content", pEdit.Content)
 	assert.True(p.Time.Equal(pEdit.Time))
 }
 
