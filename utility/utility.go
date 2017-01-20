@@ -165,3 +165,12 @@ func ComputePages(totalPosts db.CountType, paginateEvery db.CountType) db.CountT
 func RemoveCRs(s string) string {
 	return crReplacer.Replace(s)
 }
+
+// GetISO8601String accepts a `Time` and returns a string with an ISO8601 representation.
+func GetISO8601String(t *time.Time) string {
+	if t == nil {
+		return ""
+	}
+
+	return t.Format("2006-01-02T15:04:05-0700")
+}

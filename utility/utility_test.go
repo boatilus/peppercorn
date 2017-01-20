@@ -208,3 +208,20 @@ func TestRemoveCRs(t *testing.T) {
 		assert.Equal(t, c.want, RemoveCRs(c.in))
 	}
 }
+
+func TestGetISO8601String(t *testing.T) {
+	assert := assert.New(t)
+
+	tm, err := time.Parse("2006-01-02T15:04:05-0700", "2006-01-02T15:04:05-0700")
+	if !assert.NoError(err) {
+		t.FailNow()
+	}
+
+	s := GetISO8601String(&tm)
+	assert.Equal("2006-01-02T15:04:05-0700", s)
+
+	var badTime *time.Time
+
+	s = GetISO8601String(badTime)
+	assert.Equal("", s)
+}
