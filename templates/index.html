@@ -128,7 +128,7 @@
 
             <div class="article-meta">
               <small>
-                <time>{{ .PrettyTime }}</time>
+                <time datetime="{{ toISO8601 .Time }}">{{ .PrettyTime }}</time>
                 <a class="article-link">{{ commify .Count }}</a>
               </small>
             </div>

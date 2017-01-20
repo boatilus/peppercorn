@@ -24,6 +24,7 @@ func init() {
 		"inc":        func(n db.CountType) db.CountType { return n + 1 },
 		"dec":        func(n db.CountType) db.CountType { return n - 1 },
 		"prettyTime": utility.FormatTime,
+		"toISO8601":  utility.GetISO8601String,
 		"commify":    utility.CommifyCountType,
 		"getVersion": utility.GetVersionString,
 	}
