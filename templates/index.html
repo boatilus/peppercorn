@@ -5,90 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="/static/script/lib/markdown-it.min.8.2.2.js"></script>
     <script src="/static/script/lib/marked.min.js"></script>
-    <script type="text/javascript">
-      const md = window.markdownit();
-
-      // Given a potentially multi-line string of text, return a version of that text with any
-      // Markdown blockquotes removed.
-      const stripQuotes = function(text) {
-        let lines = text.split(/\r?\n/);
-        let newlines = [];
-
-        for (let i = 0; i < lines.length; i++) {
-          let line = lines[i].trim();
-
-          // We know this line is blockquotes if it begins with `>`.
-          if (line.charAt(0) !== '>') {
-            newlines.push(line);
-          }
-        }
-        
-        if (newlines[0] === '') {
-          newlines.shift();
-        }
-
-        return newlines.join(`\r\n`);
-      };
-
-      // Given a potentially multi-line string of text, return a version of that text with a `>`
-      // prepended to each line for a Markdown blockquote.
-      const quote = function(text) {
-        let lines = text.split(/\r?\n/);
-        let newlines = [`> **User**:`];
-  
-        for (let i = 0; i < lines.length; i++) {
-          let line = lines[i].trim();
-          
-          newlines.push('> ' + line);
-        }
-
-        newlines.push(`\r\n`);
-        
-        return newlines.join(`\r\n`);
-      }
-      
-      document.addEventListener('DOMContentLoaded', function() {
-        console.time('DOM_begin');
-
-        let bottom = document.getElementById('bottom');
-        let posts = document.getElementsByTagName('article');
-
-        for (let i = 0; i < posts.length; i++) {
-          let thisPost = posts[i];
-
-          let actions = thisPost.getElementsByClassName('article-actions').item(0);
-          let content = thisPost.getElementsByClassName('post-content').item(0);
-
-          // Get the post's Markdown content, parsing it and replacing it with the rendered HTML.
-          const trimmedContent = content.textContent.trim();
-
-          content.innerHTML = md.render(trimmedContent);
-
-          // Add 'Reply' and 'Option' buttons to each post, attaching handlers to them.
-          let replyButton = document.createElement('button');
-          replyButton.className = 'post-reply';
-          replyButton.innerText = 'Reply';
-          replyButton.addEventListener('click', function() {
-            const strippedAndQuoted = quote(stripQuotes(trimmedContent));
-
-            bottom.value = strippedAndQuoted;
-            bottom.focus();
-          });
-
-          let menuButton = document.createElement('button');
-          menuButton.className = 'post-menu';
-          menuButton.innerText = 'Options';
-
-          let fragment = document.createDocumentFragment();
-          fragment.appendChild(replyButton);
-          fragment.appendChild(menuButton);
-
-          actions.appendChild(fragment);
-        }
-
-        console.timeEnd('DOM_begin');
-      });
-    </script>
+    <script src="/static/script/page.js"></script>
     <link rel="stylesheet" href="/static/style/main.css">
   </head>
 
@@ -105,20 +22,24 @@
 
         <nav>
           <ul>
-            {{ if ne .PageNum 1 }}
-              <li><a href="/page/{{ dec .PageNum }}">{{ dec .PageNum }}</a></li>
-            {{ end }}
+            <li>
+              {{ if ne .PageNum 1 }}
+                <a href="/page/{{ dec .PageNum }}">{{ dec .PageNum }}</a>
+              {{ end }}
+            </li>
             <li class="nav-current">{{ .PageNum }}</li>
-            {{ if ne .PageNum .TotalPages }}
-              <li><a href="/page/{{ inc .PageNum }}">{{ inc .PageNum }}</a></li>
-            {{ end }}
+            <li>
+              {{ if ne .PageNum .TotalPages }}
+                <a href="/page/{{ inc .PageNum }}">{{ inc .PageNum }}</a>
+              {{ end }}
+            </li>
           </ul>
         </nav>
       </header>
       <hr>
       
       {{ range .Posts }}
-        <article id="{{ .ID }}" style="background-image: url('{{ .Avatar }}')"> 
+        <article id="{{ .ID }}" style="background-image: url('{{ .Avatar }}')">
           <div class="article-actions"></div>         
           <header>
             <hgroup>
@@ -134,14 +55,14 @@
             </div>
         </header>
           
-          <section class="post-content">{{ .Content }}</section>
+          <section class="article-content">{{ .Content }}</section>
         </article>
       {{ end }}
       <hr>
 
       <form method="post" action="/posts">
-        <textarea id="bottom" name="reply" rows="8" placeholder="Reply.." autocomplete="off" minlength="1" autofocus required></textarea>
-        <button type="submit">Reply</button>
+        <textarea id="bottom" name="reply" rows="8" placeholder="Reply.." autocomplete="off" minlength="1" required></textarea>
+        <button type="submit">Add Reply</button>
       </form>
     </main>
 

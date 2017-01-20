@@ -161,7 +161,19 @@ article p {
   padding: 0 0 1em 0;
 }
 
-.article-actions { position: absolute }
+.article-actions {
+  display: flex;
+  position: absolute;
+}
+
+.article-actions button {
+  background: transparent;
+  border: none;
+}
+
+.article-actions svg { display: block }
+.article-actions .fill { fill: white }
+
 .article-meta, .article-meta a { color: #888 }
 .article-meta a:hover { color: blue }
 
@@ -179,7 +191,25 @@ article p {
   }
 
   article header { flex-direction: column }
-  article h1 { font-size: 110% }
+
+  .article-actions button {
+    height: 22px;
+    padding: 0;
+  }
+
+  .article-reply { padding-left: 6px !important }
+  .article-menu { padding: 0 6px !important }
+
+  .article-reply svg { height: 18px }
+  .article-menu svg { height: 4px }
+
+  .article-reply { margin-left: 18px }
+
+  article h1 {
+    font-size: 110%;
+    line-height: 1em;
+  }
+
   article h2 { display: none }
   article img { max-width: 100%; }
   .article-actions { right: 8px }
@@ -224,10 +254,23 @@ article p {
   article img { max-width: 800px; }
 
   .article-actions {
-    margin-left: 800px;
+    margin-left: 774px;
     /*margin-top: 100px;  or whatever */
   }
 
+  .article-actions button {
+    height: 22px;
+    outline: none;
+    padding: 0 5px;
+  }
+
+  .article-actions button:hover .fill { fill: skyblue }
+  .article-actions button:active .fill { fill: lightgreen }
+
+  .article-reply { margin-left: 12px }
+  .article-reply svg { height: 19px }
+  .article-menu svg { height: 4px }
+  
   .article-meta time { margin-right: 1em }
 }
 
@@ -246,6 +289,8 @@ textarea::-webkit-input-placeholder { color: #888 }
 
 @media (max-width: 736px) {
   textarea {
+    font-size: 16px;  /* Prevents zoom on iOS Safari */
+    margin-top: 1.5em;
     outline: 1px solid #555;
     outline-offset: -7px;
     padding: 0.9em 13px;
