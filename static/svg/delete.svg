@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg
+  version="1.1"
+  xmlns="http://www.w3.org/2000/svg"
+  xmlns:xlink="http://www.w3.org/1999/xlink"
+  viewBox="0 0 360 360"
+  >
+    <circle class="red" cx="180" cy="180" r="180" />
+    <path
+      class="white"
+      d="M243.585,88 L272,116.415 L208.415,180 L272,243.585 L243.585,272 L180,208.415
+        L116.415,272 L88,243.585 L151.586,180 L88,116.415 L116.415,88 L180,151.586 L243.585,88 z"
+      />
+  </g>
+</svg>

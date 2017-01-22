@@ -38,3 +38,12 @@ rethinkdb_data
 .vscode
 
 gen_pass.go
+
+# Various browser icons
+android-chrome-*
+browserconfig.xml
+favicon.ico
+manifest.json
+mstile-*
+static/icon
+static/svg/favicon.svg
