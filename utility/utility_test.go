@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/boatilus/peppercorn/db"
+	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -130,6 +131,14 @@ func TestGetVersionString(t *testing.T) {
 	got := GetVersionString()
 
 	assert.Regexp(t, regexp.MustCompile(`\d+.\d+.\d+`), got)
+}
+
+func TestGetTitle(t *testing.T) {
+	viper.Set("title", "A Given Title")
+
+	got := GetTitle()
+
+	assert.Equal(t, "A Given Title", got)
 }
 
 func TestCommifyInt64(t *testing.T) {

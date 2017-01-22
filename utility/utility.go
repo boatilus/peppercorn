@@ -10,6 +10,7 @@ import (
 	"github.com/boatilus/peppercorn/db"
 	"github.com/boatilus/peppercorn/version"
 	"github.com/mssola/user_agent"
+	"github.com/spf13/viper"
 )
 
 // UserAgent is the type returned from ParseUserAgent()
@@ -89,6 +90,10 @@ func FormatTime(t time.Time, current time.Time) string {
 // GetVersionString returns the version as a string.
 func GetVersionString() string {
 	return version.GetString()
+}
+
+func GetTitle() string {
+	return viper.GetString("title")
 }
 
 // CommifyCountType accepts a `db.CountType` and returns a string formtted with comma thousands

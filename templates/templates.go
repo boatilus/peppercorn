@@ -27,6 +27,7 @@ func init() {
 		"toISO8601":  utility.GetISO8601String,
 		"commify":    utility.CommifyCountType,
 		"getVersion": utility.GetVersionString,
+		"getTitle":   utility.GetTitle,
 	}
 
 	pathSep = string(os.PathSeparator)
