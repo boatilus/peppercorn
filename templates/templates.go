@@ -21,13 +21,14 @@ var funcMap template.FuncMap
 
 func init() {
 	funcMap = template.FuncMap{
-		"inc":        func(n db.CountType) db.CountType { return n + 1 },
-		"dec":        func(n db.CountType) db.CountType { return n - 1 },
-		"prettyTime": utility.FormatTime,
-		"toISO8601":  utility.GetISO8601String,
-		"commify":    utility.CommifyCountType,
-		"getVersion": utility.GetVersionString,
-		"getTitle":   utility.GetTitle,
+		"inc":          func(n db.CountType) db.CountType { return n + 1 },
+		"dec":          func(n db.CountType) db.CountType { return n - 1 },
+		"prettyTime":   utility.FormatTime,
+		"toISO8601":    utility.GetISO8601String,
+		"commify":      utility.CommifyCountType,
+		"getVersion":   utility.GetVersionString,
+		"getTitle":     utility.GetTitle,
+		"getTitleWith": utility.GetTitleWith,
 	}
 
 	pathSep = string(os.PathSeparator)

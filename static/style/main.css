@@ -55,18 +55,26 @@ hr {
   display: flex;
   flex-direction: row;
   justify-content: space-between; }
-  #head h1 {
-    background-image: url("/static/svg/favicon.svg");
-    background-repeat: no-repeat;
-    background-size: auto 100%;
-    text-indent: -1000em; }
+  @media (max-width: 959px) {
+    #head h1 {
+      font-size: 110%;
+      height: 18px;
+      margin: 0; } }
+  @media (min-width: 960px) {
+    #head h1 {
+      height: 28px; } }
+  @media (min-width: 960px) {
+    #head a:hover .fill {
+      fill: white; } }
+  #head svg {
+    width: auto; }
+    #head svg .fill {
+      fill: orange; }
     @media (max-width: 959px) {
-      #head h1 {
-        font-size: 110%;
-        height: 18px;
-        margin: 0; } }
+      #head svg {
+        height: 18px; } }
     @media (min-width: 960px) {
-      #head h1 {
+      #head svg {
         height: 28px; } }
   @media (max-width: 959px) {
     #head {

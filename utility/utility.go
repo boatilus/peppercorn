@@ -92,8 +92,19 @@ func GetVersionString() string {
 	return version.GetString()
 }
 
+// GetTitle returns the title string.
 func GetTitle() string {
 	return viper.GetString("title")
+}
+
+// GetTitleWith returns the title string, with "- `appended`", or just the title if `appended`
+// is blank.
+func GetTitleWith(appended string) string {
+	if len(appended) == 0 {
+		return GetTitle()
+	}
+
+	return GetTitle() + " - " + appended
 }
 
 // CommifyCountType accepts a `db.CountType` and returns a string formtted with comma thousands

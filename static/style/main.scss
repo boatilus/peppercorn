@@ -82,17 +82,25 @@ hr { display: none }
   justify-content: space-between;
 
   h1 {
-    background-image: url('/static/svg/favicon.svg');
-    background-repeat: no-repeat;
-    background-size: auto 100%;
-    text-indent: -1000em;
-
     @include mobile {
       font-size: 110%;
       height: 18px;
       margin: 0;
     }
 
+    @include desktop { height: 28px }
+  }
+
+  @include desktop {
+    a:hover .fill { fill: white }
+  }
+
+  svg {
+    width: auto;
+
+    .fill { fill: orange }
+
+    @include mobile { height: 18px }
     @include desktop { height: 28px }
   }
 
