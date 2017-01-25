@@ -183,7 +183,7 @@ func BenchmarkCommifyInt64_72759(b *testing.B)   { benchmarkCommifyInt64(b, 7275
 func BenchmarkCommifyInt64_497167(b *testing.B)  { benchmarkCommifyInt64(b, 497167) }
 func BenchmarkCommifyInt64_8881679(b *testing.B) { benchmarkCommifyInt64(b, 8881679) }
 
-func TestComputePages(t *testing.T) {
+func TestComputePage(t *testing.T) {
 	cases := []struct {
 		numPosts  db.CountType
 		pageEvery db.CountType
@@ -199,7 +199,7 @@ func TestComputePages(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		assert.Equal(t, c.want, ComputePages(c.numPosts, c.pageEvery))
+		assert.Equal(t, c.want, ComputePage(c.numPosts, c.pageEvery))
 	}
 }
 

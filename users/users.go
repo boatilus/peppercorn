@@ -11,13 +11,14 @@ import (
 
 // User contains all the information relevant to a single user.
 type User struct {
-	ID       string       `gorethink:"id,omitempty"`
-	Avatar   string       `gorethink:"avatar,omitempty"`
-	Email    string       `gorethink:"email"`
-	Name     string       `gorethink:"name"`
-	PPP      db.CountType `gorethink:"posts_per_page"`
-	Title    string       `gorethink:"title,omitempty"`
-	Timezone string       `gorethink:"timezone"` // IANA time zone string
+	ID         string       `gorethink:"id,omitempty"`
+	Avatar     string       `gorethink:"avatar,omitempty"`
+	Email      string       `gorethink:"email"`
+	Name       string       `gorethink:"name"`
+	PPP        db.CountType `gorethink:"posts_per_page"`
+	Title      string       `gorethink:"title,omitempty"`
+	Timezone   string       `gorethink:"timezone"`    // IANA time zone string
+	LastViewed string       `gorethink:"last_viewed"` // Track the last post a user's viewed
 
 	Hash    string `gorethink:"hash"`
 	IsAdmin bool   `gorethink:"is_admin,omitempty"`
@@ -49,7 +50,7 @@ func Validate(hash string, password string) bool {
 	return true
 }
 
-// Update accepts a User and updates the document for that user. Returns a non-nil error on any
+// Update accepts a `User` and updates the document for that user. Returns a non-nil error on any
 // failure.
 func Update(u *User) error {
 	if !db.Session.IsConnected() {

@@ -163,11 +163,10 @@ func CommifyInt64(v int64) string {
 	return strings.Join(parts[j:], ",")
 }
 
-// ComputePages calculates the total number of pages given the total number of posts and the
-// pagination value.
-func ComputePages(totalPosts db.CountType, paginateEvery db.CountType) db.CountType {
-	pageCount := totalPosts / paginateEvery
-	pageModulo := totalPosts % paginateEvery
+// ComputePage calculates the page number given the post number and the pagination value.
+func ComputePage(postNum db.CountType, paginateEvery db.CountType) db.CountType {
+	pageCount := postNum / paginateEvery
+	pageModulo := postNum % paginateEvery
 
 	if pageModulo != 0 {
 		pageCount++

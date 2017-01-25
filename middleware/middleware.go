@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"log"
 	"net/http"
 	"time"
 
@@ -28,6 +29,11 @@ func getCookieByName(cookie []*http.Cookie, name string) string {
 // user, it will redirect the user to sign in.
 func Validate(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		ud := users.FromContext(req.Context())
+		if ud != nil {
+			log.Print(ud.Email)
+		}
+
 		c, err := req.Cookie(session.GetKey())
 		if err == http.ErrNoCookie {
 			// No cookie; no sesshie!

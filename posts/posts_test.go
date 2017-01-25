@@ -62,9 +62,14 @@ func setupDB() {
 			panic(err)
 		}
 
-		table.IndexCreate("active").Run(db.Session)
-		table.IndexCreate("author").Run(db.Session)
-		table.IndexCreate("time").Run(db.Session)
+		table.IndexCreate("active").RunWrite(db.Session)
+		table.IndexCreate("author").RunWrite(db.Session)
+		table.IndexCreate("time").RunWrite(db.Session)
+
+		table.IndexCreateFunc("active_time", func(row rethink.Term) interface{} {
+			return []interface{}{row.Field("active"), row.Field("time")}
+		}).RunWrite(db.Session)
+
 		table.IndexWait().Run(db.Session)
 	} else {
 		// Due to a lack of mocking in gorethink, we'll tear down the test data and repopulate on each
@@ -254,6 +259,22 @@ func TestGetByID(t *testing.T) {
 	assert.Nil(err)
 
 	assert.Equal(want, got)
+}
+
+func TestGetOffset(t *testing.T) {
+	assert := assert.New(t)
+
+	p, err := GetOne(3)
+	if !assert.NoError(err) {
+		t.FailNow()
+	}
+
+	n, err := GetOffset(p.ID)
+	if !assert.NoError(err) {
+		t.FailNow()
+	}
+
+	assert.Equal(db.CountType(3), n)
 }
 
 func TestEdit(t *testing.T) {

@@ -272,6 +272,38 @@ func GetByIDJoined(id string) (*Zip, error) {
 	return &z, nil
 }
 
+// GetOffset returns the page number on which the post would be seen, given the user's current
+// post count.
+func GetOffset(id string) (db.CountType, error) {
+	btOpts := rethink.BetweenOpts{Index: "active_time"}
+	min := []interface{}{true, rethink.MinVal}
+	max := []interface{}{true, rethink.MaxVal}
+
+	oOpts := rethink.OrderByOpts{Index: rethink.Asc("active_time")}
+
+	qp := rethink.Row.Field("id").Eq(id)
+
+	cursor, err := db.Get().Table(GetTable()).Between(min, max, btOpts).OrderBy(oOpts).OffsetsOf(qp).Run(db.Session)
+	if err != nil {
+		return 0, err
+	}
+
+	// The above is equivalent to:
+	// r
+	//	.db("peppercorn")
+	//	.table("posts")
+	// 	.between([true, r.minval], [true, r.maxval], {index: "active_time" })
+	//	.orderBy({index: r.asc("active_time")})
+	//	.offsetsOf(r.row("id").eq(id))
+
+	var n db.CountType
+	if cursor.One(&n); err != nil {
+		return 0, err
+	}
+
+	return n + 1, nil
+}
+
 // Edit accepts a post ID and the content to update a post with. Errs if `id` is empty or if
 // content length is 0, and for any database error.
 func Edit(id string, newContent string) error {

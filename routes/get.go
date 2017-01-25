@@ -20,9 +20,34 @@ import (
 	"github.com/spf13/viper"
 )
 
-// IndexGetHandler is called for the `/` (index) route and
+// IndexGetHandler is called for the `/` (index) route and directs the user either to the first
+// page, or to the last page the user viewed.
 func IndexGetHandler(w http.ResponseWriter, req *http.Request) {
-	http.Redirect(w, req, "/page/1", http.StatusSeeOther)
+	ctx := req.Context()
+
+	u := users.FromContext(ctx)
+	if u == nil {
+		http.Error(w, "Could not read user data from request context", http.StatusInternalServerError)
+		return
+	}
+
+	if len(u.LastViewed) == 0 {
+		// There's no value or we can't read from it, so we'll just sent the user to the first page.
+		http.Redirect(w, req, "/page/1", http.StatusSeeOther)
+		return
+	}
+
+	n, err := posts.GetOffset(u.LastViewed)
+	if err != nil {
+		// There's no value or we can't read from it, so we'll just sent the user to the first page.
+		http.Redirect(w, req, "/page/1", http.StatusSeeOther)
+		return
+	}
+
+	pn := utility.ComputePage(n, u.PPP)
+	uri := fmt.Sprintf("/page/%d#%s", pn, u.LastViewed)
+
+	http.Redirect(w, req.WithContext(ctx), uri, http.StatusSeeOther)
 }
 
 func SignInGetHandler(w http.ResponseWriter, req *http.Request) {
@@ -83,7 +108,7 @@ func PageGetHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	data.TotalPages = utility.ComputePages(data.PostCount, data.CurrentUser.PPP)
+	data.TotalPages = utility.ComputePage(data.PostCount, data.CurrentUser.PPP)
 
 	num := chi.URLParam(req, "num")
 
@@ -120,6 +145,20 @@ func PageGetHandler(w http.ResponseWriter, req *http.Request) {
 
 	for i := range data.Posts {
 		data.Posts[i].PrettyTime = utility.FormatTime(data.Posts[i].Time.In(loc), now)
+	}
+
+	// Now that we've successfully gathered the data needed to render, we want to mark the most
+	// recent post the user's seen. For now, we'll do this even if it's far back in time, but ideally,
+	// we should only do so if it's newer than what the `LastViewed` property currently reflects.
+	numPosts := len(data.Posts)
+	last := data.Posts[numPosts-1]
+
+	if data.CurrentUser.LastViewed != last.ID {
+		data.CurrentUser.LastViewed = last.ID
+		if err := users.Update(data.CurrentUser); err != nil {
+			// This is a non-essential task, so simply log the error.
+			log.Printf("Could not update property LastViewed [%s] on user %q [%s]: %s", last.ID, data.CurrentUser.ID, data.CurrentUser.Name, err.Error())
+		}
 	}
 
 	templates.Index.Execute(w, data)
