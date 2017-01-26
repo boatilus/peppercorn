@@ -179,6 +179,14 @@ article {
       max-width: 800px; } }
   article:nth-child(even) {
     background-color: #222; }
+  article .article-avatar img {
+    width: 80px;
+    height: auto; }
+  @media (min-width: 960px) {
+    article .article-avatar {
+      position: absolute;
+      margin-top: 3px;
+      margin-left: -95px; } }
   article .article-actions {
     display: flex;
     position: absolute; }
@@ -259,9 +267,6 @@ article {
         display: none; } }
   @media (min-width: 960px) {
     article {
-      background-position: 0 0.5em;
-      background-size: 80px auto;
-      background-repeat: no-repeat;
       box-sizing: border-box;
       margin-bottom: 1.5em;
       min-height: 110px;

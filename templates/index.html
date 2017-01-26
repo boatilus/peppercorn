@@ -61,7 +61,12 @@
       <hr>
       
       {{ range .Posts }}
-        <article id="{{ .ID }}" style="background-image: url('{{ .Avatar }}')">
+        <article id="{{ .ID }}">
+          <picture class="article-avatar">
+            <source media="(min-width: 960px)" srcset="{{ .Avatar }}">
+            <img src="">
+          </picture>
+          
           <div class="article-actions"></div>         
           <header>
             <hgroup>

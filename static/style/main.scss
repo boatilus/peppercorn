@@ -232,6 +232,19 @@ article {
 
   &:nth-child(even) { background-color: #222 }
 
+  .article-avatar {
+    img {
+      width: 80px;
+      height: auto;
+    }
+
+    @include desktop {
+      position: absolute;
+      margin-top: 3px;
+      margin-left: -95px;
+    }
+  }
+
   .article-actions {
     display: flex;
     position: absolute;
@@ -309,9 +322,6 @@ article {
   }
 
   @include desktop {
-    background-position: 0 0.5em;
-    background-size: 80px auto;
-    background-repeat: no-repeat;
     box-sizing: border-box;
     margin-bottom: 1.5em;
     min-height: 110px;
