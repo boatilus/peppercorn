@@ -283,3 +283,8 @@ func MeRevokeGetHandler(w http.ResponseWriter, req *http.Request) {
 
 	http.Redirect(w, req, paths.Get.Me, http.StatusSeeOther)
 }
+
+// ForgotGetHandler is the route called to reset a user's password.
+func ForgotGetHandler(w http.ResponseWriter, req *http.Request) {
+	templates.Forgot.Execute(w, nil)
+}

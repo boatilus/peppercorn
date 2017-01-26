@@ -55,6 +55,7 @@ func main() {
 	// GET
 	r.With(middleware.Validate).Get("/", routes.IndexGetHandler)
 	r.Get(paths.Get.SignIn, routes.SignInGetHandler)
+	r.Get(paths.Get.Forgot, routes.ForgotGetHandler)
 	r.With(middleware.Validate).Get(paths.Get.SignOut, routes.SignOutGetHandler)
 	r.With(middleware.Validate).Get(paths.Get.Page, routes.PageGetHandler)
 	r.With(middleware.Validate).Get(paths.Get.Single, routes.SingleGetHandler)

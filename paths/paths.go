@@ -16,6 +16,8 @@ var Get struct {
 	Me string
 	// MeRevoke is the path to remove a single session
 	MeRevoke string
+	// Forgot is the path to reset a user's password
+	Forgot string
 }
 
 // Post is a struct containing routing paths to POST requests
@@ -36,6 +38,7 @@ func init() {
 	Get.TotalPostCount = "/posts/count"
 	Get.Me = "/me"
 	Get.MeRevoke = "/me/revoke/:num"
+	Get.Forgot = "/forgot"
 
 	Post.SignIn = "/sign-in"
 	Post.Me = "/me"
