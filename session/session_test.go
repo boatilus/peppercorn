@@ -192,3 +192,18 @@ func TestDestoyByIndex(t *testing.T) {
 	err := DestroyByIndex("user1", 0)
 	assert.NoError(err)
 }
+
+func TestAddFlash(t *testing.T) {
+	sid := validKeys[1]
+
+	AddFlash(sid, "flash message")
+	assert.Equal(t, "flash message", flashes[sid])
+}
+
+func TestGetFlash(t *testing.T) {
+	sid := validKeys[1]
+
+	f := GetFlash(sid)
+	assert.Equal(t, "flash message", f)
+	assert.Equal(t, "", flashes[sid])
+}
