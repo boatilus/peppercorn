@@ -55,6 +55,8 @@ hr {
   display: flex;
   flex-direction: row;
   justify-content: space-between; }
+  #head a {
+    color: #a6a6a6; }
   @media (max-width: 959px) {
     #head h1 {
       font-size: 110%;
@@ -83,9 +85,6 @@ hr {
 @media (max-width: 959px) {
   #head-sign_out {
     display: none; } }
-
-#head a {
-  color: #a6a6a6; }
 
 nav {
   display: flex;

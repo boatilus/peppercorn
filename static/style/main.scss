@@ -81,6 +81,8 @@ hr { display: none }
   flex-direction: row;
   justify-content: space-between;
 
+  a { color: $color-text }
+
   h1 {
     @include mobile {
       font-size: 110%;
@@ -110,8 +112,6 @@ hr { display: none }
 @include mobile {
   #head-sign_out { display: none }
 }
-
-#head a { color: $color-text }
 
 // //////
 // Nav //
