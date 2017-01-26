@@ -236,9 +236,6 @@ func TestGetISO8601String(t *testing.T) {
 }
 
 func TestGenerateRandomNonce(t *testing.T) {
-	assert := assert.New(t)
-
 	got := GenerateRandomNonce()
-
-	t.Log(got)
+	assert.NotEmpty(t, got)
 }
