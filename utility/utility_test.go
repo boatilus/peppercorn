@@ -234,3 +234,11 @@ func TestGetISO8601String(t *testing.T) {
 	s = GetISO8601String(badTime)
 	assert.Equal("", s)
 }
+
+func TestGenerateRandomNonce(t *testing.T) {
+	assert := assert.New(t)
+
+	got := GenerateRandomNonce()
+
+	t.Log(got)
+}

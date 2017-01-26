@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"log"
 	"net/http"
 	"time"
 
@@ -29,11 +28,6 @@ func getCookieByName(cookie []*http.Cookie, name string) string {
 // user, it will redirect the user to sign in.
 func Validate(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		ud := users.FromContext(req.Context())
-		if ud != nil {
-			log.Print(ud.Email)
-		}
-
 		c, err := req.Cookie(session.GetKey())
 		if err == http.ErrNoCookie {
 			// No cookie; no sesshie!
@@ -74,4 +68,16 @@ func Validate(next http.Handler) http.Handler {
 		ctx := users.NewContext(req.Context(), u)
 		next.ServeHTTP(w, req.WithContext(ctx))
 	})
+}
+
+func SetCSP() func(next http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		fn := func(w http.ResponseWriter, req *http.Request) {
+			w.Header().Add("Content-Security-Policy", "default-src 'self'; img-src 'self' i.imgur.com; style-src 'self' 'unsafe-inline'")
+
+			next.ServeHTTP(w, req)
+		}
+
+		return http.HandlerFunc(fn)
+	}
 }

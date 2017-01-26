@@ -23,9 +23,7 @@ import (
 // IndexGetHandler is called for the `/` (index) route and directs the user either to the first
 // page, or to the last page the user viewed.
 func IndexGetHandler(w http.ResponseWriter, req *http.Request) {
-	ctx := req.Context()
-
-	u := users.FromContext(ctx)
+	u := users.FromContext(req.Context())
 	if u == nil {
 		http.Error(w, "Could not read user data from request context", http.StatusInternalServerError)
 		return
@@ -47,7 +45,7 @@ func IndexGetHandler(w http.ResponseWriter, req *http.Request) {
 	pn := utility.ComputePage(n, u.PPP)
 	uri := fmt.Sprintf("/page/%d#%s", pn, u.LastViewed)
 
-	http.Redirect(w, req.WithContext(ctx), uri, http.StatusSeeOther)
+	http.Redirect(w, req, uri, http.StatusSeeOther)
 }
 
 func SignInGetHandler(w http.ResponseWriter, req *http.Request) {

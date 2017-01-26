@@ -49,6 +49,7 @@ func main() {
 	r.Use(chiMiddleware.CloseNotify)
 	r.Use(chiMiddleware.Timeout(60 * time.Second))
 	r.Use(chiMiddleware.DefaultCompress)
+	r.Use(middleware.SetCSP())
 
 	// TODO: Refactor these routes by protected/unprotected
 	// GET
@@ -74,6 +75,7 @@ func main() {
 	// TODO: How do we serve pre-gzip'ed files?
 	workDir, _ := os.Getwd()
 	filesDir := filepath.Join(workDir, "static")
+
 	r.FileServer("/static", http.Dir(filesDir))
 
 	srv := &http.Server{Addr: port, Handler: r}

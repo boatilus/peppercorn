@@ -1,6 +1,8 @@
 package utility
 
 import (
+	"crypto/rand"
+	"encoding/base64"
 	"fmt"
 	"math"
 	"strconv"
@@ -188,4 +190,18 @@ func GetISO8601String(t *time.Time) string {
 	}
 
 	return t.Format("2006-01-02T15:04:05-0700")
+}
+
+// GenerateRandomNonce creates a cryptographically-secure random base64 string 128 bits wide, for
+// use as a nonce value Content-Security-Policy
+func GenerateRandomNonce() string {
+	n := 16
+	b := make([]byte, n)
+
+	_, err := rand.Read(b)
+	if err != nil {
+		return ""
+	}
+
+	return base64.StdEncoding.EncodeToString(b)
 }
