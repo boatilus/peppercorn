@@ -24,6 +24,12 @@
       }
 
       header { float: right }
+
+      #flash {
+        background: rgba(255, 0, 0, 0.2);
+        border-radius: 3px;
+        padding: 0.25em 0.4em;
+      }
     </style>
   </head>
 
@@ -31,6 +37,10 @@
     <header>
       <a href="/">Home</a>
     </header>
+
+    {{ if .Flash }}
+      <div id="flash">{{ .Flash }}</div>
+    {{ end }}
 
     <h1>{{.Name}}</h1>
 

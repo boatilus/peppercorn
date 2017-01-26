@@ -235,6 +235,7 @@ func MeGetHandler(w http.ResponseWriter, req *http.Request) {
 	pppOptions := viper.GetStringSlice("ppp_options")
 
 	o := struct {
+		Flash           string
 		ObfuscatedEmail string
 		Name            string
 		Title           string
@@ -245,6 +246,7 @@ func MeGetHandler(w http.ResponseWriter, req *http.Request) {
 		UserTimezone    string
 		Sessions        []sessionData
 	}{
+		session.GetFlash(u.ID),
 		obEmail,
 		u.Name,
 		u.Title,

@@ -168,6 +168,8 @@ func MePostHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	session.AddFlash(u.ID, "Changes saved")
+
 	http.Redirect(w, req, paths.Get.Me, http.StatusSeeOther)
 }
 
