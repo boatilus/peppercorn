@@ -12,19 +12,20 @@ type vistorCtxKey int
 
 const vistorIDKey vistorCtxKey = 0
 
-var hasher hash.Hash32
+var hasher hash.Hash64
 
 func init() {
-	hasher = fnv.New32a()
+	hasher = fnv.New64a()
 }
 
+// VisitorID is a middleware for attaching to the request context a unique ID for each
+// visitor, which we can use in the absense of sessions for logging purposes or to display flash
+// messages.
 func VisitorID(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		// Hash the combination of `req.RemoteAddr` and `req.`
-		hasher.Write([]byte(req.RemoteAddr))
-
-		//ds := hex.EncodeToString(hasher.Sum(nil))
-		ds := hex.EncodeToString([]byte(req.RemoteAddr))
+		// We can, with relatively good certainty, identify a visitor by his or her fully-resolved IP
+		// and `User-Agent`.
+		ds := createID(req.RemoteAddr + req.Header.Get("User-Agent"))
 
 		ctx := context.WithValue(req.Context(), vistorIDKey, ds)
 		next.ServeHTTP(w, req.WithContext(ctx))
@@ -44,4 +45,10 @@ func GetVisitorID(ctx context.Context) string {
 	}
 
 	return vid
+}
+
+func createID(val string) string {
+	hasher.Write([]byte(val))
+
+	return hex.EncodeToString(hasher.Sum(nil))
 }
