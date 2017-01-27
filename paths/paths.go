@@ -28,6 +28,8 @@ var Post struct {
 	Me string
 	// SubmitPost is the path replies are POSTed
 	SubmitPost string
+	// Forgot is the path to which the forgot password form is POSTed
+	Forgot string
 }
 
 func init() {
@@ -43,4 +45,5 @@ func init() {
 	Post.SignIn = "/sign-in"
 	Post.Me = "/me"
 	Post.SubmitPost = "/posts"
+	Post.Forgot = "/forgot"
 }

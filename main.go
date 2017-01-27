@@ -44,6 +44,7 @@ func main() {
 
 	r := chi.NewRouter()
 	r.Use(chiMiddleware.RealIP)
+	r.Use(middleware.VisitorID)
 	r.Use(chiMiddleware.Logger)
 	r.Use(chiMiddleware.Recoverer)
 	r.Use(chiMiddleware.CloseNotify)
@@ -65,6 +66,7 @@ func main() {
 
 	// POST
 	r.Post(paths.Post.SignIn, routes.SignInPostHandler)
+	r.Post(paths.Post.Forgot, routes.ForgotPostHandler)
 	r.With(middleware.Validate).Post(paths.Post.Me, routes.MePostHandler)
 	r.With(middleware.Validate).Post(paths.Post.SubmitPost, routes.PostsPostHandler)
 

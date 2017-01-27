@@ -102,6 +102,13 @@ func SignInPostHandler(w http.ResponseWriter, req *http.Request) {
 	http.Redirect(w, req, from, http.StatusTemporaryRedirect)
 }
 
+func ForgotPostHandler(w http.ResponseWriter, req *http.Request) {
+
+	session.AddFlash("", "An email was sent to %q if an account for it exists")
+
+	http.Redirect(w, req, paths.Get.Forgot, http.StatusSeeOther)
+}
+
 func MePostHandler(w http.ResponseWriter, req *http.Request) {
 	u := users.FromContext(req.Context())
 	if u == nil {
