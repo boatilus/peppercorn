@@ -52,6 +52,7 @@ func createIndices() {
 	usersTable := viper.GetString("db.users_table")
 	postsTable := viper.GetString("db.posts_table")
 	sessionsTable := viper.GetString("db.sessions_table")
+	passwordResetTable := viper.GetString("db.password_resets_table")
 
 	res, _ := db.TableCreate(usersTable).RunWrite(Session)
 	if res.TablesCreated == 1 {
@@ -66,6 +67,11 @@ func createIndices() {
 	res, _ = db.TableCreate(sessionsTable).RunWrite(Session)
 	if res.TablesCreated == 1 {
 		log.Printf("sessions table [%s] created", sessionsTable)
+	}
+
+	res, _ = db.TableCreate(passwordResetTable).RunWrite(Session)
+	if res.TablesCreated == 1 {
+		log.Printf("password_resets table [%s] created", sessionsTable)
 	}
 
 	createIndex(postsTable, "active")
