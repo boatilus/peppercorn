@@ -130,6 +130,59 @@ func Create(pwr *PasswordReset) error {
 	return nil
 }
 
+const (
+	ValidateTokenErrorDBUnconnected = "DB_UNCONNECTED"
+	ValidateTokenErrorDBError       = "DB_ERROR"
+)
+
+type ValidateTokenError struct {
+	Code string
+	Msg  string
+}
+
+// To satisfy the requirements of the error interface.
+func (err ValidateTokenError) Error() string {
+	return fmt.Sprintf("pw_reset: in ValidateToken(), %s [%s]", err.Msg, err.Code)
+}
+
+func ValidateToken(token string) (bool, error) {
+	// We know it's invalid if there's no token at all, so skip the query.
+	if len(token) == 0 {
+		return false, nil
+	}
+
+	if !db.Session.IsConnected() {
+		return false, ValidateTokenError{
+			Code: ValidateTokenErrorDBUnconnected,
+			Msg:  "RethinkDB session not connected",
+		}
+	}
+
+	cursor, err := getTable().Get(token).Run(db.Session)
+	if err != nil {
+		return false, ValidateTokenError{Code: ValidateTokenErrorDBError, Msg: err.Error()}
+	}
+
+	defer cursor.Close()
+
+	if cursor.IsNil() {
+		return false, nil
+	}
+
+	var pwr PasswordReset
+
+	if err := cursor.One(&pwr); err != nil {
+		return false, ValidateTokenError{Code: ValidateTokenErrorDBError, Msg: err.Error()}
+	}
+
+	// Reset reuqests are invalid once expired.
+	if isExpired(&pwr) {
+		return false, nil
+	}
+
+	return true, nil
+}
+
 func isExpired(pwr *PasswordReset) bool {
 	timeDiff := pwr.Expires.Sub(time.Now())
 	if timeDiff <= expiresTime {

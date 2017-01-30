@@ -61,6 +61,7 @@ func main() {
 	r.With(middleware.Validate).Get("/", routes.IndexGetHandler)
 	r.Get(paths.Get.SignIn, routes.SignInGetHandler)
 	r.Get(paths.Get.Forgot, routes.ForgotGetHandler)
+	r.Get(paths.Get.ResetPassword, routes.ResetPasswordGetHandler)
 	r.With(middleware.Validate).Get(paths.Get.SignOut, routes.SignOutGetHandler)
 	r.With(middleware.Validate).Get(paths.Get.Page, routes.PageGetHandler)
 	r.With(middleware.Validate).Get(paths.Get.Single, routes.SingleGetHandler)
@@ -71,6 +72,7 @@ func main() {
 	// POST
 	r.Post(paths.Post.SignIn, routes.SignInPostHandler)
 	r.Post(paths.Post.Forgot, routes.ForgotPostHandler)
+	r.Post(paths.Post.ResetPassword, routes.ResetPasswordPostHandler)
 	r.With(middleware.Validate).Post(paths.Post.Me, routes.MePostHandler)
 	r.With(middleware.Validate).Post(paths.Post.SubmitPost, routes.PostsPostHandler)
 

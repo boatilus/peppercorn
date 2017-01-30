@@ -14,6 +14,7 @@ var SignIn *template.Template
 var Head *template.Template
 var Me *template.Template
 var Forgot *template.Template
+var ResetPassword *template.Template
 
 var cwd string
 var pathSep string
@@ -47,6 +48,7 @@ func init() {
 	Head = parseTemplate("head")
 	Me = parseTemplate("me")
 	Forgot = parseTemplate("forgot")
+	ResetPassword = parseTemplate("reset-password")
 }
 
 func parseTemplate(name string) *template.Template {

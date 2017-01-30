@@ -13,6 +13,7 @@ import (
 	"github.com/boatilus/peppercorn/middleware"
 	"github.com/boatilus/peppercorn/paths"
 	"github.com/boatilus/peppercorn/posts"
+	"github.com/boatilus/peppercorn/pwreset"
 	"github.com/boatilus/peppercorn/session"
 	"github.com/boatilus/peppercorn/templates"
 	"github.com/boatilus/peppercorn/users"
@@ -288,7 +289,30 @@ func MeRevokeGetHandler(w http.ResponseWriter, req *http.Request) {
 	http.Redirect(w, req, paths.Get.Me, http.StatusSeeOther)
 }
 
-// ForgotGetHandler is the route called to reset a user's password.
+// ForgotGetHandler is the route called to send the user a password reset email.
 func ForgotGetHandler(w http.ResponseWriter, req *http.Request) {
 	templates.Forgot.Execute(w, nil)
+}
+
+// ResetPasswordGetHandler is the route called to reset a user's password.
+func ResetPasswordGetHandler(w http.ResponseWriter, req *http.Request) {
+	type data struct {
+		FlashMessage string
+		Token        string
+	}
+
+	token := req.FormValue("token")
+	if token == "" {
+		templates.ResetPassword.Execute(w, data{FlashMessage: "Invalid reset token."})
+		return
+	}
+
+	valid, _ := pwreset.ValidateToken(token)
+
+	if !valid {
+		templates.ResetPassword.Execute(w, data{FlashMessage: "Reset is expired or doesn't exist."})
+		return
+	}
+
+	templates.ResetPassword.Execute(w, data{Token: token})
 }

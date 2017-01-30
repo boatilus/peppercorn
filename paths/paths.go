@@ -16,8 +16,10 @@ var Get struct {
 	Me string
 	// MeRevoke is the path to remove a single session
 	MeRevoke string
-	// Forgot is the path to reset a user's password
+	// Forgot is the path to send a password reset email for a forgotten password
 	Forgot string
+	// ResetPassword is the path to reset a user's password
+	ResetPassword string
 }
 
 // Post is a struct containing routing paths to POST requests
@@ -30,6 +32,8 @@ var Post struct {
 	SubmitPost string
 	// Forgot is the path to which the forgot password form is POSTed
 	Forgot string
+	// ResetPassword is the path to which the password reset form is POSTed
+	ResetPassword string
 }
 
 func init() {
@@ -41,9 +45,11 @@ func init() {
 	Get.Me = "/me"
 	Get.MeRevoke = "/me/revoke/:num"
 	Get.Forgot = "/forgot"
+	Get.ResetPassword = "/reset-password"
 
 	Post.SignIn = "/sign-in"
 	Post.Me = "/me"
 	Post.SubmitPost = "/posts"
 	Post.Forgot = "/forgot"
+	Post.ResetPassword = "/reset-password"
 }
