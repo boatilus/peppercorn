@@ -11,12 +11,12 @@ import (
 	rethink "gopkg.in/dancannon/gorethink.v2"
 )
 
-const tableName = "password_reset_test"
+const tableName = "password_resets_test"
 
 var validKeys []string
 
 func init() {
-	viper.Set("db.password_reset_table", tableName)
+	viper.Set("db.password_resets_table", tableName)
 
 	var err error
 
