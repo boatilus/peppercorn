@@ -1,14 +1,18 @@
 package routes
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/boatilus/peppercorn/cookie"
 	"github.com/boatilus/peppercorn/db"
+	"github.com/boatilus/peppercorn/mail"
 	"github.com/boatilus/peppercorn/paths"
 	"github.com/boatilus/peppercorn/posts"
+	"github.com/boatilus/peppercorn/pwreset"
 	"github.com/boatilus/peppercorn/session"
+	"github.com/boatilus/peppercorn/templates"
 	"github.com/boatilus/peppercorn/users"
 	"github.com/boatilus/peppercorn/utility"
 )
@@ -103,10 +107,56 @@ func SignInPostHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func ForgotPostHandler(w http.ResponseWriter, req *http.Request) {
+	if err := req.ParseForm(); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 
-	session.AddFlash("", "An email was sent to %q if an account for it exists")
+	type Data struct {
+		FlashMessage string
+	}
 
-	http.Redirect(w, req, paths.Get.Forgot, http.StatusSeeOther)
+	emails := req.Form["email"]
+	if len(emails) != 1 {
+		http.Error(w, "The password reset form failed to correctly parse", http.StatusInternalServerError)
+		return
+	}
+
+	email := emails[0]
+
+	if len(email) == 0 {
+		templates.Forgot.Execute(w, Data{"Please enter a valid email address."})
+		return
+	}
+
+	defaultMessage := fmt.Sprintf("An email was sent to %q if an account with that email address exists.", emails[0])
+
+	//session.AddFlash("", "An email was sent to %q if an account for it exists")
+	u, err := users.GetByEmail(emails[0])
+	if err != nil {
+		templates.Forgot.Execute(w, Data{defaultMessage})
+		return
+	}
+
+	ua := utility.ParseUserAgent(req.UserAgent())
+
+	pwr, err := pwreset.New(u.ID, ua.Browser, ua.OS)
+	if err != nil {
+		http.Error(w, "A password reset value could not be constructed", http.StatusInternalServerError)
+		return
+	}
+
+	if err := pwreset.Create(pwr); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if err := mail.SendForgottenPassword(u.Email, pwr.ID); err != nil {
+		http.Error(w, "Password reset email could not be sent", http.StatusInternalServerError)
+		return
+	}
+
+	templates.Forgot.Execute(w, Data{defaultMessage})
 }
 
 func MePostHandler(w http.ResponseWriter, req *http.Request) {

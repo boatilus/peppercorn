@@ -71,7 +71,7 @@ func createIndices() {
 
 	res, _ = db.TableCreate(passwordResetTable).RunWrite(Session)
 	if res.TablesCreated == 1 {
-		log.Printf("password_resets table [%s] created", sessionsTable)
+		log.Printf("password_resets table [%s] created", passwordResetTable)
 	}
 
 	createIndex(postsTable, "active")
@@ -95,6 +95,9 @@ func createIndices() {
 	createIndex(sessionsTable, "user_id")
 	createIndex(sessionsTable, "timestamp")
 	db.Table(sessionsTable).IndexWait().RunWrite(Session)
+
+	createIndex(passwordResetTable, "user_id")
+	db.Table(passwordResetTable).IndexWait().RunWrite(Session)
 }
 
 func createIndex(table string, field string) {

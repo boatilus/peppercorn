@@ -10,6 +10,7 @@ import (
 
 	"github.com/boatilus/peppercorn/cookie"
 	"github.com/boatilus/peppercorn/db"
+	"github.com/boatilus/peppercorn/mail"
 	"github.com/boatilus/peppercorn/middleware"
 	"github.com/boatilus/peppercorn/paths"
 	"github.com/boatilus/peppercorn/routes"
@@ -41,6 +42,9 @@ func main() {
 
 	// Instantiate the secure cookie generator.
 	cookie.CreateGenerator()
+
+	// We need to create the mailer instance before we can proceed
+	mail.CreateMailer()
 
 	r := chi.NewRouter()
 	r.Use(chiMiddleware.RealIP)

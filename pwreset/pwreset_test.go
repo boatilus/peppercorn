@@ -55,6 +55,9 @@ func setupDB() {
 		if err != nil {
 			panic(err)
 		}
+
+		table.IndexCreate("user_id")
+		table.IndexWait()
 	} else {
 		// Due to a lack of mocking in gorethink, we'll tear down the test data and repopulate on each
 		// run of the tests.
@@ -65,8 +68,10 @@ func setupDB() {
 func TestNew(t *testing.T) {
 	assert := assert.New(t)
 	userID := "random ID"
+	browser := "Google Chrome"
+	os := "Windows 10"
 
-	got, err := New(userID)
+	got, err := New(userID, browser, os)
 	if !assert.NoError(err) {
 		t.FailNow()
 	}
@@ -93,8 +98,10 @@ func TestCreate(t *testing.T) {
 	assert := assert.New(t)
 
 	userID := "random ID"
+	browser := "Google Chrome"
+	os := "Windows 10"
 
-	pwr, err := New(userID)
+	pwr, err := New(userID, browser, os)
 	if !assert.NoError(err) {
 		t.FailNow()
 	}
