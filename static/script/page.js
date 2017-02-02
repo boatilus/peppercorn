@@ -164,11 +164,11 @@ document.addEventListener('DOMContentLoaded', function() {
   let posts = document.getElementsByTagName('article');
 
   for (let i = 0; i < posts.length; i++) {
-    let thisPost = posts[i];
+    const thisPost = posts[i];
     const author = thisPost.dataset.author;
 
     let actions = thisPost.getElementsByClassName('article-actions').item(0);
-    let content = thisPost.getElementsByClassName('article-content').item(0);
+    const content = thisPost.getElementsByClassName('article-content').item(0);
 
     // Get the post's Markdown content, parsing it and replacing it with the rendered HTML.
     const trimmedContent = content.textContent.trim();
