@@ -56,11 +56,24 @@ const deleteIcon =
     </g>
   </svg>`
 
+const returnKey  = 13;
 const shiftKey   = 16;
+const ctrlKey    = 17;
+const escapeKey  = 27;
 const leftArrow  = 37;
 const upArrow    = 38;
 const rightArrow = 39;
 const downArrow  = 40;
+
+let shifted = false;
+let modified = false;
+
+let isAdmin = false;
+let currentUser = '';
+
+let prev = null;
+let next = null;
+let bottom = null;
 
 // Given a potentially multi-line string of text, return a version of that text with any
 // Markdown blockquotes removed.
@@ -101,63 +114,54 @@ const quote = function(text) {
   return newlines.join(`\r\n`);
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-  let shifted = false;
+const handleKeyDownEvents = function(event) {
+  // We'll want to prevent all the following if the reply field is focused, as we don't want
+  // to cause problems with a user's text entry.
+  if (bottom === document.activeElement) return false;
 
-  const isAdmin = (document.body.dataset.isAdmin === 'true');
-  const currentUser = document.body.dataset.currentUser;
-
-  let prev = document.getElementById('nav-previous');
-  let next = document.getElementById('nav-next');
-  let bottom = document.getElementById('bottom');
-
-  document.addEventListener('keydown', function(e) {
-    const code = e.keyCode;
-
-    // We'll want to prevent all the following if the reply field is focused, as we don't want
-    // to cause problems with a user's text entry.
-    if (bottom === document.activeElement) {
-      return false;
-    }
-
-    if (code === shiftKey) {
+  // TODO: We also need to prevent these from functioning if the user's in an edit textarea.
+  
+  switch (event.keyCode) {
+    case shiftKey:
       shifted = true;
       return;
-    }
-
-    if (code === leftArrow) {
-      // If there's an '#nav-previous' element, we know we have a prior page.
-      if (prev !== null) {
-        document.location = prev.getAttribute('href');
-      }
-    
+    case ctrlKey:
+      modified = true;
       return;
-    }
-
-    if (code === rightArrow) {
-      if (next !== null) {
-        document.location = next.getAttribute('href');
-      }
-
+    case leftArrow:
+      if (prev !== null) document.location = prev.getAttribute('href');
       return;
-    }
-
-    if (code === upArrow) {
+    case rightArrow:
+      if (next !== null) document.location = next.getAttribute('href');
+      return;
+    case upArrow:
       if (shifted) window.scrollTo(0, 0);
       return;
-    }
+    case downArrow:
+      window.scrollTo(0, document.body.clientHeight);
+      bottom.focus();
+  }
+}
 
-    if (code === downArrow) {
-      if (shifted) {
-        window.scrollTo(0, document.body.clientHeight);
-        bottom.focus();
-      }
-    }
-  });
+const handleKeyUpEvents = function(event) {
+  if (event.keyCode === shiftKey) {
+    shifted = false;
+    return;
+  }
 
-  document.addEventListener('keyup', function(e) {
-    if (e.keyCode === shiftKey) shifted = false;
-  });
+  if (event.keyCode === ctrlKey) modified = false;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  isAdmin = (document.body.dataset.isAdmin === 'true');
+  currentUser = document.body.dataset.currentUser;
+
+  prev = document.getElementById('nav-previous');
+  next = document.getElementById('nav-next');
+  bottom = document.getElementById('bottom');
+
+  document.addEventListener('keydown', handleKeyDownEvents);
+  document.addEventListener('keyup', handleKeyUpEvents);
 
   console.time('DOM_begin');
   
@@ -168,7 +172,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const author = thisPost.dataset.author;
 
     let actions = thisPost.getElementsByClassName('article-actions').item(0);
-    const content = thisPost.getElementsByClassName('article-content').item(0);
+    let content = thisPost.getElementsByClassName('article-content').item(0);
 
     // Get the post's Markdown content, parsing it and replacing it with the rendered HTML.
     const trimmedContent = content.textContent.trim();
@@ -199,6 +203,25 @@ document.addEventListener('DOMContentLoaded', function() {
       let editButton = document.createElement('button');
       editButton.className = 'article-edit';
       editButton.innerHTML = editIcon;
+      editButton.addEventListener('click', function() {
+        let editable = document.createElement('textarea');
+        editable.value = trimmedContent;
+        editable.addEventListener('keydown', function(e) {
+          if (e.keyCode === escapeKey) {
+            content.innerHTML = md.render(trimmedContent);
+            return;
+          }
+
+          if (modified && (e.keyCode === returnKey)) console.log('whatever');
+        });
+
+        while (content.lastChild) {
+          content.removeChild(content.lastChild);
+        }
+        
+        content.appendChild(editable);
+        editable.focus();
+      });
 
       let deleteButton = document.createElement('button');
       deleteButton.className = 'article-delete';
