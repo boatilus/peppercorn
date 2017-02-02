@@ -104,11 +104,18 @@ const quote = function(text) {
 document.addEventListener('DOMContentLoaded', function() {
   let shifted = false;
 
+  const isAdmin = (document.body.dataset.isAdmin === 'true');
+  const currentUser = document.body.dataset.currentUser;
+
+  let prev = document.getElementById('nav-previous');
+  let next = document.getElementById('nav-next');
   let bottom = document.getElementById('bottom');
 
   document.addEventListener('keydown', function(e) {
     const code = e.keyCode;
 
+    // We'll want to prevent all the following if the reply field is focused, as we don't want
+    // to cause problems with a user's text entry.
     if (bottom === document.activeElement) {
       return false;
     }
@@ -119,12 +126,19 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     if (code === leftArrow) {
-      console.log('previous');
+      // If there's an '#nav-previous' element, we know we have a prior page.
+      if (prev !== null) {
+        document.location = prev.getAttribute('href');
+      }
+    
       return;
     }
 
     if (code === rightArrow) {
-      console.log('next');
+      if (next !== null) {
+        document.location = next.getAttribute('href');
+      }
+
       return;
     }
 
@@ -151,6 +165,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   for (let i = 0; i < posts.length; i++) {
     let thisPost = posts[i];
+    const author = thisPost.dataset.author;
 
     let actions = thisPost.getElementsByClassName('article-actions').item(0);
     let content = thisPost.getElementsByClassName('article-content').item(0);
@@ -159,6 +174,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const trimmedContent = content.textContent.trim();
 
     content.innerHTML = md.render(trimmedContent);
+
+    let menuButton = document.createElement('button');
+    menuButton.className = 'article-menu';
+    menuButton.innerHTML = menuIcon;
 
     // Add 'Reply' and 'Option' buttons to each post, attaching handlers to them.
     let replyButton = document.createElement('button');
@@ -172,30 +191,29 @@ document.addEventListener('DOMContentLoaded', function() {
       bottom.focus();
     });
 
-    let menuButton = document.createElement('button');
-    menuButton.className = 'article-menu';
-    menuButton.innerHTML = menuIcon;
-
-    let editButton = document.createElement('button');
-    editButton.className = 'article-edit';
-    editButton.innerHTML = editIcon;
-
-    let deleteButton = document.createElement('button');
-    deleteButton.className = 'article-delete';
-    deleteButton.innerHTML = deleteIcon;
-    deleteButton.addEventListener('click', function() {
-      const ok = confirm('Are you sure you want to delete this post?');
-
-      if (ok) {
-        // Change URL to delete request
-      }
-    });
-
     let fragment = document.createDocumentFragment();
-    fragment.appendChild(deleteButton);
-    fragment.appendChild(editButton);
     fragment.appendChild(menuButton);
     fragment.appendChild(replyButton);
+
+    if (isAdmin || (currentUser === author)) {
+      let editButton = document.createElement('button');
+      editButton.className = 'article-edit';
+      editButton.innerHTML = editIcon;
+
+      let deleteButton = document.createElement('button');
+      deleteButton.className = 'article-delete';
+      deleteButton.innerHTML = deleteIcon;
+      deleteButton.addEventListener('click', function() {
+        const ok = confirm('Are you sure you want to delete this post?');
+
+        if (ok) {
+          // Change URL to delete request
+        }
+      });
+
+      fragment.appendChild(deleteButton);
+      fragment.appendChild(editButton);
+    }
 
     actions.appendChild(fragment);
   }

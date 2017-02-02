@@ -6,7 +6,7 @@
     <script src="/static/script/lib/markdown-it.min.8.2.2.js"></script>
     <script src="/static/script/lib/marked.min.js"></script>
     <script src="/static/script/page.js"></script>
-    <link rel="icon" type="image/x-icon" href="static/icon/favicon.ico" />
+    <link rel="icon" type="image/x-icon" href="/static/icon/favicon.ico" />
     <link rel="icon" type="image/png" href="/static/icon/favicon-32x32.png" sizes="32x32" />
     <link rel="icon" type="image/png" href="/static/icon/favicon-16x16.png" sizes="16x16" />
     <link rel="apple-touch-icon" href="/static/icon/apple-touch-icon.png" sizes="180x180" />
@@ -16,7 +16,7 @@
     <meta name="theme-color" content="#d4770e" />
   </head>
 
-  <body>
+  <body data-current-user="{{ .CurrentUser.Name }}" data-is-admin="{{ if .CurrentUser.IsAdmin }}true{{ else }}false{{ end }}">
     <main>
       <header id="top">
         <div id="head">
@@ -46,13 +46,13 @@
           <ul>
             <li>
               {{ if ne .PageNum 1 }}
-                <a href="/page/{{ dec .PageNum }}">{{ dec .PageNum }}</a>
+                <a id="nav-previous" href="/page/{{ dec .PageNum }}">{{ dec .PageNum }}</a>
               {{ end }}
             </li>
             <li class="nav-current">{{ .PageNum }}</li>
             <li>
               {{ if ne .PageNum .TotalPages }}
-                <a href="/page/{{ inc .PageNum }}">{{ inc .PageNum }}</a>
+                <a id="nav-next" href="/page/{{ inc .PageNum }}">{{ inc .PageNum }}</a>
               {{ end }}
             </li>
           </ul>
@@ -61,7 +61,7 @@
       <hr>
       
       {{ range .Posts }}
-        <article id="{{ .ID }}">
+        <article id="{{ .ID }}" data-author="{{ .AuthorName }}">
           <picture class="article-avatar">
             <source media="(min-width: 960px)" srcset="{{ .Avatar }}">
             <img src="">
