@@ -10,6 +10,8 @@ var Get struct {
 	Page string
 	// Single is the path to a single post at :num
 	Single string
+	// SingleRemove is the path to remove a single post
+	SingleRemove string
 	// TotalPostCount is the path to a single number reflecting the total number of posts
 	TotalPostCount string
 	// Me is the path to the user's info page and settings
@@ -30,10 +32,18 @@ var Post struct {
 	Me string
 	// SubmitPost is the path replies are POSTed
 	SubmitPost string
+	// SingleEdit is the path to which edited posts are POSTed
+	SingleEdit string
 	// Forgot is the path to which the forgot password form is POSTed
 	Forgot string
 	// ResetPassword is the path to which the password reset form is POSTed
 	ResetPassword string
+}
+
+// Patch is a struct containing routing paths to PATCH requests
+var Patch struct {
+	// Single is the path to which edited post contents are PACTHed
+	Single string
 }
 
 func init() {
@@ -41,6 +51,7 @@ func init() {
 	Get.SignOut = "/sign-out"
 	Get.Page = "/page/:num"
 	Get.Single = "/posts/:num"
+	Get.SingleRemove = "/posts/:num/delete"
 	Get.TotalPostCount = "/posts/count"
 	Get.Me = "/me"
 	Get.MeRevoke = "/me/revoke/:num"
@@ -52,4 +63,6 @@ func init() {
 	Post.SubmitPost = "/posts"
 	Post.Forgot = "/forgot"
 	Post.ResetPassword = "/reset-password"
+
+	Patch.Single = "/posts/:num"
 }

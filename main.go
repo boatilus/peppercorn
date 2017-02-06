@@ -65,6 +65,7 @@ func main() {
 	r.With(middleware.Validate).Get(paths.Get.SignOut, routes.SignOutGetHandler)
 	r.With(middleware.Validate).Get(paths.Get.Page, routes.PageGetHandler)
 	r.With(middleware.Validate).Get(paths.Get.Single, routes.SingleGetHandler)
+	r.With(middleware.Validate).Get(paths.Get.SingleRemove, routes.SingleRemoveGetHandler)
 	r.With(middleware.Validate).Get(paths.Get.TotalPostCount, routes.CountGetHandler)
 	r.With(middleware.Validate).Get(paths.Get.Me, routes.MeGetHandler)
 	r.With(middleware.Validate).Get(paths.Get.MeRevoke, routes.MeRevokeGetHandler)
@@ -75,6 +76,9 @@ func main() {
 	r.Post(paths.Post.ResetPassword, routes.ResetPasswordPostHandler)
 	r.With(middleware.Validate).Post(paths.Post.Me, routes.MePostHandler)
 	r.With(middleware.Validate).Post(paths.Post.SubmitPost, routes.PostsPostHandler)
+
+	// PATCH
+	r.With(middleware.Validate).Patch(paths.Patch.Single, routes.SinglePatchHandler)
 
 	port := viper.GetString("port")
 	if port == "" {

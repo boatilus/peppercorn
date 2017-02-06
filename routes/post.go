@@ -266,7 +266,7 @@ func PostsPostHandler(w http.ResponseWriter, req *http.Request) {
 	http.Redirect(w, req, "/page/latest", http.StatusSeeOther)
 }
 
-// ResetPasswordGetHandler is the route called to reset a user's password.
+// ResetPasswordPostHandler is the route called to reset a user's password.
 func ResetPasswordPostHandler(w http.ResponseWriter, req *http.Request) {
 	if err := req.ParseForm(); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)

@@ -186,6 +186,33 @@ func SingleGetHandler(w http.ResponseWriter, req *http.Request) {
 	io.WriteString(w, p.Content)
 }
 
+// SingleRemoveGetHandler is called for GET requests for the `/post/{num}/delete` route and removes
+// a single post, if the user is authorized to do so.
+func SingleRemoveGetHandler(w http.ResponseWriter, req *http.Request) {
+	u := users.FromContext(req.Context())
+	if u == nil {
+		http.Error(w, "Could not read user data from request context", http.StatusInternalServerError)
+		return
+	}
+
+	// BUG: Due to some weirdness in Chi, the param here is "num", but we're actually getting supplied
+	// a post ID. We can't change the route param name due to this.
+	// See: https://github.com/pressly/chi/issues/78
+	id := chi.URLParam(req, "num")
+
+	if len(id) == 0 {
+		http.Error(w, "routes: ID cannot be empty", http.StatusBadRequest)
+		return
+	}
+
+	if err := posts.Deactivate(id); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, req, "/page/latest", http.StatusSeeOther)
+}
+
 func CountGetHandler(w http.ResponseWriter, _ *http.Request) {
 	n, err := posts.Count()
 	if err != nil {
