@@ -6,9 +6,9 @@ import * as icon from './icon';
 import * as markdownit from 'markdown-it';
 
 const md = new markdownit({
-  linkify: true,
-  typographer: true
-});
+  linkify: true,    // Automatically convert URLs to links.
+  typographer: true // Automatically convert some tokens, like (C) to the copyright symbol.
+}).use(markdownitContainer, 'spoiler');;
 
 const returnKey  = 13;
 const shiftKey   = 16;

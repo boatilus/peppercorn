@@ -1,7 +1,8 @@
 const md = new markdownit({
-  linkify: true,
-  typographer: true
-});
+  html: true,
+  linkify: true,    // Automatically convert URLs to links.
+  typographer: true // Automatically convert some tokens, like (C) to the copyright symbol.
+}).use(markdownitContainer, 'spoiler');
 
 const menuIcon = 
   `<svg
