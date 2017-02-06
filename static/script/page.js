@@ -1,4 +1,7 @@
-const md = window.markdownit();
+const md = new markdownit({
+  linkify: true,
+  typographer: true
+});
 
 const menuIcon = 
   `<svg
@@ -247,7 +250,9 @@ const handleEditClick = function(event) {
       return;
     }
 
-    if (e.isModified && (e.keyCode === returnKey)) {
+    console.log(e.getModifierState("Shift"))
+
+    if (e.isModified() && (e.keyCode === returnKey)) {
       const val = editable.value;
 
       // If no changes to the post's content, skip the entire submission process and just swap
