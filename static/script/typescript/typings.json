@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "markdown-it": "registry:dt/markdown-it#0.0.0+20161221020919"
+  }
+}
