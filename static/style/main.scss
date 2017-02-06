@@ -66,13 +66,6 @@ h1, h2, h3 { font-weight: normal }
 h1 { font-weight: 200 }
 hr { display: none }
 
-iframe {
-  @include desktop {
-    max-height: auto;
-    max-width: 640px;
-  }
-}
-
 #top {
   @include mobile {
     margin-bottom: 0.7em;
@@ -226,6 +219,10 @@ article {
     }
   }
 
+  picture {
+    @include mobile { display: none }
+  }
+
   p {
     line-height: 135%;
     margin: 0;
@@ -235,6 +232,20 @@ article {
   img {
     @include mobile { max-width: 100% }
     @include desktop { max-width: 800px }
+  }
+
+  iframe {
+    @include desktop {
+      margin-top: 0.2em !important;
+      margin-bottom: 1em !important;
+      max-height: auto;
+      max-width: 640px;
+    }
+
+    @include mobile {
+      height: auto;
+      width: 100%;
+    }
   }
 
   &:nth-child(even) { background-color: #222 }

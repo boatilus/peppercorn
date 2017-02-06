@@ -41,11 +41,6 @@ h1 {
 hr {
   display: none; }
 
-@media (min-width: 960px) {
-  iframe {
-    max-height: auto;
-    max-width: 640px; } }
-
 @media (max-width: 959px) {
   #top {
     margin-bottom: 0.7em;
@@ -171,6 +166,9 @@ article {
       font-weight: normal;
       font-size: 100%;
       margin-left: 0.75em; } }
+  @media (max-width: 959px) {
+    article picture {
+      display: none; } }
   article p {
     line-height: 135%;
     margin: 0;
@@ -181,6 +179,16 @@ article {
   @media (min-width: 960px) {
     article img {
       max-width: 800px; } }
+  @media (min-width: 960px) {
+    article iframe {
+      margin-top: 0.2em !important;
+      margin-bottom: 1em !important;
+      max-height: auto;
+      max-width: 640px; } }
+  @media (max-width: 959px) {
+    article iframe {
+      height: auto;
+      width: 100%; } }
   article:nth-child(even) {
     background-color: #222; }
   article .article-avatar img {
