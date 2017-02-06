@@ -351,14 +351,21 @@ textarea {
   display: inline-block;
   font-family: $font-stack;
   font-weight: 300;
+  line-height: 135%;
   outline-width: 1px;
   outline-style: solid;
+  width: 100%;
+
+  @include mobile { font-size: 16px /* Prevents zoom on iOS Safari */ }
+  @include desktop { font-size: 1em }
+}
+
+#bottom {
   width: 100%;
 
   &::-webkit-input-placeholder { color: #888 }
 
   @include mobile {
-    font-size: 16px;  /* Prevents zoom on iOS Safari */
     margin-top: 1.5em;
     outline-color: #555;
     outline-offset: -7px;
@@ -368,7 +375,6 @@ textarea {
   }
 
   @include desktop {
-    font-size: 0.95em;
     margin-top: 2.4em;
     outline-color: #444;
     outline-offset: -1px;
@@ -406,20 +412,34 @@ footer {
 // Page buttons //
 //////////////////
 
-#page {
-  @include mobile { display: none }
-
-  @include desktop {
-    button.right {
-      width: 0;
-      height: 0;
-      border-style: solid;
-      border-width: 40px 0 40px 30px;
-      border-color: transparent transparent transparent #777777;
-      position: fixed;
-      top: 50%;
-      right: 0px;
-      margin-top: -40px;
-    }
-  }
+@mixin page-arrow {
+  width: 0;
+  height: 0;
+  border-style: solid;
+  position: fixed;
+  top: 50%;
+  margin-top: -32px;
+  visibility: hidden;
 }
+
+#page-prev {
+  @include page-arrow;
+
+  border-width: 32px 22px 32px 0;
+  border-color: transparent #777 transparent transparent;
+  left: 10px;
+}
+
+.page-prev-enabled { border-right-color:white !important }
+
+#page-next {
+  @include page-arrow;
+
+  border-width: 32px 0 32px 22px;
+  border-color: transparent transparent transparent #777;
+  right: 10px;
+
+  .enabled { border-right-color: white !important }
+}
+
+.page-next-enabled { border-left-color:white !important }

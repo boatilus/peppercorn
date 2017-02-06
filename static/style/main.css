@@ -293,29 +293,36 @@ textarea {
   display: inline-block;
   font-family: -apple-system, "-apple-system", BlinkMacSystemFont, "Helvetica Neue", Helvetica, Arial;
   font-weight: 300;
+  line-height: 135%;
   outline-width: 1px;
   outline-style: solid;
   width: 100%; }
-  textarea::-webkit-input-placeholder {
-    color: #888; }
   @media (max-width: 959px) {
     textarea {
-      font-size: 16px;
-      /* Prevents zoom on iOS Safari */
+      font-size: 16px; } }
+  @media (min-width: 960px) {
+    textarea {
+      font-size: 1em; } }
+
+#bottom {
+  width: 100%; }
+  #bottom::-webkit-input-placeholder {
+    color: #888; }
+  @media (max-width: 959px) {
+    #bottom {
       margin-top: 1.5em;
       outline-color: #555;
       outline-offset: -7px;
       padding: 0.9em 13px; }
-      textarea:focus {
+      #bottom:focus {
         outline-color: #777; } }
   @media (min-width: 960px) {
-    textarea {
-      font-size: 0.95em;
+    #bottom {
       margin-top: 2.4em;
       outline-color: #444;
       outline-offset: -1px;
       padding: 0.4em 0.7em; }
-      textarea:focus {
+      #bottom:focus {
         outline-color: #666; } }
 
 button[type=submit] {
@@ -342,18 +349,34 @@ footer {
     footer {
       text-align: right; } }
 
-@media (max-width: 959px) {
-  #page {
-    display: none; } }
+#page-prev {
+  width: 0;
+  height: 0;
+  border-style: solid;
+  position: fixed;
+  top: 50%;
+  margin-top: -32px;
+  visibility: hidden;
+  border-width: 32px 22px 32px 0;
+  border-color: transparent #777 transparent transparent;
+  left: 10px; }
 
-@media (min-width: 960px) {
-  #page button.right {
-    width: 0;
-    height: 0;
-    border-style: solid;
-    border-width: 40px 0 40px 30px;
-    border-color: transparent transparent transparent #777777;
-    position: fixed;
-    top: 50%;
-    right: 0px;
-    margin-top: -40px; } }
+.page-prev-enabled {
+  border-right-color: white !important; }
+
+#page-next {
+  width: 0;
+  height: 0;
+  border-style: solid;
+  position: fixed;
+  top: 50%;
+  margin-top: -32px;
+  visibility: hidden;
+  border-width: 32px 0 32px 22px;
+  border-color: transparent transparent transparent #777;
+  right: 10px; }
+  #page-next .enabled {
+    border-right-color: white !important; }
+
+.page-next-enabled {
+  border-left-color: white !important; }
