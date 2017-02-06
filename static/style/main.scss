@@ -66,6 +66,13 @@ h1, h2, h3 { font-weight: normal }
 h1 { font-weight: 200 }
 hr { display: none }
 
+iframe {
+  @include desktop {
+    max-height: auto;
+    max-width: 640px;
+  }
+}
+
 #top {
   @include mobile {
     margin-bottom: 0.7em;

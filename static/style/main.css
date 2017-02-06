@@ -41,6 +41,11 @@ h1 {
 hr {
   display: none; }
 
+@media (min-width: 960px) {
+  iframe {
+    max-height: auto;
+    max-width: 640px; } }
+
 @media (max-width: 959px) {
   #top {
     margin-bottom: 0.7em;
