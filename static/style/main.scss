@@ -58,6 +58,7 @@ a {
 }
 
 button {
+  border: none;
   cursor: pointer;
   margin: 0;
 }
@@ -318,6 +319,17 @@ article {
     }
   }
 
+  .article-spoiler { display: none }
+
+  .article-spoiler-button {
+    background-color: white;
+    border-radius: 3px;
+    color: black;
+    content: "Spoiler";
+    padding: 0.25em 0.5em;
+    visibility: visible;
+  }
+
   @include mobile {
     background-image: none !important;
     border-bottom: 1px solid #555;
@@ -443,7 +455,7 @@ footer {
 #page-prev {
   @include page-arrow;
 
-  border-width: 32px 22px 32px 0;
+  border-width: 32px 14px 32px 0;
   border-color: transparent #777 transparent transparent;
   left: 10px;
 }
@@ -453,7 +465,7 @@ footer {
 #page-next {
   @include page-arrow;
 
-  border-width: 32px 0 32px 22px;
+  border-width: 32px 0 32px 14px;
   border-color: transparent transparent transparent #777;
   right: 10px;
 

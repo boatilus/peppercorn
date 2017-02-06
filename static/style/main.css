@@ -29,6 +29,7 @@ a {
     color: lightgreen; }
 
 button {
+  border: none;
   cursor: pointer;
   margin: 0; }
 
@@ -252,6 +253,15 @@ article {
         color: skyblue; }
       article .article-meta time {
         margin-right: 1em; } }
+  article .article-spoiler {
+    display: none; }
+  article .article-spoiler-button {
+    background-color: white;
+    border-radius: 3px;
+    color: black;
+    content: "Spoiler";
+    padding: 0.25em 0.5em;
+    visibility: visible; }
   @media (max-width: 959px) {
     article {
       background-image: none !important;
@@ -370,7 +380,7 @@ footer {
   top: 50%;
   margin-top: -32px;
   visibility: hidden;
-  border-width: 32px 22px 32px 0;
+  border-width: 32px 14px 32px 0;
   border-color: transparent #777 transparent transparent;
   left: 10px; }
 
@@ -385,7 +395,7 @@ footer {
   top: 50%;
   margin-top: -32px;
   visibility: hidden;
-  border-width: 32px 0 32px 22px;
+  border-width: 32px 0 32px 14px;
   border-color: transparent transparent transparent #777;
   right: 10px; }
   #page-next .enabled {

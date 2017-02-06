@@ -2,7 +2,23 @@ const md = new markdownit({
   html: true,
   linkify: true,    // Automatically convert URLs to links.
   typographer: true // Automatically convert some tokens, like (C) to the copyright symbol.
-}).use(markdownitContainer, 'spoiler');
+}).use(markdownitContainer, 'spoiler', {
+  validate: function(params) {
+    return params.trim().match(/^spoiler\s+(.*)$/);
+  },
+
+  render: function(tokens, idx) {
+    var m = tokens[idx].info.trim().match(/^spoiler\s+(.*)$/);
+
+    if (tokens[idx].nesting === 1) {
+      // opening tag
+      return '<button class="article-spoiler-button">Spoiler: ' + md.utils.escapeHtml(m[1]) + '</button><div class="article-spoiler">';
+    } else {
+      // closing tag
+      return '</div>';
+    }
+  }
+});
 
 const menuIcon = 
   `<svg
@@ -397,6 +413,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     actions.appendChild(fragment);
   }
+
+
 
   console.timeEnd('DOM_begin');
 });
