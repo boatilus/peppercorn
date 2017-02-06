@@ -73,7 +73,7 @@ func Validate(next http.Handler) http.Handler {
 func SetCSP() func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		fn := func(w http.ResponseWriter, req *http.Request) {
-			w.Header().Add("Content-Security-Policy", "default-src 'self'; img-src 'self' i.imgur.com; style-src 'self' 'unsafe-inline'")
+			w.Header().Add("Content-Security-Policy", "default-src 'self'; child-src 'self' https://www.youtube.com https://player.vimeo.com; img-src 'self' https://i.imgur.com; style-src 'self' 'unsafe-inline'")
 
 			next.ServeHTTP(w, req)
 		}
