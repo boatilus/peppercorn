@@ -63,8 +63,7 @@ func setupDB() {
 		}
 
 		table.IndexCreate("active").RunWrite(db.Session)
-		table.IndexCreate("author").RunWrite(db.Session)
-		table.IndexCreate("time").RunWrite(db.Session)
+		table.IndexCreate("user_id").RunWrite(db.Session)
 
 		table.IndexCreateFunc("active_time", func(row rethink.Term) interface{} {
 			return []interface{}{row.Field("active"), row.Field("time")}
