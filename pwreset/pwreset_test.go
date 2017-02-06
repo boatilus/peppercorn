@@ -3,6 +3,7 @@ package pwreset
 import (
 	"testing"
 
+	"log"
 	"time"
 
 	"github.com/boatilus/peppercorn/db"
@@ -48,6 +49,8 @@ func setupDB() {
 		panic(err)
 	}
 
+	log.Print("hasTable: ", hasTable)
+
 	table := peppercorn.Table(tableName)
 
 	if !hasTable {
@@ -56,8 +59,8 @@ func setupDB() {
 			panic(err)
 		}
 
-		table.IndexCreate("user_id")
-		table.IndexWait()
+		table.IndexCreate("user_id").RunWrite(db.Session)
+		table.IndexWait().Run(db.Session)
 	} else {
 		// Due to a lack of mocking in gorethink, we'll tear down the test data and repopulate on each
 		// run of the tests.
