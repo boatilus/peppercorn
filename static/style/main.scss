@@ -332,8 +332,9 @@ article {
 
   .article-spoiler-button {
     content: "Spoiler";
+    display: block;
     font-size: 0.9em;
-    visibility: visible;
+    margin-bottom: 1em;
   }
 
   @include mobile {

@@ -261,7 +261,7 @@ const handleEditClick = function(event) {
   let editable = document.createElement('textarea');
   editable.className = 'article-editable';
   editable.value     = content.textContent;
-  editable.rows      = 4;
+  editable.rows      = 6;
 
   const handleKeydown = function(e) {
     if (e.keyCode === escapeKey) {
