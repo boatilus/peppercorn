@@ -35,7 +35,7 @@ config.json
 rethinkdb_data
 
 # VS Code data
-.vscode
+.vscode/launch.json
 
 gen_pass.go
 
