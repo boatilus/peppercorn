@@ -85,6 +85,7 @@ const leftArrow  = 37;
 const upArrow    = 38;
 const rightArrow = 39;
 const downArrow  = 40;
+const hKey       = 72;
 
 let isAdmin     = false;
 let currentUser = '';
@@ -153,6 +154,33 @@ const quote = function(text) {
   newlines.push(`\r\n`);
   
   return newlines.join(`\r\n`);
+};
+
+// Accepts an <article> element and returns its content as a trimmed string.
+const getTrimmedContent = function(articleElem) {
+  const content = articleElem.getFirstElementByClassName('article-content');
+  if (content === null) {
+    console.error('handleReplyClick: no element found for this post with article-content');
+
+    return false;
+  }
+
+  return content.textContent.trim();
+};
+
+// Binds `onclick` handlers for spoiler buttons within HTMLElement `node`
+const bindSpoilersFor = function(node) {
+  if (!node instanceof HTMLElement || node === null) {
+    console.error('bindSpoilersFor: argument is not of type HTMLElement or null');
+    return;
+  }
+
+  let spoilerButtons = node.getElementsByClassName('article-spoiler-button');
+  if (spoilerButtons.length === 0) return;
+
+  for (let i = 0; i < spoilerButtons.length; i++) {
+    spoilerButtons[i].addEventListener('click', handleSpoilerClick);
+  }
 }
 
 const handleKeyDownEvents = function(event) {
@@ -190,7 +218,19 @@ const handleKeyDownEvents = function(event) {
       window.scrollTo(0, document.body.clientHeight);
       bottom.focus();
     }
+    return;
+  case hKey:
+    if (event.shiftKey) {
+      let spoilers = document.getElementsByClassName('article-spoiler-button');
+      if (spoilers.length === 0) return;
+
+      for (let i = 0; i < spoilers.length; i++) {
+        spoilers[i].style.display = 'block';
+        spoilers[i].nextSibling.style.display = 'none';
+      }
+    }
   }
+
 };
 
 const handleKeyUpEvents = function(event) {
@@ -199,18 +239,6 @@ const handleKeyUpEvents = function(event) {
     document.getElementById('page-next').style.visibility = 'hidden';
     return;
   }
-};
-
-// Accepts an <article> element and returns its content as a trimmed string.
-const getTrimmedContent = function(articleElem) {
-  const content = articleElem.getFirstElementByClassName('article-content');
-  if (content === null) {
-    console.error('handleReplyClick: no element found for this post with article-content');
-
-    return false;
-  }
-
-  return content.textContent.trim();
 };
 
 const handleReplyClick = function(event) {
@@ -269,8 +297,6 @@ const handleEditClick = function(event) {
       return;
     }
 
-    console.log(e.getModifierState("Shift"))
-
     if (e.isModified() && (e.keyCode === returnKey)) {
       const val = editable.value;
 
@@ -298,6 +324,7 @@ const handleEditClick = function(event) {
         const val = editable.value;
 
         // Keep the new Markdown in `article-content`, and render it to `article-rendered`.
+        // TODO: Remove handlers for spoiler buttons.
         content.innerHTML  = val;
         rendered.innerHTML = md.render(val);
         displayViewState();
@@ -418,13 +445,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     actions.appendChild(fragment);
 
-    // Set up click handling for spoilers.
-    let spoilers = thisPost.getElementsByClassName('article-spoiler-button');
-    if (spoilers.length === 0) continue;
-
-    for (let i = 0; i < spoilers.length; i++) {
-      spoilers[i].addEventListener('click', handleSpoilerClick);
-    }
+    bindSpoilersFor(thisPost);
   }
 
   console.timeEnd('DOM_begin');
