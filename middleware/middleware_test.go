@@ -15,7 +15,7 @@ func init() {
 func TestInitCSP(t *testing.T) {
 	InitCSP()
 
-	desired := "default-src 'self'; child-src: 'self' *.domain.com www.otherdomain.com; img-src: 'self' *.x.com; style-src 'self' 'unsafe-inline'"
+	desired := "default-src 'self'; child-src 'self' *.domain.com www.otherdomain.com; img-src 'self' *.x.com; style-src 'self' 'unsafe-inline'"
 
 	assert.Equal(t, cspString, desired)
 }
