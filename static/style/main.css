@@ -30,8 +30,18 @@ a {
 
 button {
   border: none;
+  border-radius: 3px;
+  background: white;
+  color: black;
   cursor: pointer;
-  margin: 0; }
+  font-family: -apple-system, "-apple-system", BlinkMacSystemFont, "Helvetica Neue", Helvetica, Arial;
+  margin: 0;
+  padding: 0.3em 0.5em;
+  outline: none; }
+  button:hover {
+    background: skyblue; }
+  button:active {
+    background: lightgreen; }
 
 h1, h2, h3 {
   font-weight: normal; }
@@ -256,11 +266,8 @@ article {
   article .article-spoiler {
     display: none; }
   article .article-spoiler-button {
-    background-color: white;
-    border-radius: 3px;
-    color: black;
     content: "Spoiler";
-    padding: 0.25em 0.5em;
+    font-size: 0.9em;
     visibility: visible; }
   @media (max-width: 959px) {
     article {
@@ -349,12 +356,7 @@ textarea {
         outline-color: #666; } }
 
 button[type=submit] {
-  background: white;
-  border: 0;
-  color: black;
-  font-size: 120%;
-  margin: 0;
-  padding: 0.25em 0.35em; }
+  font-size: 120%; }
   @media (max-width: 959px) {
     button[type=submit] {
       margin-left: 8px; } }

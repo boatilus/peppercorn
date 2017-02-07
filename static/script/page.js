@@ -1,14 +1,16 @@
+const spoilerReg = new RegExp(/^spoiler\s+(.*)$/);
+
 const md = new markdownit({
   html: true,
   linkify: true,    // Automatically convert URLs to links.
   typographer: true // Automatically convert some tokens, like (C) to the copyright symbol.
 }).use(markdownitContainer, 'spoiler', {
   validate: function(params) {
-    return params.trim().match(/^spoiler\s+(.*)$/);
+    return params.trim().match(spoilerReg);
   },
 
   render: function(tokens, idx) {
-    var m = tokens[idx].info.trim().match(/^spoiler\s+(.*)$/);
+    var m = tokens[idx].info.trim().match(spoilerReg);
 
     if (tokens[idx].nesting === 1) {
       // opening tag
@@ -328,6 +330,11 @@ const handleDeleteClick = function(event) {
   }
 };
 
+const handleSpoilerClick = function() {
+  this.style.display = 'none';
+  this.nextSibling.style.display = 'block';
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   isAdmin     = (document.body.dataset.isAdmin === 'true');
   currentUser = document.body.dataset.currentUser;
@@ -369,9 +376,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let content = thisPost.getElementsByClassName('article-content').item(0);
 
     // Get the post's Markdown content, parsing it and replacing it with the rendered HTML.
-    const trimmedContent = content.textContent.trim();
-
-    //content.innerHTML = md.render(trimmedContent);
+    const trimmedContent = content.textContent;
     
     let rendered = document.createElement('div');
     rendered.className = 'article-rendered';
@@ -412,9 +417,15 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     actions.appendChild(fragment);
+
+    // Set up click handling for spoilers.
+    let spoilers = thisPost.getElementsByClassName('article-spoiler-button');
+    if (spoilers.length === 0) continue;
+
+    for (let i = 0; i < spoilers.length; i++) {
+      spoilers[i].addEventListener('click', handleSpoilerClick);
+    }
   }
-
-
 
   console.timeEnd('DOM_begin');
 });

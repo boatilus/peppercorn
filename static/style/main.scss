@@ -59,8 +59,17 @@ a {
 
 button {
   border: none;
+  border-radius: 3px;
+  background: $color-link;
+  color: black;
   cursor: pointer;
+  font-family: $font-stack;
   margin: 0;
+  padding: 0.3em 0.5em;
+  outline: none;
+
+  &:hover { background: $color-hover }
+  &:active { background: $color-active }
 }
 
 h1, h2, h3 { font-weight: normal }
@@ -322,11 +331,8 @@ article {
   .article-spoiler { display: none }
 
   .article-spoiler-button {
-    background-color: white;
-    border-radius: 3px;
-    color: black;
     content: "Spoiler";
-    padding: 0.25em 0.5em;
+    font-size: 0.9em;
     visibility: visible;
   }
 
@@ -415,12 +421,7 @@ textarea {
 }
 
 button[type=submit] {
-  background: $color-link;
-  border: 0;
-  color: black;
   font-size: 120%;
-  margin: 0;
-  padding: 0.25em 0.35em;
 
   @include mobile { margin-left: 8px }
   @include desktop { margin-top: 0.5em }
