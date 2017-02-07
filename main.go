@@ -45,6 +45,7 @@ func main() {
 
 	// We need to create the mailer instance before we can proceed
 	mail.CreateMailer()
+	middleware.InitCSP()
 
 	r := chi.NewRouter()
 	r.Use(chiMiddleware.RealIP)

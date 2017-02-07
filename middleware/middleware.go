@@ -1,13 +1,16 @@
 package middleware
 
 import (
+	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/boatilus/peppercorn/cookie"
 	"github.com/boatilus/peppercorn/paths"
 	"github.com/boatilus/peppercorn/session"
 	"github.com/boatilus/peppercorn/users"
+	"github.com/spf13/viper"
 )
 
 func getCookieByName(cookie []*http.Cookie, name string) string {
@@ -70,10 +73,43 @@ func Validate(next http.Handler) http.Handler {
 	})
 }
 
+var cspString string
+
+// InitCSP initializes the Content Security Policy string from the Viper config. It needs to be
+// called before the SetCSP() middleware is invoked.
+func InitCSP() {
+	defaultSrcSet := viper.GetStringSlice("content_security_policy.default-src")
+	childSrcSet := viper.GetStringSlice("content_security_policy.child-src")
+	imgSrcSet := viper.GetStringSlice("content_security_policy.img-src")
+
+	var defaultSrcString, childSrcString, imgSrcString string
+
+	if len(defaultSrcSet) > 0 {
+		defaultSrcString = " " + strings.Join(defaultSrcSet, " ")
+	}
+
+	if len(childSrcSet) > 0 {
+		childSrcString = " " + strings.Join(childSrcSet, " ")
+	}
+
+	if len(imgSrcSet) > 0 {
+		imgSrcString = " " + strings.Join(imgSrcSet, " ")
+	}
+
+	cspString = fmt.Sprintf(
+		"default-src 'self'%s; child-src 'self'%s; img-src 'self'%s; style-src 'self' 'unsafe-inline'",
+		defaultSrcString,
+		childSrcString,
+		imgSrcString,
+	)
+}
+
+// SetCSP sets the Content Security Policy specified in `cspString`, initialized via InitCSP(), on
+// the response header.
 func SetCSP() func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		fn := func(w http.ResponseWriter, req *http.Request) {
-			w.Header().Add("Content-Security-Policy", "default-src 'self'; child-src 'self' https://www.youtube.com https://player.vimeo.com https://*.spotify.com; img-src 'self' https://i.imgur.com; style-src 'self' 'unsafe-inline'")
+			w.Header().Add("Content-Security-Policy", cspString)
 
 			next.ServeHTTP(w, req)
 		}
