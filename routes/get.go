@@ -249,6 +249,13 @@ func MeGetHandler(w http.ResponseWriter, req *http.Request) {
 
 	var sessions []sessionData
 
+	// Load the user's timezone setting so we can provide correct post timestamps.
+	loc, err := time.LoadLocation(u.Timezone)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	now := time.Now()
 
 	for i := range ss {
@@ -257,7 +264,7 @@ func MeGetHandler(w http.ResponseWriter, req *http.Request) {
 		s := sessionData{
 			Device:    fmt.Sprintf("%s on %s", data.Browser, data.OS),
 			IP:        ss[i].IP,
-			Timestamp: utility.FormatTime(ss[i].Timestamp, now),
+			Timestamp: utility.FormatTime(ss[i].Timestamp.In(loc), now),
 		}
 
 		sessions = append(sessions, s)
