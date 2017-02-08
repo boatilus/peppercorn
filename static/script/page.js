@@ -90,6 +90,8 @@ const hKey       = 72;
 let isAdmin     = false;
 let currentUser = '';
 
+// The following are selectors for which we need to cache, as we'll reference their existence in
+// key handlers.
 let prev   = null;
 let next   = null;
 let bottom = null;
@@ -113,9 +115,9 @@ Element.prototype.getFirstElementByClassName = function(className) {
   return e[0];
 }
 
-Event.prototype.isModified = function() {
-  return this.ctrlKey || this.getModifierState("Meta");
-};
+KeyboardEvent.prototype.isModified = function() {
+  return this.ctrlKey || this.metaKey;
+}
 
 // Given a potentially multi-line string of text, return a version of that text with any
 // Markdown blockquotes removed.
@@ -205,10 +207,10 @@ const handleKeyDownEvents = function(event) {
     document.getElementById('page-next').style.visibility = 'visible';
     return;
   case leftArrow:
-    if (event.shiftKey && (prev !== null)) document.location = prev.getAttribute('href');
+    if (event.shiftKey && (prev !== null)) window.location.href = prev.getAttribute('href');
     return;
   case rightArrow:
-    if (event.shiftKey && (next !== null)) document.location = next.getAttribute('href');
+    if (event.shiftKey && (next !== null)) window.location = next.getAttribute('href');
     return;
   case upArrow:
     if (event.shiftKey) window.scrollTo(0, 0);
@@ -323,10 +325,19 @@ const handleEditClick = function(event) {
         // Store text in `val` because we'll remove the textarea from the DOM.
         const val = editable.value;
 
-        // Keep the new Markdown in `article-content`, and render it to `article-rendered`.
-        // TODO: Remove handlers for spoiler buttons.
         content.innerHTML  = val;
+
+        // Keep the new Markdown in `article-content`, and render it to `article-rendered`.
+        rendered.remove();
+        rendered = null; // To mark for collection.
+        
+        rendered = document.createElement('div');
+        rendered.className = 'article-rendered';
         rendered.innerHTML = md.render(val);
+
+        bindSpoilersFor(rendered);
+        article.appendChild(rendered);
+
         displayViewState();
       });
       xhr.addEventListener('timeout', function() {
@@ -348,7 +359,7 @@ const handleEditClick = function(event) {
 const handleDeleteClick = function(event) {
   const article = this.getAncestorByTagName('article');
   if (article === null) {
-    console.error('Could not find article ancestor');
+    console.error('handleDeleteClick: could not find article ancestor');
     return false;
   }
 
@@ -363,8 +374,8 @@ const handleSpoilerClick = function() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-  isAdmin     = (document.body.dataset.isAdmin === 'true');
-  currentUser = document.body.dataset.currentUser;
+  isAdmin     = (document.body.dataset['isAdmin'] === 'true');
+  currentUser = document.body.dataset['currentUser'];
 
   prev   = document.getElementById('nav-previous');
   next   = document.getElementById('nav-next');

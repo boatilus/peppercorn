@@ -105,6 +105,7 @@ hr { display: none }
 
   @include desktop {
     a:hover .fill { fill: white }
+    aside a { margin-left: 2em }
   }
 
   svg {
@@ -331,7 +332,6 @@ article {
   .article-spoiler { display: none }
 
   .article-spoiler-button {
-    content: "Spoiler";
     display: block;
     font-size: 0.9em;
     margin-bottom: 1em;

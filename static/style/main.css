@@ -78,7 +78,9 @@ hr {
       height: 28px; } }
   @media (min-width: 960px) {
     #head a:hover .fill {
-      fill: white; } }
+      fill: white; }
+    #head aside a {
+      margin-left: 2em; } }
   #head svg {
     width: auto; }
     #head svg .fill {
@@ -266,7 +268,6 @@ article {
   article .article-spoiler {
     display: none; }
   article .article-spoiler-button {
-    content: "Spoiler";
     display: block;
     font-size: 0.9em;
     margin-bottom: 1em; }
