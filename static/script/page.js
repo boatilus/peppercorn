@@ -243,6 +243,44 @@ const handleKeyUpEvents = function(event) {
   }
 };
 
+const handleMenuClick = function() {
+  let modal = document.getElementById('article-menu-modal');
+  if (modal === null) {
+    console.error('handleMenuClick: could not find modal element');
+    return;
+  }
+
+  // Clear the contents first, before proceding with handler binding.
+  for (; modal.children.length; ) {
+    modal.children.item(0).remove();
+  }
+
+  let fragment = document.createDocumentFragment();
+
+  let edit = document.createElement('li');
+  edit.innerText = 'Edit';
+  edit.addEventListener('click', handleEditClick);
+
+  let del = document.createElement('li');
+  del.className = 'delete';
+  del.innerText = 'Delete';
+  del.addEventListener('click', handleDeleteClick);
+
+  fragment.appendChild(edit);
+  fragment.appendChild(del);
+  modal.appendChild(fragment);
+
+  const bodyRect       = document.body.getBoundingClientRect();
+  const menuButtonRect = this.getBoundingClientRect();
+
+  const offsetY = menuButtonRect.top - bodyRect.top;
+  const offsetX = menuButtonRect.left - bodyRect.left;
+
+  modal.style.top  = offsetY + this.offsetHeight + 'px';
+  modal.style.left = offsetX - this.offsetWidth + 'px';
+  modal.style.display = 'inline-block';
+};
+
 const handleReplyClick = function(event) {
   const article = this.getAncestorByTagName('article');
   if (article === null) {
@@ -393,11 +431,16 @@ document.addEventListener('DOMContentLoaded', function() {
     nextArrow.className = 'page-next-enabled';
   }
 
-  let arrowFragment = document.createDocumentFragment();
-  arrowFragment.appendChild(prevArrow);
-  arrowFragment.appendChild(nextArrow);
+  // Add a div to contain the post menu, which we'll show/hide and move around as necessary.
+  let postMenu = document.createElement('ul');
+  postMenu.id = 'article-menu-modal';
 
-  document.body.appendChild(arrowFragment);
+  let bodyFragment = document.createDocumentFragment();
+  bodyFragment.appendChild(prevArrow);
+  bodyFragment.appendChild(nextArrow);
+  bodyFragment.appendChild(postMenu);
+
+  document.body.appendChild(bodyFragment);
 
   window.addEventListener('keydown', handleKeyDownEvents);
   window.addEventListener('keyup', handleKeyUpEvents);
@@ -427,12 +470,12 @@ document.addEventListener('DOMContentLoaded', function() {
     let menuButton = document.createElement('button');
     menuButton.className = 'article-menu';
     menuButton.innerHTML = menuIcon;
+    menuButton.addEventListener('click', handleMenuClick);
 
-    // Add 'Reply' and 'Option' buttons to each post, attaching handlers to them.
+    // Add 'Reply' and 'Menu' buttons to each post, attaching handlers to them.
     let replyButton = document.createElement('button');
     replyButton.className = 'article-reply';
     replyButton.innerHTML = replyIcon;
-    
     replyButton.addEventListener('click', handleReplyClick);
 
     let fragment = document.createDocumentFragment();

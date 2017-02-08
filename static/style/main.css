@@ -317,6 +317,21 @@ article {
       article .article-meta time {
         margin-right: 1em; } }
 
+#article-menu-modal {
+  background: black;
+  border: 1px solid gray;
+  display: none;
+  position: absolute;
+  list-style: none;
+  margin: 0;
+  padding: 0; }
+  #article-menu-modal li {
+    border-bottom: 1px solid gray;
+    padding: 0.6em 0.8em; }
+  #article-menu-modal .delete {
+    background: red;
+    color: white; }
+
 textarea {
   background: transparent;
   border: 0;
