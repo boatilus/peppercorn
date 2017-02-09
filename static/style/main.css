@@ -332,6 +332,16 @@ article {
     background: red;
     color: white; }
 
+#article-edit-submit {
+  font-size: 1em;
+  margin-top: 0.75em; }
+  @media (min-width: 960px) {
+    #article-edit-submit {
+      display: none; } }
+
+.article-editable:focus {
+  outline-color: #888; }
+
 textarea {
   background: transparent;
   border: 0;

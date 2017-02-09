@@ -396,6 +396,19 @@ article {
   }
 }
 
+#article-edit-submit {
+  font-size: 1em;
+  margin-top: 0.75em;
+
+  @include desktop { display: none }
+}
+
+.article-editable {
+  &:focus {
+    outline-color: #888;
+  }
+}
+
 ///////////
 // Reply //
 ///////////

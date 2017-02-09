@@ -95,6 +95,7 @@ let currentUser = '';
 let prev   = null;
 let next   = null;
 let bottom = null;
+let modal  = null;
 
 // Retrieve the nearest ancestor that matches `tag`, returning `null` if it hits the <html> element.
 Element.prototype.getAncestorByTagName = function(tag) {
@@ -244,7 +245,13 @@ const handleKeyUpEvents = function(event) {
 };
 
 const handleMenuClick = function() {
-  let modal = document.getElementById('article-menu-modal');
+  const id = this.dataset['id'];
+
+  if (typeof id === 'undefined') {
+    console.error('handleMenuClick: no "id" data attribute bound on edit button');
+    return;
+  }
+  
   if (modal === null) {
     console.error('handleMenuClick: could not find modal element');
     return;
@@ -258,12 +265,15 @@ const handleMenuClick = function() {
   let fragment = document.createDocumentFragment();
 
   let edit = document.createElement('li');
-  edit.innerText = 'Edit';
+  edit.className     = 'article-menu-modal-edit';
+  edit.dataset['id'] = id;
+  edit.innerText     = 'Edit';
   edit.addEventListener('click', handleEditClick);
 
   let del = document.createElement('li');
   del.className = 'delete';
-  del.innerText = 'Delete';
+  del.dataset['id'] = id;
+  del.innerText     = 'Delete';
   del.addEventListener('click', handleDeleteClick);
 
   fragment.appendChild(edit);
@@ -273,11 +283,11 @@ const handleMenuClick = function() {
   const bodyRect       = document.body.getBoundingClientRect();
   const menuButtonRect = this.getBoundingClientRect();
 
-  const offsetY = menuButtonRect.top - bodyRect.top;
+  const offsetY = menuButtonRect.top  - bodyRect.top;
   const offsetX = menuButtonRect.left - bodyRect.left;
 
   modal.style.top  = offsetY + this.offsetHeight + 'px';
-  modal.style.left = offsetX - this.offsetWidth + 'px';
+  modal.style.left = offsetX - this.offsetWidth  + 'px';
   modal.style.display = 'inline-block';
 };
 
@@ -301,18 +311,38 @@ const handleEditClick = function(event) {
     editable.remove();
     editable = null;
 
-    rendered.style.display = 'block';
+    submitButton.remove();
+    submitButton = null;
+
+    action.style.visibility = 'visible';
+    rendered.style.display   = 'block';
+    modal.style.display      = 'none';
   };
   
   // We'll create a textarea element filled with the post's Markdown comment right within the
   // post, then temporarily hide the rendered content. On Ctrl+Enter or ⌘+Enter, we'll PATCH
   // the post with the new content and re-render with revised content on success. If the user hits
-  // Esc, we'll simply remove the textarea element and show the existing rendered content. 
-  const article = this.getAncestorByTagName('article');
-  if (article === null) {
-    console.error('handleEditClick: could not find article ancestor');
+  // Esc, we'll simply remove the textarea element and show the existing rendered content.
+  const id = this.dataset['id'];
+
+  if (typeof id === 'undefined') {
+    console.error('handleEditClick: no "id" data attribute bound on edit button');
     return false;
   }
+
+  const article = document.getElementById(id);
+  if (article === null) {
+    console.error('handleEditClick: could not find article with id ' + id);
+    return false;
+  }
+
+  const actions = article.getElementsByClassName('article-actions');
+  if (actions.length === 0) {
+    console.error('handleEditClick: no actions group found for this post');
+    return false;
+  }
+
+  let action = actions.item(0);
 
   let content = article.getFirstElementByClassName('article-content');
   if (content === null) {
@@ -325,11 +355,67 @@ const handleEditClick = function(event) {
     console.error('handleEditClick: no element found for this post with article-rendered');
     return false;
   }
+
+  // fragment will hold the textarea and the submit button.
+  let fragment = document.createDocumentFragment();
   
   let editable = document.createElement('textarea');
   editable.className = 'article-editable';
   editable.value     = content.textContent;
   editable.rows      = 6;
+
+  // Create a submit button to display on mobile, as we're not creating a full for this.
+  let submitButton = document.createElement('button');
+  submitButton.id        = 'article-edit-submit';
+  submitButton.innerText = 'Submit changes';
+
+  const submitEdit = function() {
+    const val = editable.value;
+
+    // If no changes to the post's content, skip the entire submission process and just swap
+    // back to the post's normal view state.
+    if (val === content.innerHTML) {
+      console.log(`handleEditClick: no change to content of "${article.id}"`);
+
+      displayViewState();
+      return;
+    }
+
+    let xhr = new XMLHttpRequest();
+    xhr.open('PATCH', `/posts/${article.id}`, true);
+    xhr.setRequestHeader('Content-type', 'application/json');
+    xhr.addEventListener('loadstart', function() {
+      console.time('post-edit');
+      console.log(`handleEditClick: sending PATCH request for "${article.id}"..`);
+    });
+    xhr.addEventListener('loadend', function() {
+      console.timeEnd('post-edit');
+      console.log(`handleEditClick: response for PATCH request received for "${article.id}"`);
+
+      // Store text in `val` because we'll remove the textarea from the DOM.
+      const val = editable.value;
+
+      content.innerHTML  = val;
+
+      // Keep the new Markdown in `article-content`, and render it to `article-rendered`.
+      rendered.remove();
+      rendered = null; // To mark for collection.
+      
+      rendered = document.createElement('div');
+      rendered.className = 'article-rendered';
+      rendered.innerHTML = md.render(val);
+
+      bindSpoilersFor(rendered);
+      article.appendChild(rendered);
+
+      displayViewState();
+    });
+    xhr.addEventListener('timeout', function() {
+      console.timeEnd('post-edit');
+      console.error("handleEditClick: PATCH request timed out");
+    });
+    xhr.send(JSON.stringify({ content: editable.value }));
+  }
 
   const handleKeydown = function(e) {
     if (e.keyCode === escapeKey) {
@@ -338,66 +424,34 @@ const handleEditClick = function(event) {
     }
 
     if (e.isModified() && (e.keyCode === returnKey)) {
-      const val = editable.value;
-
-      // If no changes to the post's content, skip the entire submission process and just swap
-      // back to the post's normal view state.
-      if (val === content.innerHTML) {
-        console.log(`handleEditClick: no change to content of "${article.id}"`);
-
-        displayViewState();
-        return;
-      }
-
-      let xhr = new XMLHttpRequest();
-      xhr.open('PATCH', `/posts/${article.id}`, true);
-      xhr.setRequestHeader('Content-type', 'application/json');
-      xhr.addEventListener('loadstart', function() {
-        console.time('post-edit');
-        console.log(`handleEditClick: sending PATCH request for "${article.id}"..`);
-      });
-      xhr.addEventListener('loadend', function() {
-        console.timeEnd('post-edit');
-        console.log(`handleEditClick: response for PATCH request received for "${article.id}"`);
-
-        // Store text in `val` because we'll remove the textarea from the DOM.
-        const val = editable.value;
-
-        content.innerHTML  = val;
-
-        // Keep the new Markdown in `article-content`, and render it to `article-rendered`.
-        rendered.remove();
-        rendered = null; // To mark for collection.
-        
-        rendered = document.createElement('div');
-        rendered.className = 'article-rendered';
-        rendered.innerHTML = md.render(val);
-
-        bindSpoilersFor(rendered);
-        article.appendChild(rendered);
-
-        displayViewState();
-      });
-      xhr.addEventListener('timeout', function() {
-        console.timeEnd('post-edit');
-        console.error("handleEditClick: PATCH request timed out");
-      });
-      xhr.send(JSON.stringify({ content: editable.value }));
+      submitEdit();
     }
   }
 
   editable.addEventListener('keydown', handleKeydown);
+  submitButton.addEventListener('click', submitEdit);
 
-  article.appendChild(editable);
+  fragment.appendChild(editable);
+  fragment.appendChild(submitButton);
+  article.appendChild(fragment);
   editable.focus();
 
-  rendered.style.display = 'none';
+  action.style.visibility = 'hidden';
+  modal.style.display      = 'none';
+  rendered.style.display   = 'none';
 };
 
 const handleDeleteClick = function(event) {
-  const article = this.getAncestorByTagName('article');
+  const id = this.dataset['id'];
+
+  if (typeof id === 'undefined') {
+    console.error('handleDeleteClick: no "id" data attribute bound on edit button');
+    return false;
+  }
+
+  const article = document.getElementById(id);
   if (article === null) {
-    console.error('handleDeleteClick: could not find article ancestor');
+    console.error('handleDeleteClick: could not find article ancestor with id ' + id);
     return false;
   }
 
@@ -432,13 +486,13 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // Add a div to contain the post menu, which we'll show/hide and move around as necessary.
-  let postMenu = document.createElement('ul');
-  postMenu.id = 'article-menu-modal';
+  modal = document.createElement('ul');
+  modal.id = 'article-menu-modal';
 
   let bodyFragment = document.createDocumentFragment();
   bodyFragment.appendChild(prevArrow);
   bodyFragment.appendChild(nextArrow);
-  bodyFragment.appendChild(postMenu);
+  bodyFragment.appendChild(modal);
 
   document.body.appendChild(bodyFragment);
 
@@ -470,6 +524,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let menuButton = document.createElement('button');
     menuButton.className = 'article-menu';
     menuButton.innerHTML = menuIcon;
+    menuButton.dataset['id'] = thisPost.id;
     menuButton.addEventListener('click', handleMenuClick);
 
     // Add 'Reply' and 'Menu' buttons to each post, attaching handlers to them.
@@ -486,11 +541,13 @@ document.addEventListener('DOMContentLoaded', function() {
       let editButton = document.createElement('button');
       editButton.className = 'article-edit';
       editButton.innerHTML = editIcon;
+      editButton.dataset['id'] = thisPost.id;
       editButton.addEventListener('click', handleEditClick);
 
       let deleteButton = document.createElement('button');
       deleteButton.className = 'article-delete';
       deleteButton.innerHTML = deleteIcon;
+      deleteButton.dataset['id'] = thisPost.id;
       deleteButton.addEventListener('click', handleDeleteClick);
 
       fragment.appendChild(deleteButton);
