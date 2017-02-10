@@ -205,6 +205,19 @@ func SingleRemoveGetHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	p, err := posts.GetByID(id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if p.Author != u.ID {
+		msg := fmt.Sprintf("routes: user %q cannot delete post of user %q", u.ID, p.Author)
+
+		http.Error(w, msg, http.StatusUnauthorized)
+		return
+	}
+
 	if err := posts.Deactivate(id); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
