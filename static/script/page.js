@@ -534,7 +534,10 @@ document.addEventListener('DOMContentLoaded', function() {
     replyButton.addEventListener('click', handleReplyClick);
 
     let fragment = document.createDocumentFragment();
-    fragment.appendChild(menuButton);
+    if (isAdmin || (currentUser === author)) {
+      fragment.appendChild(menuButton);
+    }
+    
     fragment.appendChild(replyButton);
 
     if (isAdmin || (currentUser === author)) {
