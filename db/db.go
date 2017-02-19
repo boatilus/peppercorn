@@ -26,6 +26,14 @@ func Connect() error {
 		Address: viper.GetString("db.address"),
 	}
 
+	username := viper.GetString("db.username")
+	password := viper.GetString("db.password")
+
+	if username != "" && password != "" {
+		Opts.Username = username
+		Opts.Password = password
+	}
+
 	var err error
 
 	if Session, err = rethink.Connect(Opts); err != nil {
