@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"fmt"
+	"log"
 	"math"
 	"strconv"
 	"strings"
@@ -26,6 +27,14 @@ var crReplacer *strings.Replacer
 
 func init() {
 	crReplacer = strings.NewReplacer("\r", "")
+}
+
+// Must accepts an error and, if the error is non-nil, aborts the application after logging the
+// error.
+func Must(err error) {
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 // ObfuscateEmail accepts an email address and returns parts of it obfuscated with asterisks.
