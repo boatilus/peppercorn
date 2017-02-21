@@ -13,22 +13,15 @@ import (
 )
 
 func Start(handler http.Handler) error {
-	port := viper.GetString("port")
-	if port == "" {
-		return errors.New("no port specified")
-	}
+	useTLS := viper.GetBool("use_tls")
 
-	s := &http.Server{
-		Addr:         port,
+	s := http.Server{
 		Handler:      handler,
 		ReadTimeout:  30 * time.Second,
 		WriteTimeout: 30 * time.Second,
 	}
 
-	log.Printf("server: listening on %s..", port)
-
-	// TODO: Handle this much more elegantly
-	if port != ":8000" {
+	if useTLS {
 		domain := viper.GetString("domain")
 		if domain == "" {
 			return errors.New("cannot serve with TLS if no domain specified")
@@ -40,10 +33,21 @@ func Start(handler http.Handler) error {
 			Cache:      autocert.DirCache("certs"),
 		}
 
+		s.Addr = ":8443"
 		s.TLSConfig = &tls.Config{GetCertificate: certManager.GetCertificate}
+		log.Print("server: listening on :8443..")
+
+		go func() {
+			http.ListenAndServe(":8000", http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+				http.Redirect(w, req, "https://"+domain+req.RequestURI, http.StatusMovedPermanently)
+			}))
+		}()
 
 		return s.ListenAndServeTLS("", "")
 	}
+
+	s.Addr = ":8000"
+	log.Print("server: listening on :8000..")
 
 	return s.ListenAndServe()
 }
