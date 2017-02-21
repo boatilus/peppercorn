@@ -31,6 +31,7 @@ func Start(handler http.Handler) error {
 			Prompt:     autocert.AcceptTOS,
 			HostPolicy: autocert.HostWhitelist(domain),
 			Cache:      autocert.DirCache("certs"),
+			Email:      viper.GetString("cert_email"),
 		}
 
 		s.Addr = ":8443"
