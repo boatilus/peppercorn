@@ -159,6 +159,7 @@ func Get(id string) (*PasswordReset, error) {
 	return &pwr, nil
 }
 
+// Destroy removes a password reset from the table by its ID.
 func Destroy(id string) error {
 	if len(id) == 0 {
 		return errors.New("pwreset: in Destroy(), id is empty")
@@ -169,6 +170,24 @@ func Destroy(id string) error {
 	}
 
 	res, err := getTable().Get(id).Delete().RunWrite(db.Session)
+	if err != nil {
+		return err
+	}
+
+	if res.Deleted != 1 {
+		return errors.New("pwreset: in Destroy(), res.Deleted is not 1")
+	}
+
+	return nil
+}
+
+// DestroyAll deletes all password resets.
+func DestroyAll() error {
+	if !db.Session.IsConnected() {
+		return errors.New("pwreset: in Destroy(), RethinkDB session unconnected")
+	}
+
+	res, err := getTable().Delete().RunWrite(db.Session)
 	if err != nil {
 		return err
 	}
