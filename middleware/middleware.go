@@ -34,7 +34,7 @@ func Validate(next http.Handler) http.Handler {
 		c, err := req.Cookie(session.GetKey())
 		if err == http.ErrNoCookie {
 			// No cookie; no sesshie!
-			http.Redirect(w, req, paths.Get.SignIn, http.StatusUnauthorized)
+			http.Redirect(w, req, paths.Get.SignIn, http.StatusSeeOther)
 			return
 		}
 
@@ -56,7 +56,7 @@ func Validate(next http.Handler) http.Handler {
 			c.Expires = time.Date(2000, time.January, 1, 1, 0, 0, 0, time.UTC)
 
 			http.SetCookie(w, c)
-			http.Redirect(w, req, paths.Get.SignIn, http.StatusUnauthorized)
+			http.Redirect(w, req, paths.Get.SignIn, http.StatusSeeOther)
 			return
 		}
 
