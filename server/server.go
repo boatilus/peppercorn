@@ -29,7 +29,7 @@ func Start(handler http.Handler) error {
 
 		certManager := autocert.Manager{
 			Prompt:     autocert.AcceptTOS,
-			HostPolicy: autocert.HostWhitelist(domain),
+			HostPolicy: autocert.HostWhitelist(domain, "www."+domain),
 			Cache:      autocert.DirCache("certs"),
 			Email:      viper.GetString("cert_email"),
 		}
