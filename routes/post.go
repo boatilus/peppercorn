@@ -273,11 +273,64 @@ func ResetPasswordPostHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	p := req.Form["password"]
-	if len(p) == 0 {
+	p1s := req.Form["password1"]
+	if len(p1s) == 0 {
 		http.Error(w, "Password cannot be blank", http.StatusBadRequest)
 		return
 	}
 
-	templates.ResetPassword.Execute(w, nil)
+	p1 := p1s[0]
+
+	p2s := req.Form["password2"]
+	if len(p2s) == 0 {
+		http.Error(w, "Passwords do not match", http.StatusBadRequest)
+		return
+	}
+
+	p2 := p2s[0]
+
+	if p1 != p2 {
+		http.Error(w, "Passwords do not match", http.StatusBadRequest)
+		return
+	}
+
+	tokens := req.Form["token"]
+	if len(tokens) == 0 {
+		http.Error(w, "No token submitted in form", http.StatusBadRequest)
+		return
+	}
+
+	token := tokens[0]
+
+	pwr, err := pwreset.Get(token)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	u, err := users.GetByID(pwr.UserID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	hash, err := users.CreateHash(p1)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	u.Hash = hash
+
+	if err := users.Update(u); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if err := pwreset.Destroy(token); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, req, "/sign-in", http.StatusSeeOther)
 }

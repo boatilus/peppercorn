@@ -130,6 +130,56 @@ func Create(pwr *PasswordReset) error {
 	return nil
 }
 
+func Get(id string) (*PasswordReset, error) {
+	if len(id) == 0 {
+		return nil, errors.New("pwreset: in Get(), id is empty")
+	}
+
+	if !db.Session.IsConnected() {
+		return nil, errors.New("pwreset: in Get(), RethinkDB session unconnected")
+	}
+
+	cursor, err := getTable().Get(id).Run(db.Session)
+	if err != nil {
+		return nil, err
+	}
+
+	defer cursor.Close()
+
+	if cursor.IsNil() {
+		return nil, errors.New("pwreset: in Get(), cursor is nil")
+	}
+
+	var pwr PasswordReset
+
+	if err := cursor.One(&pwr); err != nil {
+		return nil, err
+	}
+
+	return &pwr, nil
+}
+
+func Destroy(id string) error {
+	if len(id) == 0 {
+		return errors.New("pwreset: in Destroy(), id is empty")
+	}
+
+	if !db.Session.IsConnected() {
+		return errors.New("pwreset: in Destroy(), RethinkDB session unconnected")
+	}
+
+	res, err := getTable().Get(id).Delete().RunWrite(db.Session)
+	if err != nil {
+		return err
+	}
+
+	if res.Deleted != 1 {
+		return errors.New("pwreset: in Destroy(), res.Deleted is not 1")
+	}
+
+	return nil
+}
+
 const (
 	ValidateTokenErrorDBUnconnected = "DB_UNCONNECTED"
 	ValidateTokenErrorDBError       = "DB_ERROR"
@@ -151,32 +201,13 @@ func ValidateToken(token string) (bool, error) {
 		return false, nil
 	}
 
-	if !db.Session.IsConnected() {
-		return false, ValidateTokenError{
-			Code: ValidateTokenErrorDBUnconnected,
-			Msg:  "RethinkDB session not connected",
-		}
-	}
-
-	cursor, err := getTable().Get(token).Run(db.Session)
+	pwr, err := Get(token)
 	if err != nil {
-		return false, ValidateTokenError{Code: ValidateTokenErrorDBError, Msg: err.Error()}
-	}
-
-	defer cursor.Close()
-
-	if cursor.IsNil() {
 		return false, nil
 	}
 
-	var pwr PasswordReset
-
-	if err := cursor.One(&pwr); err != nil {
-		return false, ValidateTokenError{Code: ValidateTokenErrorDBError, Msg: err.Error()}
-	}
-
 	// Reset reuqests are invalid once expired.
-	if isExpired(&pwr) {
+	if isExpired(pwr) {
 		return false, nil
 	}
 
