@@ -39,7 +39,7 @@ func Start(handler http.Handler) error {
 		log.Print("server: listening on :8443..")
 
 		go func() {
-			http.ListenAndServe(":8000", http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+			http.ListenAndServe(":8080", http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 				http.Redirect(w, req, "https://"+domain+req.RequestURI, http.StatusMovedPermanently)
 			}))
 		}()
