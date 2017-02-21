@@ -21,7 +21,14 @@ func CreateMailer() {
 // SendForgottenPassword delivers a password reset email to `to`.
 func SendForgottenPassword(to string, token string) error {
 	domain := viper.GetString("domain")
-	body := fmt.Sprintf("Your password reset link: https://%s/reset-password?token=%s", domain, token)
+	useTLS := viper.GetBool("use_tls")
+
+	root := "http"
+	if useTLS {
+		root = "https"
+	}
+
+	body := fmt.Sprintf("Your password reset link: %s://%s/reset-password?token=%s", root, domain, token)
 
 	email := postmark.Email{
 		From:       viper.GetString("postmark.from"),
