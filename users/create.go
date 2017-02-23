@@ -85,5 +85,9 @@ func Create(u *User) error {
 		return fmt.Errorf("Could not insert user [%s]", u.Email)
 	}
 
+	id := res.GeneratedKeys[0]
+
+	Users[id] = *u
+
 	return nil
 }

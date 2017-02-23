@@ -106,8 +106,31 @@ func GetRange(first db.CountType, limit db.CountType) ([]Post, error) {
 	}
 
 	// We want to order displayed posts by time posted (ascending), showing only active posts,
-	// skipping all those we don't need and limiting the number of results to `limit`.
-	cursor, err := db.Get().Table(GetTable()).GetAllByIndex("active", true).OrderBy(rethink.Asc("time")).Skip(first - 1).Limit(limit).Run(db.Session)
+	// skipping inactive posts and limiting the number of results to `limit`.
+	table := db.Get().Table(GetTable())
+
+	// For the Between term, we need to filter to all active posts (`true`) and between the minimum
+	// date through the maximum possible date by querying against the `active_time` compound index.
+	// We're required to specify MinVal and MaxVal here.
+	btOpts := rethink.BetweenOpts{Index: "active_time"}
+	min := []interface{}{true, rethink.MinVal}
+	max := []interface{}{true, rethink.MaxVal}
+
+	// We'll similarly order by the `active_time` index...
+	oOpts := rethink.OrderByOpts{Index: rethink.Asc("active_time")}
+
+	// The Slice term gives us effective pagination of results, but must be performed after filtering
+	// and ordering.
+	//
+	// TODO: Consider whether moving the OrderBy term later in the chain can improve performance,
+	// as per: https://www.rethinkdb.com/docs/optimization/
+	begin := first - 1
+	end := begin + limit
+
+	// Zipping a user document into the post document without Excepting the user's ID field doesn't
+	// trample over the post document's ID field, so we don't need to do anything else but run
+	// the full query.
+	cursor, err := table.Between(min, max, btOpts).OrderBy(oOpts).Slice(begin, end).Run(db.Session)
 	if err != nil {
 		return nil, err
 	}

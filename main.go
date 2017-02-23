@@ -6,6 +6,7 @@ import (
 	"github.com/boatilus/peppercorn/mail"
 	"github.com/boatilus/peppercorn/router"
 	"github.com/boatilus/peppercorn/server"
+	"github.com/boatilus/peppercorn/users"
 	"github.com/boatilus/peppercorn/utility"
 	"github.com/spf13/viper"
 )
@@ -19,6 +20,8 @@ func init() {
 
 func main() {
 	utility.Must(db.Connect())
+
+	utility.Must(users.Populate())
 
 	// Instantiate the secure cookie generator
 	cookie.CreateGenerator()

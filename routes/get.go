@@ -128,7 +128,7 @@ func PageGetHandler(w http.ResponseWriter, req *http.Request) {
 	// posts-per-page setting.
 	begin := ((data.PageNum * data.CurrentUser.PPP) - data.CurrentUser.PPP) + 1
 
-	data.Posts, err = posts.GetRangeJoined(begin, data.CurrentUser.PPP)
+	ps, err := posts.GetRange(begin, data.CurrentUser.PPP)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -143,8 +143,24 @@ func PageGetHandler(w http.ResponseWriter, req *http.Request) {
 
 	now := time.Now()
 
-	for i := range data.Posts {
-		data.Posts[i].PrettyTime = utility.FormatTime(data.Posts[i].Time.In(loc), now)
+	for _, p := range ps {
+		u := users.Users[p.Author]
+
+		zip := posts.Zip{
+			ID:         p.ID,
+			AuthorID:   p.Author,
+			Content:    p.Content,
+			Time:       p.Time,
+			Avatar:     u.Avatar,
+			AuthorName: u.Name,
+			Title:      u.Title,
+			Count:      begin,
+			PrettyTime: utility.FormatTime(p.Time.In(loc), now),
+		}
+
+		data.Posts = append(data.Posts, zip)
+
+		begin++
 	}
 
 	// Now that we've successfully gathered the data needed to render, we want to mark the most

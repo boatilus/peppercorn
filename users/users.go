@@ -29,6 +29,38 @@ func GetTable() string {
 	return viper.GetString("db.users_table")
 }
 
+// As a workaround to faulty sorting with joins in RethinkDB, we'll maintain a local state of the
+// users at all times. This sucks, but for now it's necessary.
+var Users map[string]User
+
+func init() {
+	Users = make(map[string]User)
+}
+
+func Populate() error {
+	if !db.Session.IsConnected() {
+		return errors.New("RethinkDB session not connected")
+	}
+
+	cursor, err := db.Get().Table(GetTable()).Run(db.Session)
+	if err != nil {
+		return err
+	}
+
+	if cursor.IsNil() {
+		return errors.New("users: in Populate(), RethinkDB cursor is nil")
+	}
+
+	defer cursor.Close()
+
+	var res User
+	for cursor.Next(&res) {
+		Users[res.ID] = res
+	}
+
+	return cursor.Err() // get any error encountered during iteration
+}
+
 // CreateHash creates a Bcrypt hash for a given password. Returns a non-nil error on any failure.
 func CreateHash(password string) (string, error) {
 	b, err := bcrypt.GenerateFromPassword([]byte(password), viper.GetInt("brcypt_cost"))
@@ -66,6 +98,8 @@ func Update(u *User) error {
 	if res.Replaced != 1 {
 		return fmt.Errorf("Failed to update user %q with new data", u.ID)
 	}
+
+	Users[u.ID] = *u
 
 	return nil
 }
