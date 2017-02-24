@@ -87,8 +87,16 @@
       {{ end }}
       <hr>
 
-      <form method="post" action="/posts">
-        <textarea id="bottom" name="reply" rows="8" placeholder="Reply.." autocomplete="off" minlength="1" required></textarea>
+      <form id="reply" method="post" action="/posts">
+        <textarea
+          id="bottom"
+          name="reply"
+          rows="8"
+          placeholder="Reply.."
+          autocomplete="off"
+          minlength="1"
+          required
+        ></textarea>
         <button type="submit">Add Reply</button>
       </form>
     </main>

@@ -94,6 +94,7 @@ let currentUser = '';
 // key handlers.
 let prev   = null;
 let next   = null;
+let reply  = null;
 let bottom = null;
 let modal  = null;
 
@@ -233,7 +234,6 @@ const handleKeyDownEvents = function(event) {
       }
     }
   }
-
 };
 
 const handleKeyUpEvents = function(event) {
@@ -315,8 +315,8 @@ const handleEditClick = function(event) {
     submitButton = null;
 
     action.style.visibility = 'visible';
-    rendered.style.display   = 'block';
-    modal.style.display      = 'none';
+    rendered.style.display  = 'block';
+    modal.style.display     = 'none';
   };
   
   // We'll create a textarea element filled with the post's Markdown comment right within the
@@ -471,6 +471,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   prev   = document.getElementById('nav-previous');
   next   = document.getElementById('nav-next');
+  reply  = document.getElementById('reply');
   bottom = document.getElementById('bottom');
 
   let prevArrow = document.createElement('div');
@@ -484,6 +485,13 @@ document.addEventListener('DOMContentLoaded', function() {
   if (next !== null) {
     nextArrow.className = 'page-next-enabled';
   }
+
+  // Add a listener to submit a reply on Ctrl+Enter/Option+Enter
+  bottom.addEventListener('keydown', function(e) {
+    if (bottom.value != "" && e.isModified() && (e.keyCode === returnKey)) {
+      reply.submit();
+    }
+  })
 
   // Add a div to contain the post menu, which we'll show/hide and move around as necessary.
   modal = document.createElement('ul');
