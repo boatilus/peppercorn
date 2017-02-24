@@ -40,6 +40,8 @@ button {
   outline: none; }
   button:hover {
     background: skyblue; }
+  button:focus {
+    background: skyblue; }
   button:active {
     background: lightgreen; }
 
@@ -192,6 +194,9 @@ article {
   @media (min-width: 960px) {
     article img {
       max-width: 800px; } }
+  article blockquote h1 {
+    font-size: 1em;
+    font-weight: bold; }
   @media (min-width: 960px) {
     article iframe {
       margin-top: 0.2em !important;
@@ -337,9 +342,6 @@ article {
 #article-edit-submit {
   font-size: 1em;
   margin-top: 0.75em; }
-  @media (min-width: 960px) {
-    #article-edit-submit {
-      display: none; } }
 
 .article-editable:focus {
   outline-color: #888; }

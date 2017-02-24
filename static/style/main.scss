@@ -69,6 +69,7 @@ button {
   outline: none;
 
   &:hover { background: $color-hover }
+  &:focus { background: $color-hover }
   &:active { background: $color-active }
 }
 
@@ -245,6 +246,11 @@ article {
     @include desktop { max-width: 800px }
   }
 
+  blockquote h1 {
+    font-size: 1em;
+    font-weight: bold;
+  }
+
   iframe {
     @include desktop {
       margin-top: 0.2em !important;
@@ -402,7 +408,7 @@ article {
   font-size: 1em;
   margin-top: 0.75em;
 
-  @include desktop { display: none }
+  //@include desktop { display: none }
 }
 
 .article-editable {

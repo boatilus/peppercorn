@@ -145,9 +145,9 @@ const stripQuotes = function(text) {
 
 // Given a potentially multi-line string of text, return a version of that text with a `>`
 // prepended to each line for a Markdown blockquote.
-const quote = function(text) {
+const quote = function(user, text) {
   let lines = text.split(/\r?\n/);
-  let newlines = [`> **User**:`];
+  let newlines = [`> # ${user}:`];
 
   for (let i = 0; i < lines.length; i++) {
     let line = lines[i].trim();
@@ -298,8 +298,10 @@ const handleReplyClick = function(event) {
     return false;
   }
 
+  const author = article.dataset['author'];
+
   const trimmedContent = getTrimmedContent(article);
-  const strippedAndQuoted = quote(stripQuotes(trimmedContent));
+  const strippedAndQuoted = quote(author, stripQuotes(trimmedContent));
 
   bottom.value = strippedAndQuoted;
   bottom.focus();
