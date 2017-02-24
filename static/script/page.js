@@ -14,7 +14,8 @@ const md = new markdownit({
 
     if (tokens[idx].nesting === 1) {
       // opening tag
-      return '<button class="article-spoiler-button">Spoiler: ' + md.utils.escapeHtml(m[1]) + '</button><div class="article-spoiler">';
+      return `<button class="article-spoiler-button">Spoiler: ${md.utils.escapeHtml(m[1])}</button>
+              <div class="article-spoiler">`;
     } else {
       // closing tag
       return '</div>';
@@ -187,6 +188,18 @@ const bindSpoilersFor = function(node) {
   }
 }
 
+// Hide the modal menu if it's visible.
+const handleDocumentClick = function() {
+  if (modal === null) {
+    console.error('handleDocumentClick: could not find modal element');
+    return;
+  }
+
+  if (modal.style.display !== 'inline-block') return;
+
+  modal.style.display = 'none';
+}
+
 const handleKeyDownEvents = function(event) {
   const nodeName = document.activeElement.nodeName;
   const isInputFocused = nodeName === 'TEXTAREA' || nodeName === 'INPUT';
@@ -280,15 +293,15 @@ const handleMenuClick = function() {
   fragment.appendChild(del);
   modal.appendChild(fragment);
 
-  const bodyRect       = document.body.getBoundingClientRect();
-  const menuButtonRect = this.getBoundingClientRect();
+  // const bodyRect       = document.body.getBoundingClientRect();
+  // const menuButtonRect = this.getBoundingClientRect();
 
-  const offsetY = menuButtonRect.top  - bodyRect.top;
-  const offsetX = menuButtonRect.left - bodyRect.left;
+  // const offsetY = menuButtonRect.top  - bodyRect.top;
+  // const offsetX = menuButtonRect.left - bodyRect.left;
 
-  modal.style.top  = offsetY + this.offsetHeight + 'px';
-  modal.style.left = offsetX - this.offsetWidth  + 'px';
-  modal.style.display = 'inline-block';
+  // modal.style.top  = offsetY + this.offsetHeight + 'px';
+  // modal.style.left = offsetX - this.offsetWidth  + 'px';
+  modal.style.display = 'block';
 };
 
 const handleReplyClick = function(event) {
@@ -487,6 +500,8 @@ document.addEventListener('DOMContentLoaded', function() {
   if (next !== null) {
     nextArrow.className = 'page-next-enabled';
   }
+
+  document.addEventListener('click', handleDocumentClick);
 
   // Add a listener to submit a reply on Ctrl+Enter/Option+Enter
   bottom.addEventListener('keydown', function(e) {
