@@ -62,16 +62,18 @@
       
       {{ range .Posts }}
         <article id="{{ .ID }}" data-author="{{ .AuthorName }}">
+          {{ if .Avatar }}
           <picture class="article-avatar">
             <source media="(min-width: 960px)" srcset="{{ .Avatar }}">
             <img src="">
           </picture>
+          {{ end }}
           
           <div class="article-actions"></div>         
           <header>
             <hgroup>
               <h1><a href="/users/{{ .AuthorName }}" rel="author">{{ .AuthorName }}</a></h1>
-              <h2>{{ .Title }}</h2>
+              {{ if .Title }}<h2>{{ .Title }}</h2>{{ end }}
             </hgroup>
 
             <div class="article-meta">

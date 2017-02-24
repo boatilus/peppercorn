@@ -153,6 +153,26 @@ article {
   padding-top: 0.4em; }
   article header {
     display: flex; }
+    article header h1 {
+      font-size: larger;
+      margin: 0; }
+      @media (max-width: 959px) {
+        article header h1 {
+          font-size: 110%;
+          line-height: 1em; } }
+      @media (min-width: 960px) {
+        article header h1 {
+          display: inline;
+          font-size: 140%; } }
+    @media (max-width: 959px) {
+      article header h2 {
+        display: none; } }
+    @media (min-width: 960px) {
+      article header h2 {
+        display: inline;
+        font-weight: normal;
+        font-size: 100%;
+        margin-left: 0.75em; } }
     @media (max-width: 959px) {
       article header {
         flex-direction: column; } }
@@ -161,26 +181,6 @@ article {
         align-items: center;
         padding-bottom: 0.5em;
         justify-content: space-between; } }
-  article h1 {
-    font-size: larger;
-    margin: 0; }
-    @media (max-width: 959px) {
-      article h1 {
-        font-size: 110%;
-        line-height: 1em; } }
-    @media (min-width: 960px) {
-      article h1 {
-        display: inline;
-        font-size: 140%; } }
-  @media (max-width: 959px) {
-    article h2 {
-      display: none; } }
-  @media (min-width: 960px) {
-    article h2 {
-      display: inline;
-      font-weight: normal;
-      font-size: 100%;
-      margin-left: 0.75em; } }
   @media (max-width: 959px) {
     article picture {
       display: none; } }
@@ -188,15 +188,29 @@ article {
     line-height: 135%;
     margin: 0;
     padding: 0 0 1em 0; }
+  article h1, article h2, article h3 {
+    margin-top: 0; }
   @media (max-width: 959px) {
     article img {
       max-width: 100%; } }
   @media (min-width: 960px) {
     article img {
       max-width: 800px; } }
-  article blockquote h1 {
-    font-size: 1em;
-    font-weight: bold; }
+  article blockquote {
+    background: #111;
+    box-sizing: border-box;
+    margin: 0 0 1em 1em;
+    padding: 0.5em 0.75em 0 0.75em;
+    width: 92%; }
+    article blockquote blockquote {
+      background: #262626; }
+      article blockquote blockquote blockquote {
+        background: #111; }
+    article blockquote h1 {
+      display: block;
+      font-size: 1em;
+      font-weight: bold;
+      margin-bottom: 0.5em; }
   @media (min-width: 960px) {
     article iframe {
       margin-top: 0.2em !important;

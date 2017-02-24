@@ -196,38 +196,38 @@ article {
   header {
     display: flex;
 
+    h1 {
+      font-size: larger;
+      margin: 0;
+
+      @include mobile {
+        font-size: 110%;
+        line-height: 1em;
+      }
+
+      @include desktop {
+        display: inline;
+        font-size: 140%;
+      }
+    }
+
+    h2 {
+      @include mobile { display: none }
+
+      @include desktop {
+        display: inline;
+        font-weight: normal;
+        font-size: 100%;
+        margin-left: 0.75em;
+      }
+    }
+
     @include mobile { flex-direction: column }
 
     @include desktop {
       align-items: center;
       padding-bottom: 0.5em;
       justify-content: space-between;
-    }
-  }
-
-  h1 {
-    font-size: larger;
-    margin: 0;
-
-    @include mobile {
-      font-size: 110%;
-      line-height: 1em;
-    }
-
-    @include desktop {
-      display: inline;
-      font-size: 140%;
-    }
-  }
-
-  h2 {
-    @include mobile { display: none }
-
-    @include desktop {
-      display: inline;
-      font-weight: normal;
-      font-size: 100%;
-      margin-left: 0.75em;
     }
   }
 
@@ -241,14 +241,34 @@ article {
     padding: 0 0 1em 0;
   }
 
+  h1, h2, h3 { margin-top: 0 }
+
   img {
     @include mobile { max-width: 100% }
     @include desktop { max-width: 800px }
   }
 
-  blockquote h1 {
-    font-size: 1em;
-    font-weight: bold;
+  blockquote {
+    background: #111;
+    box-sizing: border-box;
+    margin: 0 0 1em 1em;
+    padding: 0.5em 0.75em 0 0.75em;
+    width: 92%;
+
+    blockquote {
+      background: #262626;
+
+      blockquote {
+        background: #111;
+      }
+    }
+
+    h1 {
+      display: block;
+      font-size: 1em;
+      font-weight: bold;
+      margin-bottom: 0.5em;
+    }
   }
 
   iframe {
