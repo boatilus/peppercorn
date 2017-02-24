@@ -271,6 +271,8 @@ article {
     display: block;
     font-size: 0.9em;
     margin-bottom: 1em; }
+  article .article-rendered {
+    margin-top: 0.25em; }
   @media (max-width: 959px) {
     article {
       background-image: none !important;

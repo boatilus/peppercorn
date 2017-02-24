@@ -337,6 +337,8 @@ article {
     margin-bottom: 1em;
   }
 
+  .article-rendered { margin-top: 0.25em }
+
   @include mobile {
     background-image: none !important;
     border-bottom: 1px solid #555;
