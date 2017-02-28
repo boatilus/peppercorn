@@ -35,7 +35,10 @@ func Start(handler http.Handler) error {
 		}
 
 		s.Addr = ":8443"
-		s.TLSConfig = &tls.Config{GetCertificate: certManager.GetCertificate}
+		s.TLSConfig = &tls.Config{
+			GetCertificate: certManager.GetCertificate,
+			MinVersion:     tls.VersionTLS12,
+		}
 		log.Print("server: listening on :8443..")
 
 		go func() {
