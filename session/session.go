@@ -23,6 +23,10 @@ type Session struct {
 	Timestamp time.Time `gorethink:"timestamp"`
 }
 
+// DefaultAge specifies the default length of time a session is valid (in seconds) unless specified
+// for Viper with the 'session.max_age' value.
+const DefaultAge = 30 * 24 * 60 * 60
+
 // GetKey returns the session key we'll implant in the cookie from viper
 func GetKey() string {
 	return viper.GetString("session_key")
@@ -85,11 +89,11 @@ func GetByID(sid string) (*Session, error) {
 	return &s, nil
 }
 
-// GetByUser queries the DB for any sessions for a given user and returns them, sorted by the
-// timestamp in descending order (newest first). Returns an empty slice of Sessions and an error on
-// failure.
+// GetByUser queries the DB for any valid, unexpired sessions for a given user and returns them,
+// sorted by the timestamp in descending order (newest first). Returns an empty slice of Sessions
+// and an error on failure.
 //
-// TODO: Consider paginating results
+// TODO: Consider paginating results?
 func GetByUser(userID string) ([]Session, error) {
 	if !db.Session.IsConnected() {
 		return nil, errors.New("RethinkDB session not connected")
@@ -97,7 +101,19 @@ func GetByUser(userID string) ([]Session, error) {
 
 	log.Printf("Retrieving sessions for user %q..", userID)
 
-	t := db.Get().Table(GetTable()).GetAllByIndex("user_id", userID).OrderBy(rethink.Desc("timestamp"))
+	maxAge := viper.GetInt("cookie.max_age")
+	if maxAge == 0 {
+		maxAge = DefaultAge
+	}
+
+	from := time.Now().UTC().Add(-(time.Duration(maxAge) * time.Second))
+	to := time.Now().UTC()
+
+	table := db.Get().Table(GetTable())
+
+	t := table.GetAllByIndex("user_id", userID).Filter(func(row rethink.Term) rethink.Term {
+		return row.Field("timestamp").During(from, to)
+	}).OrderBy(rethink.Desc("timestamp"))
 
 	cursor, err := t.Run(db.Session)
 	if err != nil {

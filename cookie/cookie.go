@@ -30,7 +30,7 @@ func CreateGenerator() {
 func Create(value string) (*http.Cookie, error) {
 	maxAge := viper.GetInt("cookie.max_age")
 	if maxAge == 0 {
-		maxAge = 30 * 24 * 60 * 60 // Default to 30 days if unspecified
+		maxAge = session.DefaultAge
 	}
 
 	if cookieGen == nil {
