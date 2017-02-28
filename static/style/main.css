@@ -5,7 +5,8 @@ html {
   @media (max-width: 959px) {
     html {
       color: #bfbfbf;
-      font-size: 16px; } }
+      font-size: 16px;
+      -webkit-text-size-adjust: 100%; } }
   @media (min-width: 960px) {
     html {
       color: #a6a6a6;
@@ -155,7 +156,8 @@ article {
     display: flex; }
     article header h1 {
       font-size: larger;
-      margin: 0; }
+      margin: 0;
+      text-rendering: optimizeLegibility; }
       @media (max-width: 959px) {
         article header h1 {
           font-size: 110%;
@@ -164,15 +166,17 @@ article {
         article header h1 {
           display: inline;
           font-size: 140%; } }
-    @media (max-width: 959px) {
-      article header h2 {
-        display: none; } }
-    @media (min-width: 960px) {
-      article header h2 {
-        display: inline;
-        font-weight: normal;
-        font-size: 100%;
-        margin-left: 0.75em; } }
+    article header h2 {
+      text-rendering: optimizeLegibility; }
+      @media (max-width: 959px) {
+        article header h2 {
+          display: none; } }
+      @media (min-width: 960px) {
+        article header h2 {
+          display: inline;
+          font-weight: normal;
+          font-size: 100%;
+          margin-left: 0.75em; } }
     @media (max-width: 959px) {
       article header {
         flex-direction: column; } }
@@ -188,6 +192,9 @@ article {
     line-height: 135%;
     margin: 0;
     padding: 0 0 1em 0; }
+    @media (max-width: 959px) {
+      article p {
+        text-rendering: optimizeSpeed; } }
   article h1, article h2, article h3 {
     margin-top: 0; }
   @media (max-width: 959px) {

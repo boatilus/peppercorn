@@ -29,6 +29,7 @@ html {
   @include mobile {
     color: $color-text-mobile;
     font-size: 16px;
+    -webkit-text-size-adjust: 100%;
   }
 
   @include desktop {
@@ -199,6 +200,7 @@ article {
     h1 {
       font-size: larger;
       margin: 0;
+      text-rendering: optimizeLegibility;
 
       @include mobile {
         font-size: 110%;
@@ -212,6 +214,8 @@ article {
     }
 
     h2 {
+      text-rendering: optimizeLegibility;
+
       @include mobile { display: none }
 
       @include desktop {
@@ -239,6 +243,8 @@ article {
     line-height: 135%;
     margin: 0;
     padding: 0 0 1em 0;
+    
+    @include mobile { text-rendering: optimizeSpeed }
   }
 
   h1, h2, h3 { margin-top: 0 }
