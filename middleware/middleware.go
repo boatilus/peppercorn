@@ -104,24 +104,12 @@ func InitCSP() {
 	)
 }
 
-// SetCSP sets the Content Security Policy specified in `cspString`, initialized via InitCSP(), on
-// the response header.
-func SetCSP() func(next http.Handler) http.Handler {
+// SetSecurity sets the Content Security Policy header specified in `cspString`, initialized via
+// InitCSP(), and the Strict Transport Security header on the response.
+func SetSecurity() func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		fn := func(w http.ResponseWriter, req *http.Request) {
 			w.Header().Add("Content-Security-Policy", cspString)
-
-			next.ServeHTTP(w, req)
-		}
-
-		return http.HandlerFunc(fn)
-	}
-}
-
-// SetSTS sets the Strict-Transport-Security header on the response.
-func SetSTS() func(next http.Handler) http.Handler {
-	return func(next http.Handler) http.Handler {
-		fn := func(w http.ResponseWriter, req *http.Request) {
 			w.Header().Add("Strict-Transport-Security", "max-age=63072000; includeSubDomains")
 
 			next.ServeHTTP(w, req)
