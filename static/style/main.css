@@ -203,6 +203,17 @@ article {
   @media (min-width: 960px) {
     article img {
       max-width: 800px; } }
+  article a {
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    -ms-word-break: break-all;
+    /* Instead use this non-standard one: */
+    word-break: break-word;
+    /* Adds a hyphen where the word breaks, if supported (No Blink) */
+    -ms-hyphens: auto;
+    -moz-hyphens: auto;
+    -webkit-hyphens: auto;
+    hyphens: auto; }
   article blockquote {
     background: #111;
     box-sizing: border-box;
@@ -364,9 +375,12 @@ article {
     background: red;
     color: white; }
 
-#article-edit-submit {
+#article-edit-submit, #article-edit-cancel {
   font-size: 1em;
   margin-top: 0.75em; }
+
+#article-edit-cancel {
+  margin-left: 2em; }
 
 .article-editable:focus {
   outline-color: #888; }

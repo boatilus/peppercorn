@@ -343,9 +343,14 @@ const handleEditClick = function(event) {
     submitButton.remove();
     submitButton = null;
 
+    cancelButton.remove();
+    cancelButton = null;
+
     action.style.visibility = 'visible';
     rendered.style.display  = 'block';
     modal.style.display     = 'none';
+
+    document.body.removeEventListener('touchmove', preventEvent);
   };
   
   // We'll create a textarea element filled with the post's Markdown comment right within the
@@ -397,6 +402,10 @@ const handleEditClick = function(event) {
   let submitButton = document.createElement('button');
   submitButton.id        = 'article-edit-submit';
   submitButton.innerText = 'Submit changes';
+
+  let cancelButton = document.createElement('button');
+  cancelButton.id        = 'article-edit-cancel';
+  cancelButton.innerText = 'Cancel';
 
   const submitEdit = function() {
     const val = editable.value;
@@ -459,16 +468,20 @@ const handleEditClick = function(event) {
 
   editable.addEventListener('keydown', handleKeydown);
   submitButton.addEventListener('click', submitEdit);
+  cancelButton.addEventListener('click', displayViewState);
 
   fragment.appendChild(editable);
   fragment.appendChild(submitButton);
+  fragment.appendChild(cancelButton);
   article.appendChild(fragment);
   editable.focus();
 
   action.style.visibility = 'hidden';
-  modal.style.display      = 'none';
+  modal.style.display     = 'none';
   blank.style.display     = 'none';
-  rendered.style.display   = 'none';
+  rendered.style.display  = 'none';
+
+  document.body.removeEventListener('touchmove', preventEvent);
 };
 
 const handleDeleteClick = function(event) {
@@ -489,12 +502,17 @@ const handleDeleteClick = function(event) {
     window.location.href = `/posts/${article.id}/delete`;
   }
 
+  modal.style.display = 'none';
   blank.style.display = 'none';
+
+  document.body.removeEventListener('touchmove', preventEvent);
 };
 
 const handleCancelClick = function() {
   modal.style.display = 'none';
   blank.style.display = 'none';
+
+  document.body.removeEventListener('touchmove', preventEvent);
 }
 
 const handleSpoilerClick = function() {
