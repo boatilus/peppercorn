@@ -349,9 +349,13 @@ const handleEditClick = function(event) {
     cancelButton.remove();
     cancelButton = null;
 
-    action.style.visibility = 'visible';
-    rendered.style.display  = 'block';
-    modal.style.display     = 'none';
+    action.style.visibility     = 'visible';
+    rendered.style.display      = 'block';
+    modal.style.display         = 'none';
+
+    for (let i = 0; i < allActions.length; i++) {
+      allActions.item(i).style.visibility = 'visible';
+    }
 
     document.body.removeEventListener('touchmove', preventEvent);
   };
@@ -367,19 +371,25 @@ const handleEditClick = function(event) {
     return false;
   }
 
-  const article = document.getElementById(id);
+  let article = document.getElementById(id);
   if (article === null) {
     console.error('handleEditClick: could not find article with id ' + id);
     return false;
   }
 
-  const actions = article.getElementsByClassName('article-actions');
+  let actions = article.getElementsByClassName('article-actions');
   if (actions.length === 0) {
     console.error('handleEditClick: no actions group found for this post');
     return false;
   }
 
   let action = actions.item(0);
+
+  let allActions = document.getElementsByClassName('article-actions');
+  
+  for (let i = 0; i < allActions.length; i++) {
+    allActions.item(i).style.visibility = 'hidden';
+  }
 
   let content = article.getFirstElementByClassName('article-content');
   if (content === null) {
