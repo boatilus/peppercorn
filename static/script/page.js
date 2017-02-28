@@ -330,7 +330,10 @@ const handleReplyClick = function(event) {
   const trimmedContent = getTrimmedContent(article);
   const strippedAndQuoted = quote(author, stripQuotes(trimmedContent));
 
-  bottom.value = strippedAndQuoted;
+  const oldValue = bottom.value;
+
+  bottom.value = '';
+  bottom.value = oldValue + strippedAndQuoted;
   bottom.focus();
 };
 
