@@ -479,6 +479,12 @@ const handleEditClick = function(event) {
   article.appendChild(fragment);
   editable.focus();
 
+  const bodyRect     = document.body.getBoundingClientRect();
+  const editableRect = editable.getBoundingClientRect();
+  const offsetY      = editableRect.top  - bodyRect.top - editableRect.height;
+
+  window.scrollTo(0, offsetY);
+
   action.style.visibility = 'hidden';
   modal.style.display     = 'none';
   blank.style.display     = 'none';
