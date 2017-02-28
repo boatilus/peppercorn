@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/boatilus/peppercorn/cookie"
@@ -290,9 +291,20 @@ func MeGetHandler(w http.ResponseWriter, req *http.Request) {
 	for i := range ss {
 		data := utility.ParseUserAgent(ss[i].UserAgent)
 
+		var ip string
+
+		// Running locally, an IP is displayed like "[::1]:57305". Ergo, if we're running locally,
+		// just pass the IP unchanged. Otherwise, split off the port from the IP address and only
+		// display that to the user.
+		if ss[i].IP[0] == '[' {
+			ip = ss[i].IP
+		} else {
+			ip = strings.Split(ss[i].IP, ":")[0]
+		}
+
 		s := sessionData{
 			Device:    fmt.Sprintf("%s on %s", data.Browser, data.OS),
-			IP:        ss[i].IP,
+			IP:        ip,
 			Timestamp: utility.FormatTime(ss[i].Timestamp.In(loc), now),
 		}
 
