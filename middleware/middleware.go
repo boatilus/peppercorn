@@ -117,3 +117,16 @@ func SetCSP() func(next http.Handler) http.Handler {
 		return http.HandlerFunc(fn)
 	}
 }
+
+// SetSTS sets the Strict-Transport-Security header on the response.
+func SetSTS() func(next http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		fn := func(w http.ResponseWriter, req *http.Request) {
+			w.Header().Add("Strict-Transport-Security", "max-age=63072000; includeSubDomains")
+
+			next.ServeHTTP(w, req)
+		}
+
+		return http.HandlerFunc(fn)
+	}
+}

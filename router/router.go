@@ -26,6 +26,7 @@ func Create() (http.Handler, error) {
 	r.Use(chiMiddleware.CloseNotify)
 	r.Use(chiMiddleware.Timeout(60 * time.Second))
 	r.Use(chiMiddleware.DefaultCompress)
+	r.Use(middleware.SetSTS())
 	r.Use(middleware.SetCSP())
 
 	// TODO: Refactor these routes by protected/unprotected

@@ -39,6 +39,7 @@ func Start(handler http.Handler) error {
 			GetCertificate: certManager.GetCertificate,
 			MinVersion:     tls.VersionTLS12,
 		}
+
 		log.Print("server: listening on :8443..")
 
 		go func() {
