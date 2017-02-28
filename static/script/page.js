@@ -98,6 +98,7 @@ let next   = null;
 let reply  = null;
 let bottom = null;
 let modal  = null;
+let blank  = null;
 
 // Retrieve the nearest ancestor that matches `tag`, returning `null` if it hits the <html> element.
 Element.prototype.getAncestorByTagName = function(tag) {
@@ -284,13 +285,19 @@ const handleMenuClick = function() {
   edit.addEventListener('click', handleEditClick);
 
   let del = document.createElement('li');
-  del.className = 'delete';
+  del.className     = 'delete';
   del.dataset['id'] = id;
   del.innerText     = 'Delete';
   del.addEventListener('click', handleDeleteClick);
 
+  let cancel = document.createElement('li');
+  cancel.className = 'article-menu-modal-cancel';
+  cancel.innerText = 'Cancel';
+  cancel.addEventListener('click', handleCancelClick);
+
   fragment.appendChild(edit);
   fragment.appendChild(del);
+  fragment.appendChild(cancel);
   modal.appendChild(fragment);
 
   // const bodyRect       = document.body.getBoundingClientRect();
@@ -302,7 +309,14 @@ const handleMenuClick = function() {
   // modal.style.top  = offsetY + this.offsetHeight + 'px';
   // modal.style.left = offsetX - this.offsetWidth  + 'px';
   modal.style.display = 'block';
+  blank.style.display = 'block';
+
+  document.body.addEventListener('touchmove', preventEvent);
 };
+
+const preventEvent = function(event) {
+  event.preventDefault();
+}
 
 const handleReplyClick = function(event) {
   const article = this.getAncestorByTagName('article');
@@ -453,6 +467,7 @@ const handleEditClick = function(event) {
 
   action.style.visibility = 'hidden';
   modal.style.display      = 'none';
+  blank.style.display     = 'none';
   rendered.style.display   = 'none';
 };
 
@@ -473,7 +488,14 @@ const handleDeleteClick = function(event) {
   if (window.confirm('Are you sure you want to delete this post?')) {
     window.location.href = `/posts/${article.id}/delete`;
   }
+
+  blank.style.display = 'none';
 };
+
+const handleCancelClick = function() {
+  modal.style.display = 'none';
+  blank.style.display = 'none';
+}
 
 const handleSpoilerClick = function() {
   this.style.display = 'none';
@@ -514,10 +536,14 @@ document.addEventListener('DOMContentLoaded', function() {
   modal = document.createElement('ul');
   modal.id = 'article-menu-modal';
 
+  blank = document.createElement('div');
+  blank.id = 'blank';
+
   let bodyFragment = document.createDocumentFragment();
   bodyFragment.appendChild(prevArrow);
   bodyFragment.appendChild(nextArrow);
   bodyFragment.appendChild(modal);
+  bodyFragment.appendChild(blank);
 
   document.body.appendChild(bodyFragment);
 

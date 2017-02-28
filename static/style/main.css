@@ -347,7 +347,9 @@ article {
   margin: 0;
   padding: 0;
   text-align: center;
-  width: 100%; }
+  transition: 0.5s bottom;
+  width: 100%;
+  z-index: 100; }
   #article-menu-modal li {
     border-top: 1px solid gray;
     padding: 1.2em 0; }
@@ -452,3 +454,12 @@ footer {
 
 .page-next-enabled {
   border-left-color: white !important; }
+
+#blank {
+  background: rgba(0, 0, 0, 0.4);
+  display: none;
+  position: fixed;
+  height: 100%;
+  left: 0;
+  top: 0;
+  width: 100%; }
