@@ -30,6 +30,8 @@
         border-radius: 3px;
         padding: 0.25em 0.4em;
       }
+
+      #sessions hr:last-of-type { display: none }
     </style>
   </head>
 
@@ -109,18 +111,21 @@
       <hr/>
 
       <h2>Devices and Sessions</h2>
-      {{ range $i, $e := .Sessions }}
-        <section class="grid grid--medium">
-          <div class="column--heavy">
-            {{ $e.Device }}<br>
-            {{ $e.IP }}<br>
-            Created on: <strong>{{ $e.Timestamp }}</strong>
+        <section id="sessions">
+        {{ range $i, $e := .Sessions }}
+          <div class="grid grid--medium">
+            <div class="column--heavy">
+              {{ $e.Device }}<br>
+              {{ $e.IP }}<br>
+              Created on: <strong>{{ $e.Timestamp }}</strong>
+            </div>
+            <div>
+              <a class="btn" href="/me/revoke/{{ $i }}">Revoke Access</a>
+            </div>
           </div>
-          <div>
-            <a class="btn" href="/me/revoke/{{ $i }}">Revoke Access</a>
-          </div>
-        </section>
-      {{ end }}
+          <hr>
+        {{ end }}
+      </div>
     </form>
   </body>
 </html>
