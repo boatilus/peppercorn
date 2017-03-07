@@ -254,6 +254,8 @@ article {
     @include desktop { max-width: 800px }
   }
 
+  img[src=""] { display: none } // if they've been blocked by the Content Security Policy, for ex.
+
   a {
     overflow-wrap: break-word;
     word-wrap: break-word;
