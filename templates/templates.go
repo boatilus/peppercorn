@@ -2,7 +2,6 @@ package templates
 
 import (
 	"html/template"
-	"log"
 	"os"
 
 	"github.com/boatilus/peppercorn/db"
@@ -16,8 +15,8 @@ var Me *template.Template
 var Forgot *template.Template
 var ResetPassword *template.Template
 
-var cwd string
-var pathSep string
+var sep string
+var dir string
 
 var funcMap template.FuncMap
 
@@ -33,14 +32,10 @@ func init() {
 		"getTitleWith": utility.GetTitleWith,
 	}
 
-	pathSep = string(os.PathSeparator)
+	sep = string(os.PathSeparator)
 
-	var err error
-
-	cwd, err = os.Getwd()
-	if err != nil {
-		log.Fatal(err)
-	}
+	goPath := os.Getenv("GOPATH")
+	dir = goPath + sep + "src" + sep + "github.com" + sep + "boatilus" + sep + "peppercorn"
 
 	// TODO: Async these
 	Index = parseTemplate("index")
@@ -52,7 +47,8 @@ func init() {
 }
 
 func parseTemplate(name string) *template.Template {
-	t := template.Must(template.New(name + ".html").Funcs(funcMap).ParseFiles(cwd + pathSep + "templates" + pathSep + name + ".html"))
+	path := dir + sep + "templates" + sep + name + ".html"
+	t := template.Must(template.New(name + ".html").Funcs(funcMap).ParseFiles(path))
 
 	return t
 }
