@@ -20,8 +20,12 @@ type User struct {
 	Timezone   string       `gorethink:"timezone"`    // IANA time zone string
 	LastViewed string       `gorethink:"last_viewed"` // Track the last post a user's viewed
 
-	Hash    string `gorethink:"hash"`
-	IsAdmin bool   `gorethink:"is_admin,omitempty"`
+	Hash string `gorethink:"hash"`
+
+	Has2FAEnabled bool   `gorethink:"has_2fa_enabled"`
+	TOTPSecret    string `gorethink:"totp_secret"`
+
+	IsAdmin bool `gorethink:"is_admin,omitempty"`
 }
 
 // GetTable returns the value of db.users_table from the config file.
