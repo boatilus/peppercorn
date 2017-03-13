@@ -39,22 +39,33 @@ Your `config` should look like this and be placed in the app's working directory
 ```JSON
 {
     "test": true,
+    "title": "Anything you'd like!",
     "port": ":8000",
-    "bcrypt_cost": 10,
+    "bcrypt_cost": 12,
     "session_key": "anyString",
-    "cookie": {
-    "hash_key": "a 64-character string for HMAC",
-    "block_key": "a 32-character string for AES-256"
+    "two_factor_auth": {
+      "duration": 259200,
+      "required": false
     },
+    "cookie": {
+      "hash_key": "a 64-character string for HMAC",
+      "block_key": "a 32-character string for AES-256"
+    },
+    "timezones": ["US/Pacific", "US/East"],
+    "ppp_options": [5, 10, 20, 50, 100],
     "db": {
-    "address": "localhost:28015",
-    "name": "peppercorn",
-    "users_table": "users",
-    "posts_table": "posts",
-    "sessions_table": "sessions"
+      "address": "localhost:28015",
+      "name": "peppercorn",
+      "users_table": "users",
+      "posts_table": "posts",
+      "sessions_table": "sessions"
     },
     "sentry": {
-    "dsn": "your Sentry DSN, if desired"
+      "dsn": "your Sentry DSN, if desired"
+    },
+    "postmark": {
+      "server_token": "",
+      "account_token": ""
     }
 }
 ```
