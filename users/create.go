@@ -65,7 +65,19 @@ func NewFromDefaults(email string, name string, password string) (*User, error) 
 		return nil, err
 	}
 
-	return &User{Email: email, Name: name, PPP: defaultPPP, Hash: bhash}, nil
+	authDuration := db.CountType(viper.GetInt("two_factor_auth.duration"))
+	if authDuration == 0 {
+		authDuration = default2FAAuthDuration
+	}
+
+	return &User{
+		Email: email,
+		Name:  name,
+		PPP:   defaultPPP,
+		Hash:  bhash,
+
+		AuthDuration: authDuration,
+	}, nil
 }
 
 // Create accepts a valid User object and inserts it into the database, assuming a user with that ID,
