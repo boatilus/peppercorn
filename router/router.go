@@ -41,7 +41,7 @@ func Create() (http.Handler, error) {
 	r.With(middleware.Validate).Get(paths.Get.TotalPostCount, routes.CountGetHandler)
 	r.With(middleware.Validate).Get(paths.Get.Me, routes.MeGetHandler)
 	r.With(middleware.Validate).Get(paths.Get.MeRevoke, routes.MeRevokeGetHandler)
-	r.With(middleware.Validate).Get(paths.Get.EnableTwoFactorAuthentication, routes.EnableTwoFactorAuthentication)
+	r.With(middleware.Validate).Get(paths.Get.EnableTwoFactorAuthentication, routes.EnableTwoFactorAuthenticationGetHandler)
 
 	// POST
 	r.Post(paths.Post.SignIn, routes.SignInPostHandler)
@@ -49,6 +49,7 @@ func Create() (http.Handler, error) {
 	r.Post(paths.Post.ResetPassword, routes.ResetPasswordPostHandler)
 	r.With(middleware.Validate).Post(paths.Post.Me, routes.MePostHandler)
 	r.With(middleware.Validate).Post(paths.Post.SubmitPost, routes.PostsPostHandler)
+	r.With(middleware.Validate).Post(paths.Post.EnableTwoFactorAuthentication, routes.EnableTwoFactorAuthenticationPostHandler)
 
 	// PATCH
 	r.With(middleware.Validate).Patch(paths.Patch.Single, routes.SinglePatchHandler)

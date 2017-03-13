@@ -322,6 +322,7 @@ func MeGetHandler(w http.ResponseWriter, req *http.Request) {
 		Avatar          string
 		PPPOptions      []string
 		PPP             string
+		Has2FAEnabled   bool
 		Timezones       []string
 		UserTimezone    string
 		Sessions        []sessionData
@@ -333,6 +334,7 @@ func MeGetHandler(w http.ResponseWriter, req *http.Request) {
 		u.Avatar,
 		pppOptions,
 		strconv.FormatInt(int64(u.PPP), 10),
+		u.Has2FAEnabled,
 		viper.GetStringSlice("timezones"),
 		u.Timezone,
 		sessions,

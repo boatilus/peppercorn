@@ -111,8 +111,13 @@
       <hr/>
 
       <h3>Two-Factor Authentication</h3>
-      <p>Status: </p>
-      <a class="btn" href="/me/enable-two-factor-authentication">Enable two-factor authentication</a>
+      {{ if .Has2FAEnabled }}
+        <p>Status: <span style="color: green">Enabled</span></p>
+        <a class="btn" href="/me/disable-two-factor-authentication">Disable two-factor authentication</a>
+      {{ else }}
+        <p>Status: <span style="color: red">Disabled</span></p>
+        <a class="btn" href="/me/enable-two-factor-authentication">Enable two-factor authentication</a>
+      {{ end }}
       <hr/>
 
       <h3>Devices and Sessions</h3>

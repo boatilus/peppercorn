@@ -40,6 +40,8 @@ var Post struct {
 	Forgot string
 	// ResetPassword is the path to which the password reset form is POSTed
 	ResetPassword string
+	// EnableTwoFactorAuthentication is the path to which a TOTP code is POSTed to enable 2FA
+	EnableTwoFactorAuthentication string
 }
 
 // Patch is a struct containing routing paths to PATCH requests
@@ -66,6 +68,7 @@ func init() {
 	Post.SubmitPost = "/posts"
 	Post.Forgot = "/forgot"
 	Post.ResetPassword = "/reset-password"
+	Post.EnableTwoFactorAuthentication = "/me/enable-two-factor-authentication"
 
 	Patch.Single = "/posts/:num"
 }

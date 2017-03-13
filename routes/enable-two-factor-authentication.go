@@ -11,7 +11,7 @@ import (
 	"github.com/pquerna/otp/totp"
 )
 
-func EnableTwoFactorAuthentication(w http.ResponseWriter, req *http.Request) {
+func EnableTwoFactorAuthenticationGetHandler(w http.ResponseWriter, req *http.Request) {
 	u := users.FromContext(req.Context())
 	if u == nil {
 		http.Error(
@@ -29,17 +29,18 @@ func EnableTwoFactorAuthentication(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	// In typical fashion, we describe the TOTP secret with the account email.
 	key, err := totp.Generate(totp.GenerateOpts{
 		Issuer:      "peppercorn",
-		AccountName: u.ID,
+		AccountName: u.Email,
 	})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	var buf bytes.Buffer
-	img, err := key.Image(500, 500)
+	var buf bytes.Buffer            // to hold the QR code PNG data
+	img, err := key.Image(500, 500) // we'll scale this down for Retina
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -50,6 +51,7 @@ func EnableTwoFactorAuthentication(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	// In the HTML, we display the generated image as base64.
 	base64Image := base64.StdEncoding.EncodeToString(buf.Bytes())
 
 	type data struct {
@@ -57,8 +59,9 @@ func EnableTwoFactorAuthentication(w http.ResponseWriter, req *http.Request) {
 		Secret string
 	}
 
+	// Update the user's record with the secret, but don't yet switch the Has2FAEnabled field to
+	// `true`. We'll do this only after the user confirms the generated code.
 	u.TOTPSecret = key.Secret()
-
 	if err := users.Update(u); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
