@@ -18,8 +18,9 @@ type UserOpts struct {
 }
 
 const defaultPPP db.CountType = 10
+const default2FAAuthDuration db.CountType = 259200 // as seconds, so three days
 
-// New validates and creates a User object with all properties supplied
+// New validates and creates a User object with all properties supplied via a UserOpts object.
 func New(opts UserOpts, password string) (*User, error) {
 	if opts.PPP == 0 {
 		opts.PPP = defaultPPP
@@ -34,12 +35,19 @@ func New(opts UserOpts, password string) (*User, error) {
 		return nil, err
 	}
 
+	authDuration := db.CountType(viper.GetInt("two_factor_auth.duration"))
+	if authDuration == 0 {
+		authDuration = default2FAAuthDuration
+	}
+
 	return &User{
 		Avatar: opts.Avatar,
 		Email:  opts.Email,
 		Name:   opts.Name,
 		PPP:    opts.PPP,
 		Title:  opts.Title,
+
+		AuthDuration: authDuration,
 
 		Hash:    string(bhash),
 		IsAdmin: opts.IsAdmin,
