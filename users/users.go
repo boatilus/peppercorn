@@ -18,12 +18,14 @@ type User struct {
 	PPP        db.CountType `gorethink:"posts_per_page"`
 	Title      string       `gorethink:"title"`
 	Timezone   string       `gorethink:"timezone"`    // IANA time zone string
-	LastViewed string       `gorethink:"last_viewed"` // Track the last post a user's viewed
+	LastViewed string       `gorethink:"last_viewed"` // tracks the last post a user's viewed
 
 	Hash string `gorethink:"hash"`
 
-	Has2FAEnabled bool   `gorethink:"has_2fa_enabled"`
-	TOTPSecret    string `gorethink:"totp_secret"`
+	Has2FAEnabled bool `gorethink:"has_2fa_enabled"`
+	// AuthDuration is the length of time a 2FA session is valid, in seconds.
+	AuthDuration db.CountType `gorethink:"auth_duration"`
+	TOTPSecret   string       `gorethink:"totp_secret"`
 
 	IsAdmin bool `gorethink:"is_admin,omitempty"`
 }
@@ -106,6 +108,25 @@ func Update(u *User) error {
 	Users[u.ID] = *u
 
 	return nil
+}
+
+// SetAuthDuration sets the value for the user's two-factor authorization session duration, in
+// seconds. After this elapses, the user is required to enter his/her authentication code to access
+// restricted routes. The function returns an error if the argument is < 1 or if there's a
+// database error.
+func (u *User) SetAuthDuration(seconds db.CountType) error {
+	if seconds < 1 {
+		return errors.New("users.SetAuthDuration: argument seconds cannot be < 1")
+	}
+
+	u.AuthDuration = seconds
+	return Update(u)
+}
+
+// GetAuthDuration returns the value for the user's two-factor authentication session duration,
+// in seconds.
+func (u *User) GetAuthDuration() db.CountType {
+	return u.AuthDuration
 }
 
 func validateData(email string, name string, ppp db.CountType, password string) error {

@@ -320,3 +320,26 @@ func TestGetByName(t *testing.T) {
 		assert.Equal(got.Hash, c.want.Hash)
 	}
 }
+
+func TestSetAuthDuration(t *testing.T) {
+	assert := assert.New(t)
+
+	u, err := GetByName("user1")
+	if err != nil {
+		t.Error(err)
+	}
+
+	const val db.CountType = 3600
+
+	err = u.SetAuthDuration(val)
+	if !assert.Nil(err) {
+		t.FailNow()
+	}
+
+	assert.Equal(val, u.AuthDuration)
+}
+
+func TestGetAuthDuration(t *testing.T) {
+	u, _ := GetByName("user1")
+	assert.Equal(t, db.CountType(3600), u.GetAuthDuration())
+}
