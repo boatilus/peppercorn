@@ -46,7 +46,7 @@
 
     <h1>{{.Name}}</h1>
 
-    <h2>Your Account</h2>
+    <h3>Your Account</h3>
     <form method="post" action="/me">
       <label class="textfield">
         <input name="email" type="email" value="{{.ObfuscatedEmail}}" disabled />
@@ -110,7 +110,12 @@
       <input type="submit" value="Save changes">
       <hr/>
 
-      <h2>Devices and Sessions</h2>
+      <h3>Two-Factor Authentication</h3>
+      <p>Status: </p>
+      <a class="btn" href="/me/enable-two-factor-authentication">Enable two-factor authentication</a>
+      <hr/>
+
+      <h3>Devices and Sessions</h3>
         <section id="sessions">
         {{ range $i, $e := .Sessions }}
           <div class="grid grid--medium">

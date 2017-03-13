@@ -14,6 +14,7 @@ var Head *template.Template
 var Me *template.Template
 var Forgot *template.Template
 var ResetPassword *template.Template
+var EnableTwoFactorAuthentication *template.Template
 
 var sep string
 var dir string
@@ -44,6 +45,7 @@ func init() {
 	Me = parseTemplate("me")
 	Forgot = parseTemplate("forgot")
 	ResetPassword = parseTemplate("reset-password")
+	EnableTwoFactorAuthentication = parseTemplate("enable-two-factor-authentication")
 }
 
 func parseTemplate(name string) *template.Template {

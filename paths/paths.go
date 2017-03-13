@@ -22,6 +22,8 @@ var Get struct {
 	Forgot string
 	// ResetPassword is the path to reset a user's password
 	ResetPassword string
+	// EnableTwoFactorAuthentication is the path to enable two-factor authentication
+	EnableTwoFactorAuthentication string
 }
 
 // Post is a struct containing routing paths to POST requests
@@ -57,6 +59,7 @@ func init() {
 	Get.MeRevoke = "/me/revoke/:num"
 	Get.Forgot = "/forgot"
 	Get.ResetPassword = "/reset-password"
+	Get.EnableTwoFactorAuthentication = "/me/enable-two-factor-authentication"
 
 	Post.SignIn = "/sign-in"
 	Post.Me = "/me"
