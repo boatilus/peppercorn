@@ -119,6 +119,11 @@ func (u *User) SetAuthDuration(seconds db.CountType) error {
 		return errors.New("users.SetAuthDuration: argument seconds cannot be < 1")
 	}
 
+	// We can skip an update if no change.
+	if seconds == u.AuthDuration {
+		return nil
+	}
+
 	u.AuthDuration = seconds
 	return Update(u)
 }
