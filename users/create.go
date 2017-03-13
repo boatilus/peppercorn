@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/boatilus/peppercorn/db"
+	"github.com/spf13/viper"
 )
 
 // UserOpts is a type passed into constructors to create a new User
@@ -35,7 +36,7 @@ func New(opts UserOpts, password string) (*User, error) {
 		return nil, err
 	}
 
-	authDuration := db.CountType(viper.GetInt("two_factor_auth.duration"))
+	authDuration := db.CountType(viper.GetInt("two_factor_auth.default_duration"))
 	if authDuration == 0 {
 		authDuration = default2FAAuthDuration
 	}
@@ -65,7 +66,7 @@ func NewFromDefaults(email string, name string, password string) (*User, error) 
 		return nil, err
 	}
 
-	authDuration := db.CountType(viper.GetInt("two_factor_auth.duration"))
+	authDuration := db.CountType(viper.GetInt("two_factor_auth.default_duration"))
 	if authDuration == 0 {
 		authDuration = default2FAAuthDuration
 	}

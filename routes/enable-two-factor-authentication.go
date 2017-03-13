@@ -9,6 +9,7 @@ import (
 	"github.com/boatilus/peppercorn/templates"
 	"github.com/boatilus/peppercorn/users"
 	"github.com/pquerna/otp/totp"
+	"github.com/spf13/viper"
 )
 
 func EnableTwoFactorAuthenticationGetHandler(w http.ResponseWriter, req *http.Request) {
@@ -31,7 +32,7 @@ func EnableTwoFactorAuthenticationGetHandler(w http.ResponseWriter, req *http.Re
 
 	// In typical fashion, we describe the TOTP secret with the account email.
 	key, err := totp.Generate(totp.GenerateOpts{
-		Issuer:      "peppercorn",
+		Issuer:      viper.GetString("title"),
 		AccountName: u.Email,
 	})
 	if err != nil {

@@ -314,6 +314,15 @@ func MeGetHandler(w http.ResponseWriter, req *http.Request) {
 	obEmail := utility.ObfuscateEmail(u.Email) // Obfuscate email
 	pppOptions := viper.GetStringSlice("ppp_options")
 
+	durationOpts := viper.Get("two_factor_auth.duration_options").([]interface{})
+
+	var durationStrings []string
+
+	for i := range durationOpts {
+		d := time.Duration(durationOpts[i].(int)) * time.Second
+		durationStrings = append(durationStrings, fmt.Sprintf("%v days", d.Hours()/24))
+	}
+
 	o := struct {
 		Flash           string
 		ObfuscatedEmail string
@@ -323,6 +332,7 @@ func MeGetHandler(w http.ResponseWriter, req *http.Request) {
 		PPPOptions      []string
 		PPP             string
 		Has2FAEnabled   bool
+		DurationOpts    []string
 		Timezones       []string
 		UserTimezone    string
 		Sessions        []sessionData
@@ -335,6 +345,7 @@ func MeGetHandler(w http.ResponseWriter, req *http.Request) {
 		pppOptions,
 		strconv.FormatInt(int64(u.PPP), 10),
 		u.Has2FAEnabled,
+		durationStrings,
 		viper.GetStringSlice("timezones"),
 		u.Timezone,
 		sessions,
