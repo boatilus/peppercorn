@@ -46,6 +46,5 @@ func EnableTwoFactorAuthenticationPostHandler(w http.ResponseWriter, req *http.R
 	}
 
 	session.AddFlash(u.ID, "Two-factor authentication has been enabled")
-
 	http.Redirect(w, req, paths.Get.Me, http.StatusSeeOther)
 }

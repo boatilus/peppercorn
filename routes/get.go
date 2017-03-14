@@ -311,17 +311,21 @@ func MeGetHandler(w http.ResponseWriter, req *http.Request) {
 		sessions = append(sessions, s)
 	}
 
-	obEmail := utility.ObfuscateEmail(u.Email) // Obfuscate email
+	obEmail := utility.ObfuscateEmail(u.Email) // we'll obfuscate the email address for privacy
 	pppOptions := viper.GetStringSlice("ppp_options")
 
+	// To display a list of radio buttons for users to select the expiry time for 2FA sessions.
 	durationOpts := viper.Get("two_factor_auth.duration_options").([]interface{})
+	durations := make([]int64, len(durationOpts))
 
-	var durationStrings []string
-
+	// For durations, we want to display them as the number of days, so we'll create Duration objects
+	// as cast them into int64s.
 	for i := range durationOpts {
-		d := time.Duration(durationOpts[i].(int)) * time.Second
-		durationStrings = append(durationStrings, fmt.Sprintf("%v days", d.Hours()/24))
+		d := time.Duration(durationOpts[i].(float64)) * time.Second
+		durations[i] = int64(d.Hours())
 	}
+
+	currentDuration := time.Duration(u.AuthDuration) * time.Second
 
 	o := struct {
 		Flash           string
@@ -332,23 +336,25 @@ func MeGetHandler(w http.ResponseWriter, req *http.Request) {
 		PPPOptions      []string
 		PPP             string
 		Has2FAEnabled   bool
-		DurationOpts    []string
+		DurationOpts    []int64
+		CurrentDuration int64
 		Timezones       []string
 		UserTimezone    string
 		Sessions        []sessionData
 	}{
-		session.GetFlash(u.ID),
-		obEmail,
-		u.Name,
-		u.Title,
-		u.Avatar,
-		pppOptions,
-		strconv.FormatInt(int64(u.PPP), 10),
-		u.Has2FAEnabled,
-		durationStrings,
-		viper.GetStringSlice("timezones"),
-		u.Timezone,
-		sessions,
+		Flash:           session.GetFlash(u.ID),
+		ObfuscatedEmail: obEmail,
+		Name:            u.Name,
+		Title:           u.Title,
+		Avatar:          u.Avatar,
+		PPPOptions:      pppOptions,
+		PPP:             strconv.FormatInt(int64(u.PPP), 10),
+		Has2FAEnabled:   u.Has2FAEnabled,
+		DurationOpts:    durations,
+		CurrentDuration: int64(currentDuration.Hours()),
+		Timezones:       viper.GetStringSlice("timezones"),
+		UserTimezone:    u.Timezone,
+		Sessions:        sessions,
 	}
 
 	templates.Me.Execute(w, &o)
