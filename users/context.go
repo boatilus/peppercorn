@@ -1,8 +1,6 @@
 package users
 
-import (
-	"context"
-)
+import "context"
 
 // contextKey and userKey are used to pass user data in request contexts
 type contextKey int

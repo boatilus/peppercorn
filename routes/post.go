@@ -75,7 +75,7 @@ func SignInPostHandler(w http.ResponseWriter, req *http.Request) {
 	ua := req.Header.Get("User-Agent")
 
 	// We're ready to create the session and set the session cookie.
-	id, err := session.Create(u.ID, ip, ua)
+	id, err := session.Create(u, ip, ua)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

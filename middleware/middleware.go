@@ -38,20 +38,18 @@ func Validate(next http.Handler) http.Handler {
 			return
 		}
 
-		id, err := cookie.Decode(c)
+		sid, err := cookie.Decode(c)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		authenticated, userID, err := session.IsAuthenticated(id)
+		s, err := session.GetByID(sid)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		if !authenticated {
 			// No session matches the value of the session cookie, so destroy the cookie.
+
+			// TODO: This is a truly awful, bad way to check this because it assumes a DB error equates
+			// to a bad session :(
 			c.MaxAge = -1
 			c.Expires = time.Date(2000, time.January, 1, 1, 0, 0, 0, time.UTC)
 
@@ -60,16 +58,48 @@ func Validate(next http.Handler) http.Handler {
 			return
 		}
 
-		u, err := users.GetByID(userID)
+		u, err := users.GetByID(s.UserID)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		// We'll want to bind the user's data to the context so we needn't make another DB request for
-		// it.
+		// it. We'll also add this session to the context.
 		ctx := users.NewContext(req.Context(), u)
+		ctx = session.NewContext(ctx, s)
 		next.ServeHTTP(w, req.WithContext(ctx))
+	})
+}
+
+// If the user has multi-factor authentication enabled on his or her account, check to see that
+// it has not yet expired.
+func ValidateMFA(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		ctx := req.Context()
+
+		u := users.FromContext(ctx)
+		if u == nil {
+			msg := "ValidateMFA: could not read user data from request context"
+			http.Error(w, msg, http.StatusInternalServerError)
+			return
+		}
+
+		s := session.FromContext(ctx)
+		if s == nil {
+			msg := "ValidateMFA: could not read session data from request context"
+			http.Error(w, msg, http.StatusInternalServerError)
+			return
+		}
+
+		if u.Has2FAEnabled {
+			if s.HasMFAExpired() {
+				http.Redirect(w, req, paths.Get.EnterCode, http.StatusSeeOther)
+				return
+			}
+		}
+
+		next.ServeHTTP(w, req)
 	})
 }
 

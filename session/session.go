@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/boatilus/peppercorn/db"
+	"github.com/boatilus/peppercorn/users"
 	"github.com/spf13/viper"
 	rethink "gopkg.in/dancannon/gorethink.v2"
 )
@@ -14,13 +15,19 @@ import (
 // Session maintains a session key (the RethinkDB ID), the user's IP address and the user agent for
 // that session's browser, as well as a timestamp when the session was created.
 //
-// TODO: Consider also adding a LastAccessed field, updating each time session is used
+// TODO: Consider also adding a LastAccessed field, updating each time session is used.
 type Session struct {
-	ID        string    `gorethink:"id,omitempty"`
-	UserID    string    `gorethink:"user_id"`
-	IP        string    `gorethink:"ip"`
-	UserAgent string    `gorethink:"user_agent"`
+	ID string `gorethink:"id,omitempty"`
+	// UserID is the ID of the user to which this session is attached. A user may have many sessions.
+	UserID    string `gorethink:"user_id"`
+	IP        string `gorethink:"ip"`
+	UserAgent string `gorethink:"user_agent"`
+	// Timestamp is the time at which the session is created. Sessions expire based on cookie.max_age
+	// value set in the configuration, or by the DefaultAge constant.
 	Timestamp time.Time `gorethink:"timestamp"`
+	// MFAExpiresAt is the time at which the user's multi-factor authentication session is revoked
+	// if the user's enabled multi-factor authentication.
+	MFAExpiresAt time.Time `gorethink:"mfa_expires"`
 }
 
 // DefaultAge specifies the default length of time a session is valid (in seconds) unless specified
@@ -39,18 +46,24 @@ func GetTable() string {
 // Create builds a session object given the user's ID, his IP address and his User-Agent, fills
 // the current time in the Timestamp field and inserts it into the sessions table. The return value
 // is the ID of the session document in the DB. Returns a blank string and an error on any failure.
-func Create(userID string, ip string, userAgent string) (string, error) {
+func Create(user *users.User, ip string, userAgent string) (string, error) {
 	if !db.Session.IsConnected() {
 		return "", errors.New("RethinkDB session not connected")
 	}
 
-	log.Printf("Creating session for user %q [%s]..", userID, ip)
+	log.Printf("Creating session for user %q [%s]..", user.ID, ip)
+
+	// We'll set the expiration time of the multi-factor session to the user's desired authentication
+	// duration.
+	now := time.Now().UTC()
+	mfaExpires := time.Duration(user.AuthDuration) * time.Second
 
 	s := Session{
-		UserID:    userID,
-		IP:        ip,
-		UserAgent: userAgent,
-		Timestamp: time.Now().UTC(),
+		UserID:       user.ID,
+		IP:           ip,
+		UserAgent:    userAgent,
+		Timestamp:    now,
+		MFAExpiresAt: now.Add(mfaExpires),
 	}
 
 	res, err := db.Get().Table(GetTable()).Insert(&s).RunWrite(db.Session)
@@ -58,9 +71,21 @@ func Create(userID string, ip string, userAgent string) (string, error) {
 		return "", err
 	}
 
-	log.Printf("Session for user %q created at %s", userID, s.Timestamp)
+	log.Printf("Session for user %q created at %s", user.ID, s.Timestamp)
 
 	return res.GeneratedKeys[0], nil
+}
+
+// HasMFAExpired returns true if the MFA expiration time has exceeded the current time and false
+// otherwise.
+func (s *Session) HasMFAExpired() bool {
+	now := time.Now().UTC()
+
+	if s.MFAExpiresAt.Sub(now) < 0 {
+		return true
+	}
+
+	return false
 }
 
 // GetByID queries the DB for a session with a given SID and returns it. Returns nil and an error
