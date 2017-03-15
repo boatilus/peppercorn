@@ -7,20 +7,21 @@ import (
 	"time"
 
 	"github.com/boatilus/peppercorn/db"
+	"github.com/boatilus/peppercorn/users"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	rethink "gopkg.in/dancannon/gorethink.v2"
 )
 
 const tableName = "sessions_test"
-const sessionKey = "some value"
+const sKey = "some value"
 
 var validKeys []string
 var sessions []Session
 
 func init() {
 	viper.Set("db.sessions_table", tableName)
-	viper.Set("session_key", sessionKey)
+	viper.Set("session_key", sKey)
 
 	var err error
 
@@ -83,7 +84,7 @@ func setupDB() {
 
 func TestGetKey(t *testing.T) {
 	keyGot := GetKey()
-	assert.Equal(t, sessionKey, keyGot)
+	assert.Equal(t, sKey, keyGot)
 }
 
 func TestGetTable(t *testing.T) {
@@ -94,11 +95,11 @@ func TestGetTable(t *testing.T) {
 func TestCreate(t *testing.T) {
 	assert := assert.New(t)
 
-	userID := "user3"
+	u, _ := users.NewFromDefaults("r@ovao.la", "WOWFRIEND", "PASSWORD")
 	ip := "108.213.25.224"
 	userAgent := "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2)"
 
-	id, err := Create(userID, ip, userAgent)
+	id, err := Create(u, ip, userAgent)
 	if !assert.NoError(err) {
 		t.FailNow()
 	}
