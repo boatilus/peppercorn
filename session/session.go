@@ -80,7 +80,6 @@ func Create(user *users.User, ip string, userAgent string) (string, error) {
 // otherwise.
 func (s *Session) HasMFAExpired() bool {
 	now := time.Now().UTC()
-
 	if s.MFAExpiresAt.Sub(now) < 0 {
 		return true
 	}

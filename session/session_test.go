@@ -208,3 +208,15 @@ func TestGetFlash(t *testing.T) {
 	assert.Equal(t, "flash message", f)
 	assert.Equal(t, "", flashes[sid])
 }
+
+func TestHasMFAExpired(t *testing.T) {
+	sid := validKeys[1]
+	now := time.Now().UTC()
+	s, _ := Get(sid)
+
+	s.MFAExpiresAt = now.Add(-(1 * time.Hour))
+	assert.True(t, s.HasMFAExpired())
+
+	s.MFAExpiresAt = now.Add(1 * time.Hour)
+	assert.False(t, s.HasMFAExpired())
+}
