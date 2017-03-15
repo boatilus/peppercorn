@@ -107,11 +107,11 @@ func TestCreate(t *testing.T) {
 	assert.Len(id, 36) // A UUID is 36 characters
 }
 
-func TestGetByID(t *testing.T) {
+func TestGet(t *testing.T) {
 	assert := assert.New(t)
 	assert.NotEmpty(validKeys[0])
 
-	s, err := GetByID(validKeys[0])
+	s, err := Get(validKeys[0])
 	if !assert.NoError(err) {
 		t.FailNow()
 	}

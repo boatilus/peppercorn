@@ -88,9 +88,9 @@ func (s *Session) HasMFAExpired() bool {
 	return false
 }
 
-// GetByID queries the DB for a session with a given SID and returns it. Returns nil and an error
+// Get queries the DB for a session with a given SID and returns it. Returns nil and an error
 // on failure.
-func GetByID(sid string) (*Session, error) {
+func Get(sid string) (*Session, error) {
 	if !db.Session.IsConnected() {
 		return nil, errors.New("RethinkDB session not connected")
 	}

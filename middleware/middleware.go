@@ -44,7 +44,7 @@ func Validate(next http.Handler) http.Handler {
 			return
 		}
 
-		s, err := session.GetByID(sid)
+		s, err := session.Get(sid)
 		if err != nil {
 			// No session matches the value of the session cookie, so destroy the cookie.
 
