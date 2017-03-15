@@ -48,9 +48,10 @@ func Create() (http.Handler, error) {
 	r.Post(paths.Post.SignIn, routes.SignInPostHandler)
 	r.Post(paths.Post.Forgot, routes.ForgotPostHandler)
 	r.Post(paths.Post.ResetPassword, routes.ResetPasswordPostHandler)
-	r.With(middleware.Validate).Post(paths.Post.Me, routes.MePostHandler)
-	r.With(middleware.Validate).Post(paths.Post.SubmitPost, routes.PostsPostHandler)
+	r.With(middleware.Validate, middleware.ValidateMFA).Post(paths.Post.Me, routes.MePostHandler)
+	r.With(middleware.Validate, middleware.ValidateMFA).Post(paths.Post.SubmitPost, routes.PostsPostHandler)
 	r.With(middleware.Validate).Post(paths.Post.EnableTwoFactorAuthentication, routes.EnableTwoFactorAuthenticationPostHandler)
+	r.With(middleware.Validate).Post(paths.Post.EnterCode, routes.EnterCodePostHandler)
 
 	// PATCH
 	r.With(middleware.Validate).Patch(paths.Patch.Single, routes.SinglePatchHandler)

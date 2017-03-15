@@ -46,5 +46,9 @@ func EnterCodeGetHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	templates.EnterCode.Execute(w, nil)
+	type data struct {
+		FlashMessage string
+	}
+
+	templates.EnterCode.Execute(w, data{FlashMessage: session.GetFlash(s.ID)})
 }

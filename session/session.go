@@ -265,3 +265,31 @@ func IsAuthenticated(sid string) (authenticated bool, userID string, err error) 
 	// If the record was found, the session is good, as we remove invalid sessions from the DB
 	return true, s.UserID, nil
 }
+
+// Update accepts a session with (potentially) modified values and updates the record in the DB.
+func Update(s *Session) error {
+	if !db.Session.IsConnected() {
+		return errors.New("session: RethinkDB session not connected")
+	}
+
+	log.Printf("session: updating session with SID %q..", s.ID)
+
+	res, err := db.Get().Table(GetTable()).Get(s.ID).Update(s).RunWrite(db.Session)
+	if err != nil {
+		return err
+	}
+
+	if res.Skipped == 1 {
+		log.Printf("session: no changes made to session with SID %q", s.ID)
+
+		return nil
+	}
+
+	if res.Replaced != 1 {
+		return fmt.Errorf("session: failed to update session with SID %q", s.ID)
+	}
+
+	log.Printf("session: updated session with SID %q", s.ID)
+
+	return nil
+}

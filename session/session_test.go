@@ -220,3 +220,17 @@ func TestHasMFAExpired(t *testing.T) {
 	s.MFAExpiresAt = now.Add(1 * time.Hour)
 	assert.False(t, s.HasMFAExpired())
 }
+
+func TestUpdate(t *testing.T) {
+	sid := validKeys[1]
+	s, _ := Get(sid)
+
+	s.IP = "192.168.0.1"
+	err := Update(s)
+	if !assert.NoError(t, err) {
+		t.FailNow()
+	}
+
+	s, _ = Get(sid)
+	assert.Equal(t, "192.168.0.1", s.IP)
+}

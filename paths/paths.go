@@ -44,6 +44,8 @@ var Post struct {
 	ResetPassword string
 	// EnableTwoFactorAuthentication is the path to which a TOTP code is POSTed to enable 2FA
 	EnableTwoFactorAuthentication string
+	// EnterCode is the path to which a TOTP code is POSTed to reverify the MFA session
+	EnterCode string
 }
 
 // Patch is a struct containing routing paths to PATCH requests
@@ -72,6 +74,7 @@ func init() {
 	Post.Forgot = "/forgot"
 	Post.ResetPassword = "/reset-password"
 	Post.EnableTwoFactorAuthentication = "/me/enable-two-factor-authentication"
+	Post.EnterCode = "/enter-code"
 
 	Patch.Single = "/posts/:num"
 }
