@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <link rel="stylesheet" href="/static/style/lib/cutestrap.min.css">
     <style type="text/css">
+      body { padding-bottom: 3em !important }
+
       @media (max-width: 600px) {
         body {
           margin-left: 2.5%;
@@ -13,7 +15,7 @@
       }
 
       @media (min-width: 600px) {
-          body {
+        body {
           margin: 0 auto 2em auto;
           width: 80%;
         }
@@ -29,6 +31,11 @@
         background: rgba(255, 0, 0, 0.2);
         border-radius: 3px;
         padding: 0.25em 0.4em;
+      }
+
+      form {
+        display: inline;
+        padding: 0 !important
       }
 
       #sessions hr:last-of-type { display: none }

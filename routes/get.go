@@ -11,7 +11,6 @@ import (
 
 	"github.com/boatilus/peppercorn/cookie"
 	"github.com/boatilus/peppercorn/db"
-	"github.com/boatilus/peppercorn/middleware"
 	"github.com/boatilus/peppercorn/paths"
 	"github.com/boatilus/peppercorn/posts"
 	"github.com/boatilus/peppercorn/pwreset"
@@ -255,9 +254,6 @@ func CountGetHandler(w http.ResponseWriter, _ *http.Request) {
 
 // MeGetHandler is the handler
 func MeGetHandler(w http.ResponseWriter, req *http.Request) {
-	vid := middleware.GetVisitorID(req.Context())
-	log.Print(vid)
-
 	u := users.FromContext(req.Context())
 	if u == nil {
 		http.Error(w, "Could not read user data from request context", http.StatusInternalServerError)

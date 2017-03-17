@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>{{ getTitleWith "Two-Factor Recovery Codes" }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/static/style/lib/cutestrap.min.css">
+    <style type="text/css">
+      body { padding-bottom: 3em !important }
+
+      @media (max-width: 600px) {
+        body {
+          margin-left: 2.5%;
+          margin-right: 2.5%;
+        }
+      }
+
+      @media (min-width: 601px) {
+        body {
+          margin: 0 auto 2em auto;
+          width: 80%;
+        }
+      }
+
+      header { float: right }
+
+      #codes {
+        font-family: monospace;
+        font-size: 1.4em;
+        line-height: 2em;
+        -moz-column-count: 2;
+        -webkit-column-count: 2;
+        column-count: 2;
+      }
+
+      @media (max-width: 600px) {
+        #codes { width: auto }
+      }
+
+      @media (min-width: 601px) {
+        #codes { width: 22em }
+      }
+
+      #flash {
+        background: rgba(255, 0, 0, 0.2);
+        border-radius: 3px;
+        padding: 0.25em 0.4em;
+      }
+    </style>
+  </head>
+
+  <body>
+    <header>
+      <a href="/">Home</a>
+    </header>
+
+    <h1>{{ getTitle }} Two-Factor Recovery Codes</h1>
+    <p>
+      If you lose your authenticator app, you can regain access to your account with any of the
+      following recovery codes. Please print these out or otherwise securely store them.
+    </p>
+
+    <div id="codes">
+      {{ range . }}
+        {{ . }}<br>
+      {{ end }}
+    </div>
+  </body>
+</html>

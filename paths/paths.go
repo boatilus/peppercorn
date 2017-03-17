@@ -24,8 +24,13 @@ var Get struct {
 	ResetPassword string
 	// EnableTwoFactorAuthentication is the path to enable two-factor authentication
 	EnableTwoFactorAuthentication string
+	// DisableTwoFactorAuthentication is the path to disable 2FA for a user.
+	DisableTwoFactorAuthentication string
 	// EnterCode is the path to prompt the user to enter his/her MFA authentication code.
 	EnterCode string
+	// RecoveryCodes is the path to display account recovery codes if the user's lost his/her
+	// authenticator.
+	RecoveryCodes string
 }
 
 // Post is a struct containing routing paths to POST requests
@@ -66,7 +71,9 @@ func init() {
 	Get.Forgot = "/forgot"
 	Get.ResetPassword = "/reset-password"
 	Get.EnableTwoFactorAuthentication = "/me/enable-two-factor-authentication"
+	Get.DisableTwoFactorAuthentication = "/me/disable-two-factor-authentication"
 	Get.EnterCode = "/enter-code"
+	Get.RecoveryCodes = "/me/recovery-codes"
 
 	Post.SignIn = "/sign-in"
 	Post.Me = "/me"

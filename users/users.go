@@ -26,6 +26,8 @@ type User struct {
 	// AuthDuration is the length of time a 2FA session is valid, in seconds.
 	AuthDuration db.CountType `gorethink:"auth_duration"`
 	TOTPSecret   string       `gorethink:"totp_secret"`
+	// RecoveryCodes is an array containing a user's MFA recovery codes.
+	RecoveryCodes []string `gorethink:"recovery_codes"`
 
 	IsAdmin bool `gorethink:"is_admin,omitempty"`
 }

@@ -239,3 +239,9 @@ func TestGenerateRandomNonce(t *testing.T) {
 	got := GenerateRandomNonce()
 	assert.NotEmpty(t, got)
 }
+
+func TestGenerateRandomRecoveryCode(t *testing.T) {
+	got := GenerateRandomRecoveryCode()
+	assert.NotEmpty(t, got)
+	assert.Len(t, got, 12)
+}

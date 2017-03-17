@@ -61,6 +61,8 @@ func EnableTwoFactorAuthenticationPostHandler(w http.ResponseWriter, req *http.R
 	}
 
 	u.Has2FAEnabled = true
+	u.GenerateRecoveryCodes()
+
 	u.AuthDuration = db.CountType(viper.GetInt("two_factor_auth.default_duration"))
 	if u.AuthDuration == 0 {
 		u.AuthDuration = 3600 // set a reasonable default of 3600 seconds (one hour) if unspecified

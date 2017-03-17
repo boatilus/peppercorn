@@ -43,6 +43,8 @@ func Create() (http.Handler, error) {
 	r.With(middleware.Validate, middleware.ValidateMFA).Get(paths.Get.MeRevoke, routes.MeRevokeGetHandler)
 	r.With(middleware.Validate).Get(paths.Get.EnableTwoFactorAuthentication, routes.EnableTwoFactorAuthenticationGetHandler)
 	r.With(middleware.Validate).Get(paths.Get.EnterCode, routes.EnterCodeGetHandler)
+	r.With(middleware.Validate, middleware.ValidateMFA).Get(paths.Get.DisableTwoFactorAuthentication, routes.DisableTwoFactorAuthenticationGetHandler)
+	r.With(middleware.Validate, middleware.ValidateMFA).Get(paths.Get.RecoveryCodes, routes.RecoveryCodesGetHandler)
 
 	// POST
 	r.Post(paths.Post.SignIn, routes.SignInPostHandler)

@@ -343,3 +343,14 @@ func TestGetAuthDuration(t *testing.T) {
 	u, _ := GetByName("user1")
 	assert.Equal(t, db.CountType(3600), u.GetAuthDuration())
 }
+
+func TestGenerateRecoveryCodes(t *testing.T) {
+	u, _ := GetByName("user1")
+	u.GenerateRecoveryCodes()
+
+	assert.Len(t, u.RecoveryCodes, 10)
+
+	for _, e := range u.RecoveryCodes {
+		assert.Len(t, e, 12)
+	}
+}

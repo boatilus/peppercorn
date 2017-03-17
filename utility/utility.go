@@ -10,6 +10,9 @@ import (
 	"strings"
 	"time"
 
+	"encoding/binary"
+
+	"github.com/Dancapistan/gobase32"
 	"github.com/boatilus/peppercorn/db"
 	"github.com/boatilus/peppercorn/version"
 	"github.com/mssola/user_agent"
@@ -213,4 +216,24 @@ func GenerateRandomNonce() string {
 	}
 
 	return base64.StdEncoding.EncodeToString(b)
+}
+
+// GenerateRandomRecoveryCode generates a random, (hopefully) cryptographically-secure string 12
+// characters in length. The string is encoded using Crockford's base32, since we can expect
+// that recovery codes will be printed by the user and may need to be paper-transcribed at some
+// point.
+func GenerateRandomRecoveryCode() string {
+	b := make([]byte, 8)
+
+	_, err := rand.Read(b)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	n1 := binary.LittleEndian.Uint32(b[0:4])
+	n2 := binary.LittleEndian.Uint32(b[4:8])
+	b1 := base32.Encode(n1).Pad(6)
+	b2 := base32.Encode(n2).Pad(6)
+
+	return string(b1[0:6]) + string(b2[0:6])
 }
