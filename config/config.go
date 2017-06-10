@@ -2,7 +2,7 @@ package config
 
 import (
 	"log"
-	"os"
+	"os/user"
 
 	"github.com/spf13/viper"
 )
@@ -12,7 +12,13 @@ const configPath = "."
 
 func init() {
 	viper.SetConfigName(configName)
-	viper.AddConfigPath(os.Getenv("HOME"))
+
+	u, err := user.Current()
+	if err != nil {
+		panic(err)
+	}
+
+	viper.AddConfigPath(u.HomeDir)
 	viper.AddConfigPath(configPath)
 
 	if err := viper.ReadInConfig(); err != nil {
