@@ -3,7 +3,6 @@ package templates
 import (
 	"html/template"
 	"os"
-	"os/user"
 
 	"github.com/boatilus/peppercorn/db"
 	"github.com/boatilus/peppercorn/utility"
@@ -36,13 +35,13 @@ func init() {
 		"getTitleWith": utility.GetTitleWith,
 	}
 
-	u, err := user.Current()
+	cwd, err := os.Getwd()
 	if err != nil {
 		panic(err)
 	}
 
 	sep = string(os.PathSeparator)
-	dir = u.HomeDir + sep + "peppercorn" + sep + "templates"
+	dir = cwd
 
 	// TODO: Async these
 	Index = parseTemplate("index")
