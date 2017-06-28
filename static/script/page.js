@@ -318,6 +318,8 @@ const preventEvent = function(event) {
   event.preventDefault();
 }
 
+// handleReplyClick grabs the post's Markdown content and places it into the reply box, prefaced
+// by the post author's name.
 const handleReplyClick = function(event) {
   const article = this.getAncestorByTagName('article');
   if (article === null) {
@@ -337,7 +339,8 @@ const handleReplyClick = function(event) {
   bottom.focus();
 };
 
-// handleEditClick is the handler called for the Edit button `click` event.
+// handleEditClick is the handler called for the Edit button `click` event. It replaces the post's
+// content with a `textarea` and presents a pair of buttons to either cancel changes or save them.
 const handleEditClick = function(event) {
   const displayViewState = function() {
     editable.remove();
