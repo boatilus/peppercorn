@@ -40,6 +40,7 @@
 
       #sessions hr:last-of-type { display: none }
     </style>
+    <script src="/static/script/me.js"></script>
   </head>
 
   <body>
@@ -120,7 +121,7 @@
 
     <h3>Two-Factor Authentication</h3>
     {{ if .Has2FAEnabled }}
-      <form method="post" action="/me/two-factor-authentication-duration">
+      <form id="mfa_duration_form" method="post" action="/me/two-factor-authentication-duration">
         <p>Status: <span style="color: green">Enabled</span></p>
         <p>
           Time before reverification is required:
@@ -134,7 +135,7 @@
         
         <input type="submit" value="Save changes">
       </form>
-      <a class="btn" href="/me/disable-two-factor-authentication">Disable two-factor authentication</a>
+      <a id="mfa_disable" class="btn" href="/me/disable-two-factor-authentication">Disable two-factor authentication</a>
       <p><br><a href="/me/recovery-codes">View recovery codes</a></p>
     {{ else }}
       <p>Status: <span style="color: red">Disabled</span></p>
