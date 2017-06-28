@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-const configName = "config"
+const configName = "peppercorn"
 const configPath = "."
 
 func init() {
